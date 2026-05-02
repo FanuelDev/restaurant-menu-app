@@ -1,0 +1,142 @@
+# docker-compose.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# Stack complète : Angular (Nginx) + AdonisJS + MySQL + MinIO
+# Usage dev  : docker compose up
+# Usage prod : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: '3.9'
+
+services:
+
+  # ── Base de données MySQL ──────────────────────────────────────────────────
+  db:
+    image: mysql:8.3
+    container_name: restaurant_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE:      restaurant_menu
+      MYSQL_USER:          restaurant_user
+      MYSQL_PASSWORD:      restaurant_pass
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "restaurant_user", "-prestaurant_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - restaurant_net
+
+  # ── MinIO (stockage S3-compatible pour les images) ─────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: restaurant_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER:     minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Console web MinIO (http://localhost:9001)
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - restaurant_net
+
+  # ── Création du bucket MinIO au premier démarrage ──────────────────────────
+  minio-init:
+    image: minio/mc:latest
+    container_name: restaurant_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 minioadmin minioadmin;
+        mc mb --ignore-existing local/restaurant-menu;
+        mc anonymous set public local/restaurant-menu;
+        echo '✅ Bucket restaurant-menu créé et public';
+      "
+    networks:
+      - restaurant_net
+
+  # ── Backend AdonisJS v6 ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: restaurant_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      NODE_ENV:       production
+      PORT:           3333
+      HOST:           0.0.0.0
+      APP_KEY:        change-this-32-char-secret-key!!
+      TZ:             UTC
+      LOG_LEVEL:      info
+
+      # MySQL
+      DB_HOST:        db
+      DB_PORT:        3306
+      DB_USER:        restaurant_user
+      DB_PASSWORD:    restaurant_pass
+      DB_DATABASE:    restaurant_menu
+
+      # Stockage (MinIO)
+      DRIVE_DISK:     s3
+      S3_KEY:         minioadmin
+      S3_SECRET:      minioadmin
+      S3_BUCKET:      restaurant-menu
+      S3_ENDPOINT:    http://minio:9000
+      S3_REGION:      us-east-1
+
+      # CORS — autorise le frontend
+      CORS_ORIGIN:    http://localhost:4200,http://frontend
+
+      MAX_IMAGE_SIZE_MB: 5
+    ports:
+      - "3333:3333"
+    volumes:
+      - backend_uploads:/app/public/uploads
+    networks:
+      - restaurant_net
+
+  # ── Frontend Angular (servi par Nginx en prod) ─────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: restaurant_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    networks:
+      - restaurant_net
+
+# ── Volumes persistants ────────────────────────────────────────────────────
+volumes:
+  db_data:
+  minio_data:
+  backend_uploads:
+
+# ── Réseau interne ──────────────────────────────────────────────────────────
+networks:
+  restaurant_net:
+    driver: bridge

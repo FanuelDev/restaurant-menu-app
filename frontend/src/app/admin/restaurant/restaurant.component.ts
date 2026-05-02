@@ -1,0 +1,309 @@
+// frontend/src/app/admin/restaurant/restaurant.component.ts
+import { Component, inject, OnInit, signal } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
+import { RestaurantService } from '../../shared/services/restaurant.service'
+
+const DAYS: { key: string; label: string }[] = [
+  { key: 'monday', label: 'Lundi' },
+  { key: 'tuesday', label: 'Mardi' },
+  { key: 'wednesday', label: 'Mercredi' },
+  { key: 'thursday', label: 'Jeudi' },
+  { key: 'friday', label: 'Vendredi' },
+  { key: 'saturday', label: 'Samedi' },
+  { key: 'sunday', label: 'Dimanche' },
+]
+
+@Component({
+  selector: 'app-restaurant',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Informations restaurant</h1>
+          <p class="page-subtitle">Identité visuelle et horaires</p>
+        </div>
+      </header>
+
+      <div class="two-col">
+        <!-- Colonne principale -->
+        <div class="main-col">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="card">
+              <h2 class="card__title">Identité</h2>
+
+              <!-- Logo -->
+              <div class="form-group">
+                <label class="form-label">Logo du restaurant</label>
+                <div class="logo-zone" (click)="logoInput.click()" role="button" tabindex="0" (keydown.enter)="logoInput.click()">
+                  @if (logoPreview() || restaurant()?.logoUrl) {
+                    <img [src]="logoPreview() || restaurant()!.logoUrl" alt="Logo" class="logo-preview" />
+                    <div class="logo-overlay">Changer le logo</div>
+                  } @else {
+                    <div class="logo-placeholder">
+                      <span aria-hidden="true">🏪</span>
+                      <span>Uploader un logo</span>
+                    </div>
+                  }
+                </div>
+                <input #logoInput type="file" accept="image/*" class="file-input-hidden" (change)="onLogoChange($event)" />
+                @if (logoSaving()) {
+                  <p class="uploading-hint">Upload en cours…</p>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="r-name">Nom du restaurant *</label>
+                <input id="r-name" type="text" class="form-control" formControlName="name" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="r-slogan">Slogan</label>
+                <input id="r-slogan" type="text" class="form-control" formControlName="slogan" placeholder="Ex : Une cuisine sincère…" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="r-color">Couleur principale</label>
+                <div class="color-input-row">
+                  <input id="r-color" type="color" class="color-picker" formControlName="brandColor" />
+                  <input type="text" class="form-control" formControlName="brandColor" placeholder="#C0392B" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 class="card__title">Contact</h2>
+
+              <div class="form-group">
+                <label class="form-label" for="r-addr">Adresse</label>
+                <input id="r-addr" type="text" class="form-control" formControlName="address" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label" for="r-phone">Téléphone</label>
+                  <input id="r-phone" type="tel" class="form-control" formControlName="phone" />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label" for="r-email">E-mail</label>
+                  <input id="r-email" type="email" class="form-control" formControlName="email" />
+                </div>
+              </div>
+            </div>
+
+            @if (saveError()) {
+              <div class="alert-error" role="alert">{{ saveError() }}</div>
+            }
+            @if (saveSuccess()) {
+              <div class="alert-success" role="status">✅ Modifications enregistrées.</div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-large" [disabled]="saving()">
+              {{ saving() ? 'Enregistrement…' : 'Enregistrer les modifications' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Colonne horaires -->
+        <div class="side-col">
+          <div class="card">
+            <h2 class="card__title">Horaires d'ouverture</h2>
+            <div class="hours-list">
+              @for (day of days; track day.key) {
+                <div class="hours-row">
+                  <span class="hours-day">{{ day.label }}</span>
+                  @if (getHours(day.key)?.closed) {
+                    <span class="hours-closed">Fermé</span>
+                  } @else {
+                    <span class="hours-time">{{ getHours(day.key)?.open }} – {{ getHours(day.key)?.close }}</span>
+                  }
+                  <button class="btn-icon" (click)="editHours(day.key)" [attr.aria-label]="'Modifier horaires ' + day.label">✏️</button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .page-container { max-width: 960px; }
+    .page-header { margin-bottom: var(--space-6); }
+    .page-title { font-family: var(--font-display); font-size: 2rem; margin: 0 0 var(--space-1); }
+    .page-subtitle { color: var(--text-muted); margin: 0; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: start; }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface-1);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
+
+      &__title { font-size: 1.125rem; font-weight: 600; margin: 0 0 var(--space-5); }
+    }
+
+    .form-group { margin-bottom: var(--space-4); }
+    .form-row { display: flex; gap: var(--space-4); }
+    .flex-1 { flex: 1; }
+    .form-label { display: block; font-weight: 500; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: var(--space-2); }
+    .form-control {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); font-size: 1rem; background: var(--surface-1);
+      color: var(--text-primary); box-sizing: border-box;
+      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
+    }
+
+    .color-input-row { display: flex; gap: var(--space-3); align-items: center; }
+    .color-picker {
+      width: 48px; height: 48px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      cursor: pointer; padding: 2px;
+    }
+
+    .logo-zone {
+      width: 120px; height: 120px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover .logo-overlay { opacity: 1; }
+    }
+    .logo-preview { width: 100%; height: 100%; object-fit: cover; }
+    .logo-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .logo-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); color: var(--text-muted); font-size: 0.8125rem; span:first-child { font-size: 2rem; } }
+    .file-input-hidden { display: none; }
+    .uploading-hint { font-size: 0.8125rem; color: var(--text-muted); margin-top: var(--space-1); }
+
+    .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
+    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      border-radius: var(--radius-md); font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+      padding: 0.625rem 1.25rem; font-size: 0.9375rem;
+      &-primary { background: var(--color-brand); color: white; &:hover:not(:disabled) { background: var(--color-brand-dark); } &:disabled { opacity: 0.6; cursor: not-allowed; } }
+      &-large { padding: 0.875rem 2rem; font-size: 1rem; }
+    }
+    .btn-icon { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); cursor: pointer; &:hover { background: var(--surface-2); } }
+
+    .hours-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .hours-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); &:last-child { border-bottom: none; } }
+    .hours-day { font-weight: 500; flex: 1; font-size: 0.9375rem; }
+    .hours-time { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
+    .hours-closed { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+  `],
+})
+export class RestaurantComponent implements OnInit {
+  private readonly restaurantService = inject(RestaurantService)
+  private readonly fb = inject(FormBuilder)
+
+  readonly restaurant = this.restaurantService.restaurant
+  readonly saving = signal(false)
+  readonly logoSaving = signal(false)
+  readonly saveError = signal<string | null>(null)
+  readonly saveSuccess = signal(false)
+  readonly logoPreview = signal<string | null>(null)
+
+  readonly days = DAYS
+
+  form = this.fb.group({
+    name: ['', Validators.required],
+    slogan: [''],
+    brandColor: ['#C0392B'],
+    address: [''],
+    phone: [''],
+    email: [''],
+  })
+
+  ngOnInit(): void {
+    this.restaurantService.loadAdmin().subscribe((r) => {
+      this.form.patchValue({
+        name: r.name,
+        slogan: r.slogan ?? '',
+        brandColor: r.brandColor,
+        address: r.address ?? '',
+        phone: r.phone ?? '',
+        email: r.email ?? '',
+      })
+    })
+  }
+
+  getHours(day: string) {
+    return this.restaurant()?.openingHours?.[day] ?? null
+  }
+
+  editHours(day: string): void {
+    const hours = this.getHours(day)
+    const open = prompt(`Ouverture (${day}) — format HH:MM :`, hours?.open ?? '12:00')
+    if (open === null) return
+    const close = prompt(`Fermeture (${day}) — format HH:MM :`, hours?.close ?? '22:00')
+    if (close === null) return
+
+    const updated = {
+      ...this.restaurant()?.openingHours,
+      [day]: { open, close, closed: false },
+    }
+    this.restaurantService.update({ openingHours: updated } as never).subscribe()
+  }
+
+  onLogoChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => this.logoPreview.set(e.target?.result as string)
+    reader.readAsDataURL(file)
+
+    this.logoSaving.set(true)
+    this.restaurantService.uploadLogo(file).subscribe({
+      next: () => this.logoSaving.set(false),
+      error: () => {
+        this.logoSaving.set(false)
+        alert('Erreur lors de l\'upload du logo.')
+      },
+    })
+  }
+
+  onSubmit(): void {
+    if (this.form.invalid) return
+
+    this.saving.set(true)
+    this.saveError.set(null)
+    this.saveSuccess.set(false)
+
+    this.restaurantService.update(this.form.value as never).subscribe({
+      next: () => {
+        this.saving.set(false)
+        this.saveSuccess.set(true)
+        setTimeout(() => this.saveSuccess.set(false), 3000)
+      },
+      error: (err) => {
+        this.saving.set(false)
+        this.saveError.set(err?.error?.message ?? 'Erreur lors de l\'enregistrement.')
+      },
+    })
+  }
+}
