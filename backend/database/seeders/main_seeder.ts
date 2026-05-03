@@ -1,51 +1,167 @@
-// backend/database/seeders/main_seeder.ts
+import { DateTime } from 'luxon'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
-import User from '#models/user'
+import db from '@adonisjs/lucid/services/db'
+import Plan from '#models/plan'
 import Restaurant from '#models/restaurant'
+import User from '#models/user'
 import Category from '#models/category'
 import MenuItem from '#models/menu_item'
 
-/**
- * Seeder de démonstration — injecte des données réalistes pour un restaurant gastronomique fictif.
- * Lancer avec : node ace db:seed
- */
 export default class MainSeeder extends BaseSeeder {
   async run() {
-    // ── Utilisateur admin ──────────────────────────────────────────────────
-    const [admin] = await User.updateOrCreateMany('email', [
+    // ── Plans ─────────────────────────────────────────────────────────────────
+    const plansData = [
       {
-        email: 'admin@restaurant.fr',
-        password: 'Admin1234!',
-        fullName: 'Chef Admin',
-        role: 'admin',
+        name: 'Gratuit',
+        slug: 'free',
+        description: 'Démarrez sans engagement',
+        priceMonthlyCents: 0,
+        priceYearlyCents: 0,
+        maxCategories: 3,
+        maxMenuItems: 15,
+        maxUsers: 1,
+        features: ['3 catégories', '15 plats', '1 utilisateur', 'Page menu publique'],
+        isActive: true,
+        isPublic: true,
+        sortOrder: 0,
+      },
+      {
+        name: 'Pro',
+        slug: 'pro',
+        description: 'Pour les restaurants en croissance',
+        priceMonthlyCents: 1500000,
+        priceYearlyCents: 15000000,
+        maxCategories: 20,
+        maxMenuItems: 200,
+        maxUsers: 5,
+        features: ['20 catégories', '200 plats', '5 caissiers', 'Statistiques', 'Support prioritaire'],
+        isActive: true,
+        isPublic: true,
+        sortOrder: 1,
+      },
+      {
+        name: 'Enterprise',
+        slug: 'enterprise',
+        description: 'Puissance illimitée pour les grandes enseignes',
+        priceMonthlyCents: 5000000,
+        priceYearlyCents: 50000000,
+        maxCategories: -1,
+        maxMenuItems: -1,
+        maxUsers: -1,
+        features: ['Illimité', 'API dédiée', 'Support 24/7', 'SLA garanti', 'Onboarding personnalisé'],
+        isActive: true,
+        isPublic: true,
+        sortOrder: 2,
+      },
+    ]
+
+    for (const data of plansData) {
+      await Plan.updateOrCreate({ slug: data.slug }, data)
+    }
+    console.log('✅ Plans créés : Free, Pro, Enterprise')
+
+    // ── Super admin ───────────────────────────────────────────────────────────
+    const [superAdmin] = await User.updateOrCreateMany('email', [
+      {
+        email: 'superadmin@menuapp.com',
+        password: 'SuperAdmin1234!',
+        fullName: 'Super Administrateur',
+        role: 'super_admin',
+        restaurantId: null,
+        isActive: true,
       },
     ])
-    console.log(`✅ Admin créé : ${admin.email}`)
+    console.log(`✅ Super admin : ${superAdmin.email} / SuperAdmin1234!`)
 
-    // ── Informations restaurant ────────────────────────────────────────────
-    const restaurant = await Restaurant.getOrCreate()
-    await restaurant
-      .merge({
+    // ── Sample restaurant ─────────────────────────────────────────────────────
+    const freePlan = await Plan.findByOrFail('slug', 'free')
+    const proPlan = await Plan.findByOrFail('slug', 'pro')
+
+    const [restaurant] = await Restaurant.updateOrCreateMany('slug', [
+      {
+        slug: 'demo',
         name: 'Le Comptoir des Saveurs',
         slogan: 'Une cuisine sincère, des produits d\'exception',
         brandColor: '#C0392B',
-        address: '12 rue de la Gastronomie, 75001 Paris',
-        phone: '+33 1 42 00 00 00',
-        email: 'contact@lecomptoirdessaveurs.fr',
+        address: '12 rue de la Gastronomie, Abidjan',
+        phone: '+225 07 00 00 00 00',
+        email: 'contact@comptoir.ci',
+        country: 'CI',
+        currency: 'XOF',
+        planId: proPlan.id,
+        subscriptionStatus: 'trialing',
+        trialEndsAt: DateTime.now().plus({ days: 14 }),
+        isActive: true,
         openingHours: {
-          monday: { open: '12:00', close: '14:30', closed: false },
-          tuesday: { open: '12:00', close: '14:30', closed: false },
-          wednesday: { open: '12:00', close: '14:30', closed: false },
-          thursday: { open: '12:00', close: '14:30', closed: false },
-          friday: { open: '12:00', close: '14:30', closed: false },
-          saturday: { open: '12:00', close: '22:30', closed: false },
-          sunday: { open: '12:00', close: '15:00', closed: false },
+          monday: { open: '12:00', close: '22:30', closed: false },
+          tuesday: { open: '12:00', close: '22:30', closed: false },
+          wednesday: { open: '12:00', close: '22:30', closed: false },
+          thursday: { open: '12:00', close: '22:30', closed: false },
+          friday: { open: '12:00', close: '23:00', closed: false },
+          saturday: { open: '11:00', close: '23:30', closed: false },
+          sunday: { open: '11:00', close: '15:00', closed: false },
         },
-      })
-      .save()
-    console.log(`✅ Restaurant configuré : ${restaurant.name}`)
+      },
+    ])
+    console.log(`✅ Restaurant demo : ${restaurant.slug} (${restaurant.name})`)
 
-    // ── Catégories ─────────────────────────────────────────────────────────
+    // ── Restaurant admin user ─────────────────────────────────────────────────
+    const [adminUser] = await User.updateOrCreateMany('email', [
+      {
+        email: 'admin@demo.ci',
+        password: 'Admin1234!',
+        fullName: 'Kouamé Ange',
+        role: 'admin',
+        restaurantId: restaurant.id,
+        isActive: true,
+      },
+    ])
+
+    const [cashierUser] = await User.updateOrCreateMany('email', [
+      {
+        email: 'caissier@demo.ci',
+        password: 'Caissier1234!',
+        fullName: 'Fatou Diallo',
+        role: 'cashier',
+        restaurantId: restaurant.id,
+        isActive: true,
+      },
+    ])
+    console.log(`✅ Admin restaurant : ${adminUser.email} / Admin1234!`)
+    console.log(`✅ Caissier : ${cashierUser.email} / Caissier1234!`)
+
+    // ── Second demo restaurant (free plan) ────────────────────────────────────
+    const [restaurant2] = await Restaurant.updateOrCreateMany('slug', [
+      {
+        slug: 'savana',
+        name: 'Restaurant La Savana',
+        slogan: 'Les saveurs de l\'Afrique',
+        brandColor: '#27AE60',
+        address: 'Plateau, Abidjan',
+        phone: '+225 05 00 00 00 00',
+        email: 'info@savana.ci',
+        country: 'CI',
+        currency: 'XOF',
+        planId: freePlan.id,
+        subscriptionStatus: 'trialing',
+        trialEndsAt: DateTime.now().plus({ days: 7 }),
+        isActive: true,
+      },
+    ])
+
+    await User.updateOrCreateMany('email', [
+      {
+        email: 'admin@savana.ci',
+        password: 'Admin1234!',
+        fullName: 'Ibrahim Coulibaly',
+        role: 'admin',
+        restaurantId: restaurant2.id,
+        isActive: true,
+      },
+    ])
+    console.log(`✅ Restaurant demo 2 : ${restaurant2.slug} (${restaurant2.name})`)
+
+    // ── Categories & menu items for demo restaurant ───────────────────────────
     const categoriesData = [
       { name: 'Entrées', description: 'Pour bien commencer', sortOrder: 1, isVisible: true },
       { name: 'Plats', description: 'Nos créations du chef', sortOrder: 2, isVisible: true },
@@ -57,161 +173,55 @@ export default class MainSeeder extends BaseSeeder {
 
     const categories: Record<string, Category> = {}
     for (const data of categoriesData) {
-      const [cat] = await Category.updateOrCreateMany('name', [data])
-      categories[data.name] = cat
-    }
-    console.log(`✅ ${Object.keys(categories).length} catégories créées`)
+      const existing = await Category.query()
+        .where('restaurant_id', restaurant.id)
+        .where('name', data.name)
+        .first()
 
-    // ── Plats ──────────────────────────────────────────────────────────────
+      if (existing) {
+        categories[data.name] = existing
+      } else {
+        categories[data.name] = await Category.create({ ...data, restaurantId: restaurant.id })
+      }
+    }
+    console.log(`✅ ${Object.keys(categories).length} catégories créées pour "demo"`)
+
+    // Menu items
     const menuItemsData = [
-      // Entrées
-      {
-        categoryId: categories['Entrées'].id,
-        name: 'Soupe de tomate confite',
-        description: 'Tomates San Marzano rôties, huile d\'olive vierge, basilic frais et croûtons de pain de campagne',
-        priceInCents: 1200,
-        isAvailable: true,
-        badge: 'popular' as const,
-        sortOrder: 1,
-      },
-      {
-        categoryId: categories['Entrées'].id,
-        name: 'Tartare de thon rouge',
-        description: 'Thon rouge de Méditerranée, avocat, mangue, vinaigrette yuzu-sésame',
-        priceInCents: 1900,
-        isAvailable: true,
-        badge: 'new' as const,
-        sortOrder: 2,
-      },
-      {
-        categoryId: categories['Entrées'].id,
-        name: 'Burrata crémeuse',
-        description: 'Burrata des Pouilles, tomates cerises, pesto maison, fleur de sel de Guérande',
-        priceInCents: 1600,
-        isAvailable: true,
-        badge: 'vegetarian' as const,
-        sortOrder: 3,
-      },
-      {
-        categoryId: categories['Entrées'].id,
-        name: 'Velouté de butternut',
-        description: 'Courge butternut rôtie, lait de coco, gingembre frais, noix de cajou torréfiées',
-        priceInCents: 1100,
-        isAvailable: true,
-        badge: 'vegetarian' as const,
-        sortOrder: 4,
-      },
-      // Poissons
-      {
-        categoryId: categories['Poissons'].id,
-        name: 'Pavé de bar en croûte d\'herbes',
-        description: 'Bar de ligne, persillade maison, beurre blanc à la ciboulette, légumes de saison',
-        priceInCents: 3200,
-        isAvailable: true,
-        badge: 'popular' as const,
-        sortOrder: 1,
-      },
-      {
-        categoryId: categories['Poissons'].id,
-        name: 'Filet de sole meunière',
-        description: 'Sole de l\'Atlantique, beurre noisette, câpres, citron confit, purée de pommes de terre',
-        priceInCents: 2900,
-        isAvailable: true,
-        badge: null,
-        sortOrder: 2,
-      },
-      {
-        categoryId: categories['Poissons'].id,
-        name: 'Saint-Jacques poêlées',
-        description: '5 noix de Saint-Jacques Label Rouge, velouté de chou-fleur, huile de truffe, cerfeuil',
-        priceInCents: 3800,
-        isAvailable: false,
-        badge: 'new' as const,
-        sortOrder: 3,
-      },
-      // Viandes
-      {
-        categoryId: categories['Viandes'].id,
-        name: 'Entrecôte maturée 30 jours',
-        description: 'Bœuf Angus, 350g, sauce béarnaise maison, frites fraîches, salade verte',
-        priceInCents: 4500,
-        isAvailable: true,
-        badge: 'popular' as const,
-        sortOrder: 1,
-      },
-      {
-        categoryId: categories['Viandes'].id,
-        name: 'Magret de canard aux cerises',
-        description: 'Magret des Landes, réduction de cerises Amarena, gratin dauphinois, haricots verts',
-        priceInCents: 3400,
-        isAvailable: true,
-        badge: null,
-        sortOrder: 2,
-      },
-      {
-        categoryId: categories['Viandes'].id,
-        name: 'Poulet rôti façon grand-mère',
-        description: 'Poulet fermier Label Rouge, jus corsé, pommes de terre grenaille rôties, lardons',
-        priceInCents: 2600,
-        isAvailable: true,
-        badge: null,
-        sortOrder: 3,
-      },
-      // Desserts
-      {
-        categoryId: categories['Desserts'].id,
-        name: 'Moelleux au chocolat Valrhona',
-        description: 'Cœur coulant au Guanaja 70%, glace vanille Bourbon, crumble caramel beurre salé',
-        priceInCents: 1400,
-        isAvailable: true,
-        badge: 'popular' as const,
-        sortOrder: 1,
-      },
-      {
-        categoryId: categories['Desserts'].id,
-        name: 'Tarte Tatin revisitée',
-        description: 'Pommes Granny caramélisées, pâte feuilletée inversée, crème fraîche épaisse, calvados',
-        priceInCents: 1200,
-        isAvailable: true,
-        badge: null,
-        sortOrder: 2,
-      },
-      {
-        categoryId: categories['Desserts'].id,
-        name: 'Panna cotta au jasmin',
-        description: 'Panna cotta infusée au jasmin, coulis de framboise fraîche, zestes de citron vert',
-        priceInCents: 1100,
-        isAvailable: true,
-        badge: 'new' as const,
-        sortOrder: 3,
-      },
-      // Boissons
-      {
-        categoryId: categories['Boissons'].id,
-        name: 'Eau minérale (50cl)',
-        description: 'Evian ou Perrier',
-        priceInCents: 450,
-        isAvailable: true,
-        badge: null,
-        sortOrder: 1,
-      },
-      {
-        categoryId: categories['Boissons'].id,
-        name: 'Verre de vin rouge — Côtes du Rhône',
-        description: 'Sélection du sommelier, 15cl, notes épicées et fruits noirs',
-        priceInCents: 850,
-        isAvailable: true,
-        badge: 'popular' as const,
-        sortOrder: 2,
-      },
+      { categoryId: categories['Entrées'].id, name: 'Soupe de tomate confite', description: 'Tomates rôties, huile d\'olive, basilic frais', priceInCents: 250000, isAvailable: true, badge: 'popular', sortOrder: 1 },
+      { categoryId: categories['Entrées'].id, name: 'Tartare de thon', description: 'Thon frais, avocat, mangue, vinaigrette citron', priceInCents: 350000, isAvailable: true, badge: 'new', sortOrder: 2 },
+      { categoryId: categories['Entrées'].id, name: 'Salade César', description: 'Laitue romaine, poulet grillé, parmesan, croûtons', priceInCents: 300000, isAvailable: true, badge: 'vegetarian', sortOrder: 3 },
+      { categoryId: categories['Poissons'].id, name: 'Bar en croûte d\'herbes', description: 'Bar de ligne, beurre blanc, légumes de saison', priceInCents: 600000, isAvailable: true, badge: 'popular', sortOrder: 1 },
+      { categoryId: categories['Poissons'].id, name: 'Crevettes sautées', description: 'Crevettes royales, ail, persil, riz basmati', priceInCents: 450000, isAvailable: true, badge: null, sortOrder: 2 },
+      { categoryId: categories['Viandes'].id, name: 'Côte de bœuf (400g)', description: 'Bœuf local, sauce chimichurri, frites maison', priceInCents: 900000, isAvailable: true, badge: 'popular', sortOrder: 1 },
+      { categoryId: categories['Viandes'].id, name: 'Poulet braisé', description: 'Poulet fermier, sauce arachide, attiéké', priceInCents: 350000, isAvailable: true, badge: null, sortOrder: 2 },
+      { categoryId: categories['Viandes'].id, name: 'Agneau en tajine', description: 'Épaule d\'agneau, légumes confits, couscous', priceInCents: 700000, isAvailable: false, badge: 'new', sortOrder: 3 },
+      { categoryId: categories['Desserts'].id, name: 'Fondant au chocolat', description: 'Cœur coulant, glace vanille, caramel beurre salé', priceInCents: 200000, isAvailable: true, badge: 'popular', sortOrder: 1 },
+      { categoryId: categories['Desserts'].id, name: 'Tarte aux mangues', description: 'Mangues fraîches, crème pâtissière, pâte sablée', priceInCents: 180000, isAvailable: true, badge: null, sortOrder: 2 },
+      { categoryId: categories['Boissons'].id, name: 'Eau minérale (50cl)', description: 'Évian ou Perrier', priceInCents: 75000, isAvailable: true, badge: null, sortOrder: 1 },
+      { categoryId: categories['Boissons'].id, name: 'Jus de bissap', description: 'Hibiscus frais, gingembre, menthe', priceInCents: 120000, isAvailable: true, badge: 'popular', sortOrder: 2 },
+      { categoryId: categories['Boissons'].id, name: 'Bière locale (33cl)', description: 'Flag ou Castel fraîche', priceInCents: 150000, isAvailable: true, badge: null, sortOrder: 3 },
     ]
 
     for (const item of menuItemsData) {
-      await MenuItem.updateOrCreateMany(['categoryId', 'name'], [item])
+      const existing = await MenuItem.query()
+        .where('restaurant_id', restaurant.id)
+        .where('category_id', item.categoryId)
+        .where('name', item.name)
+        .first()
+
+      if (!existing) {
+        await MenuItem.create({ ...item, restaurantId: restaurant.id })
+      }
     }
-    console.log(`✅ ${menuItemsData.length} plats créés`)
-    console.log('\n📋 Identifiants de connexion admin :')
-    console.log('   Email    : admin@restaurant.fr')
-    console.log('   Password : Admin1234!')
+    console.log(`✅ ${menuItemsData.length} plats créés pour "demo"`)
+
+    await db.from('restaurants').update({ plan_id: proPlan.id }).where('slug', 'demo')
+
+    console.log('\n📋 Récapitulatif des accès :')
+    console.log('  Super Admin  : superadmin@menuapp.com / SuperAdmin1234!')
+    console.log('  Admin demo   : admin@demo.ci         / Admin1234!   (X-Tenant-Slug: demo)')
+    console.log('  Caissier demo: caissier@demo.ci      / Caissier1234! (X-Tenant-Slug: demo)')
+    console.log('  Admin savana : admin@savana.ci        / Admin1234!   (X-Tenant-Slug: savana)')
   }
 }

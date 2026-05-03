@@ -1,0 +1,1377 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Restaurant Menu SaaS API",
+    "description": "API REST multi-tenant pour la gestion du menu restaurant.\n\n## Authentification\nLes routes protégées nécessitent un **Bearer token** obtenu via `POST /api/auth/login`.\n\n`Authorization: Bearer <token>`\n\n## Multi-tenant\nLes routes `/api/public/*` et `/api/admin/*` nécessitent l'identification du restaurant.\n\nEn **production** : sous-domaine (`bistrot.monapp.com`).\n\nEn **développement** : header `X-Tenant-Slug: demo`.\n\n## Rôles\n| Rôle | Accès |\n|------|-------|\n| `super_admin` | `/api/super-admin/*` — gestion de la plateforme |\n| `admin` | `/api/admin/*` — gestion complète du restaurant |\n| `cashier` | `/api/admin/*` — lecture + modifications menu (pas de suppression ni billing) |\n\n## Comptes de démonstration\n| Rôle | Email | Mot de passe | Tenant |\n|------|-------|-------------|--------|\n| Super Admin | `superadmin@menuapp.com` | `SuperAdmin1234!` | — |\n| Admin | `admin@demo.ci` | `Admin1234!` | `X-Tenant-Slug: demo` |\n| Caissier | `caissier@demo.ci` | `Caissier1234!` | `X-Tenant-Slug: demo` |",
+    "version": "2.0.0",
+    "contact": { "name": "Restaurant Menu SaaS" }
+  },
+  "servers": [
+    { "url": "http://localhost:3333", "description": "Développement local" }
+  ],
+  "tags": [
+    { "name": "Health", "description": "Statut de l'API" },
+    { "name": "Auth", "description": "Authentification (tous rôles)" },
+    { "name": "Inscription", "description": "Création de compte restaurant self-service" },
+    { "name": "Public", "description": "Données publiques du tenant (sans auth)" },
+    { "name": "Admin — Restaurant", "description": "Infos restaurant (admin)" },
+    { "name": "Admin — Catégories", "description": "Gestion des catégories (admin + caissier)" },
+    { "name": "Admin — Plats", "description": "Gestion des plats (admin + caissier)" },
+    { "name": "Admin — Abonnement", "description": "Abonnement et paiement CinetPay (admin)" },
+    { "name": "Admin — Équipe", "description": "Gestion des caissiers (admin)" },
+    { "name": "Admin — Audit", "description": "Journal d'audit des actions (admin)" },
+    { "name": "Super Admin — Stats", "description": "Statistiques plateforme" },
+    { "name": "Super Admin — Restaurants", "description": "Gestion des comptes restaurants" },
+    { "name": "Super Admin — Plans", "description": "Gestion des plans tarifaires" },
+    { "name": "Webhooks", "description": "Callbacks tiers (CinetPay)" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque",
+        "description": "Token obtenu via POST /api/auth/login"
+      }
+    },
+    "parameters": {
+      "TenantSlug": {
+        "name": "X-Tenant-Slug",
+        "in": "header",
+        "required": false,
+        "description": "Slug du restaurant (requis en dev si pas de sous-domaine). Ex: `demo`",
+        "schema": { "type": "string", "example": "demo" }
+      },
+      "IdPath": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer" },
+        "example": 1
+      },
+      "PageQuery": {
+        "name": "page",
+        "in": "query",
+        "schema": { "type": "integer", "default": 1 }
+      },
+      "PerPageQuery": {
+        "name": "perPage",
+        "in": "query",
+        "schema": { "type": "integer", "default": 20, "maximum": 100 }
+      }
+    },
+    "schemas": {
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "name": { "type": "string", "example": "Pro" },
+          "slug": { "type": "string", "example": "pro" },
+          "description": { "type": "string", "nullable": true, "example": "Pour les restaurants en croissance" },
+          "priceMonthlyCents": { "type": "integer", "example": 1500000, "description": "Prix mensuel en centimes (1 500 000 = 15 000 FCFA)" },
+          "priceYearlyCents": { "type": "integer", "example": 15000000 },
+          "maxCategories": { "type": "integer", "example": 20, "description": "-1 = illimité" },
+          "maxMenuItems": { "type": "integer", "example": 200, "description": "-1 = illimité" },
+          "maxUsers": { "type": "integer", "example": 5, "description": "-1 = illimité" },
+          "features": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["20 catégories", "200 plats", "5 caissiers"]
+          },
+          "isActive": { "type": "boolean", "example": true },
+          "isPublic": { "type": "boolean", "example": true },
+          "sortOrder": { "type": "integer", "example": 1 }
+        }
+      },
+      "Restaurant": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "slug": { "type": "string", "example": "demo", "description": "Sous-domaine unique du restaurant" },
+          "name": { "type": "string", "example": "Le Comptoir des Saveurs" },
+          "slogan": { "type": "string", "nullable": true, "example": "Une cuisine sincère" },
+          "brandColor": { "type": "string", "example": "#C0392B" },
+          "logoUrl": { "type": "string", "nullable": true, "format": "uri" },
+          "address": { "type": "string", "nullable": true, "example": "Plateau, Abidjan" },
+          "phone": { "type": "string", "nullable": true, "example": "+225 07 00 00 00 00" },
+          "email": { "type": "string", "nullable": true, "format": "email" },
+          "website": { "type": "string", "nullable": true, "format": "uri" },
+          "country": { "type": "string", "example": "CI", "description": "Code ISO 2 lettres" },
+          "currency": { "type": "string", "example": "XOF", "enum": ["XOF", "XAF", "CDF", "GNF", "USD"] },
+          "openingHours": {
+            "type": "object",
+            "nullable": true,
+            "example": {
+              "monday": { "open": "12:00", "close": "22:00", "closed": false },
+              "sunday": { "open": "11:00", "close": "15:00", "closed": false }
+            }
+          },
+          "subscriptionStatus": {
+            "type": "string",
+            "enum": ["trialing", "active", "past_due", "canceled", "suspended"],
+            "example": "trialing"
+          },
+          "trialEndsAt": { "type": "string", "format": "date-time", "nullable": true },
+          "plan": { "$ref": "#/components/schemas/Plan", "nullable": true },
+          "isActive": { "type": "boolean", "example": true },
+          "blockedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "blockedReason": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "restaurantId": { "type": "integer", "example": 1 },
+          "planId": { "type": "integer", "example": 2 },
+          "plan": { "$ref": "#/components/schemas/Plan" },
+          "cinetpayTransactionId": { "type": "string", "example": "sub_1748000000_a1b2c3d4" },
+          "billingCycle": { "type": "string", "enum": ["monthly", "yearly"], "example": "monthly" },
+          "status": { "type": "string", "enum": ["pending", "active", "canceled", "expired"], "example": "active" },
+          "amountCents": { "type": "integer", "example": 1500000 },
+          "currency": { "type": "string", "example": "XOF" },
+          "currentPeriodStart": { "type": "string", "format": "date-time", "nullable": true },
+          "currentPeriodEnd": { "type": "string", "format": "date-time", "nullable": true },
+          "canceledAt": { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TeamMember": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 3 },
+          "restaurantId": { "type": "integer", "example": 1 },
+          "fullName": { "type": "string", "example": "Fatou Diallo" },
+          "email": { "type": "string", "format": "email", "example": "fatou@demo.ci" },
+          "role": { "type": "string", "enum": ["cashier"], "example": "cashier" },
+          "phone": { "type": "string", "nullable": true, "example": "+225 05 00 00 00 00" },
+          "isActive": { "type": "boolean", "example": true },
+          "lastLoginAt": { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AuditLog": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 42 },
+          "restaurantId": { "type": "integer", "example": 1 },
+          "userId": { "type": "integer", "nullable": true, "example": 2 },
+          "userEmail": { "type": "string", "example": "admin@demo.ci" },
+          "userRole": { "type": "string", "enum": ["super_admin", "admin", "cashier"], "example": "cashier" },
+          "action": {
+            "type": "string",
+            "example": "menu_item.updated",
+            "enum": [
+              "category.created", "category.updated", "category.deleted", "category.reordered",
+              "menu_item.created", "menu_item.updated", "menu_item.deleted", "menu_item.toggled",
+              "restaurant.updated", "restaurant.logo_uploaded",
+              "user.created", "user.updated", "user.deleted",
+              "subscription.created", "subscription.canceled",
+              "restaurant.blocked", "restaurant.unblocked"
+            ]
+          },
+          "resourceType": { "type": "string", "nullable": true, "example": "menu_item" },
+          "resourceId": { "type": "integer", "nullable": true, "example": 7 },
+          "resourceName": { "type": "string", "nullable": true, "example": "Tartare de thon" },
+          "oldValues": { "type": "object", "nullable": true, "example": { "name": "Tartare de bœuf", "priceInCents": 300000 } },
+          "newValues": { "type": "object", "nullable": true, "example": { "name": "Tartare de thon", "priceInCents": 350000 } },
+          "ipAddress": { "type": "string", "nullable": true, "example": "192.168.1.1" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "restaurantId": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Entrées" },
+          "description": { "type": "string", "nullable": true },
+          "isVisible": { "type": "boolean", "example": true },
+          "sortOrder": { "type": "integer", "example": 1 },
+          "menuItemsCount": { "type": "integer", "example": 4 },
+          "menuItems": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MenuItem" },
+            "description": "Inclus uniquement sur les routes publiques"
+          }
+        }
+      },
+      "MenuItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "restaurantId": { "type": "integer", "example": 1 },
+          "categoryId": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Tartare de thon" },
+          "description": { "type": "string", "nullable": true },
+          "priceInCents": { "type": "integer", "example": 350000, "description": "Prix en centimes" },
+          "priceFormatted": { "type": "string", "example": "3 500 FCFA" },
+          "imageUrl": { "type": "string", "nullable": true, "format": "uri" },
+          "badge": { "type": "string", "nullable": true, "enum": ["new", "popular", "vegetarian", "spicy"] },
+          "isAvailable": { "type": "boolean", "example": true },
+          "sortOrder": { "type": "integer", "example": 1 }
+        }
+      },
+      "AuthUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "email": { "type": "string", "format": "email", "example": "admin@demo.ci" },
+          "fullName": { "type": "string", "nullable": true, "example": "Kouamé Ange" },
+          "role": { "type": "string", "enum": ["super_admin", "admin", "cashier"], "example": "admin" },
+          "restaurantId": { "type": "integer", "nullable": true, "example": 1 }
+        }
+      },
+      "PaginatedMeta": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "example": 42 },
+          "perPage": { "type": "integer", "example": 20 },
+          "currentPage": { "type": "integer", "example": 1 },
+          "lastPage": { "type": "integer", "example": 3 },
+          "firstPage": { "type": "integer", "example": 1 }
+        }
+      },
+      "SuperAdminStats": {
+        "type": "object",
+        "properties": {
+          "totals": {
+            "type": "object",
+            "properties": {
+              "restaurants": { "type": "integer", "example": 18 },
+              "users": { "type": "integer", "example": 34 },
+              "activeSubscriptions": { "type": "integer", "example": 7 },
+              "trialRestaurants": { "type": "integer", "example": 9 },
+              "blockedRestaurants": { "type": "integer", "example": 2 }
+            }
+          },
+          "planStats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "planName": { "type": "string", "example": "Pro" },
+                "planSlug": { "type": "string", "example": "pro" },
+                "count": { "type": "integer", "example": 7 }
+              }
+            }
+          },
+          "recentSignups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "name": { "type": "string" },
+                "slug": { "type": "string" },
+                "subscriptionStatus": { "type": "string" },
+                "createdAt": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "admin@demo.ci" },
+          "password": { "type": "string", "format": "password", "example": "Admin1234!" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "example": "bearer" },
+              "value": { "type": "string", "example": "oat_MTIz..." },
+              "expiresAt": { "type": "string", "format": "date-time", "nullable": true }
+            }
+          },
+          "user": { "$ref": "#/components/schemas/AuthUser" },
+          "restaurant": { "$ref": "#/components/schemas/Restaurant", "nullable": true }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["restaurantName", "restaurantSlug", "country", "currency", "fullName", "email", "password", "password_confirmation"],
+        "properties": {
+          "restaurantName": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Le Comptoir des Saveurs" },
+          "restaurantSlug": { "type": "string", "pattern": "^[a-z0-9-]+$", "minLength": 2, "maxLength": 50, "example": "comptoir-saveurs" },
+          "country": { "type": "string", "minLength": 2, "maxLength": 2, "example": "CI", "description": "Code ISO 3166-1 alpha-2" },
+          "currency": { "type": "string", "enum": ["XOF", "XAF", "CDF", "GNF", "USD"], "example": "XOF" },
+          "address": { "type": "string", "example": "Plateau, Abidjan" },
+          "phone": { "type": "string", "example": "+225 07 00 00 00 00" },
+          "website": { "type": "string", "format": "uri" },
+          "fullName": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Kouamé Ange" },
+          "email": { "type": "string", "format": "email", "example": "ange@comptoir.ci" },
+          "password": { "type": "string", "minLength": 8, "example": "MonPass1234!" },
+          "password_confirmation": { "type": "string", "example": "MonPass1234!" },
+          "ownerPhone": { "type": "string", "example": "+225 07 00 00 00 00" },
+          "planSlug": { "type": "string", "default": "free", "example": "free" }
+        }
+      },
+      "SubscribeRequest": {
+        "type": "object",
+        "required": ["planSlug", "billingCycle"],
+        "properties": {
+          "planSlug": { "type": "string", "example": "pro" },
+          "billingCycle": { "type": "string", "enum": ["monthly", "yearly"], "example": "monthly" }
+        }
+      },
+      "CategoryCreateRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "example": "Entrées" },
+          "description": { "type": "string", "example": "Nos entrées maison" },
+          "isVisible": { "type": "boolean", "default": true }
+        }
+      },
+      "CategoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "isVisible": { "type": "boolean" },
+          "sortOrder": { "type": "integer" }
+        }
+      },
+      "ReorderRequest": {
+        "type": "object",
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "sortOrder"],
+              "properties": {
+                "id": { "type": "integer" },
+                "sortOrder": { "type": "integer" }
+              }
+            },
+            "example": [{ "id": 3, "sortOrder": 1 }, { "id": 1, "sortOrder": 2 }]
+          }
+        }
+      },
+      "MenuItemCreateRequest": {
+        "type": "object",
+        "required": ["name", "priceInCents", "categoryId"],
+        "properties": {
+          "name": { "type": "string", "example": "Tartare de thon" },
+          "description": { "type": "string" },
+          "priceInCents": { "type": "integer", "example": 350000 },
+          "categoryId": { "type": "integer", "example": 1 },
+          "badge": { "type": "string", "enum": ["new", "popular", "vegetarian", "spicy"] },
+          "isAvailable": { "type": "boolean", "default": true },
+          "image": { "type": "string", "format": "binary", "description": "Fichier image (JPEG/PNG/WebP, max 5 Mo)" }
+        }
+      },
+      "RestaurantUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "slogan": { "type": "string", "nullable": true },
+          "brandColor": { "type": "string", "example": "#C0392B" },
+          "address": { "type": "string", "nullable": true },
+          "phone": { "type": "string", "nullable": true },
+          "email": { "type": "string", "format": "email", "nullable": true },
+          "openingHours": { "type": "object", "nullable": true }
+        }
+      },
+      "TeamCreateRequest": {
+        "type": "object",
+        "required": ["fullName", "email", "password"],
+        "properties": {
+          "fullName": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Fatou Diallo" },
+          "email": { "type": "string", "format": "email", "example": "fatou@demo.ci" },
+          "password": { "type": "string", "minLength": 8, "example": "Caissier1234!" },
+          "phone": { "type": "string", "example": "+225 05 00 00 00 00" }
+        }
+      },
+      "TeamUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": { "type": "string" },
+          "phone": { "type": "string", "nullable": true },
+          "isActive": { "type": "boolean" }
+        }
+      },
+      "BlockRequest": {
+        "type": "object",
+        "required": ["reason"],
+        "properties": {
+          "reason": { "type": "string", "minLength": 5, "maxLength": 500, "example": "Violation des conditions d'utilisation" }
+        }
+      },
+      "PlanCreateRequest": {
+        "type": "object",
+        "required": ["name", "slug", "priceMonthlyCents", "priceYearlyCents", "maxCategories", "maxMenuItems", "maxUsers"],
+        "properties": {
+          "name": { "type": "string", "example": "Pro" },
+          "slug": { "type": "string", "example": "pro" },
+          "description": { "type": "string", "nullable": true },
+          "priceMonthlyCents": { "type": "integer", "minimum": 0, "example": 1500000 },
+          "priceYearlyCents": { "type": "integer", "minimum": 0, "example": 15000000 },
+          "maxCategories": { "type": "integer", "minimum": -1, "example": 20, "description": "-1 = illimité" },
+          "maxMenuItems": { "type": "integer", "minimum": -1, "example": 200 },
+          "maxUsers": { "type": "integer", "minimum": -1, "example": 5 },
+          "features": { "type": "array", "items": { "type": "string" } },
+          "isActive": { "type": "boolean", "default": true },
+          "isPublic": { "type": "boolean", "default": true },
+          "sortOrder": { "type": "integer", "default": 0 }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "Validation failed" },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Token manquant ou invalide",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "message": "Unauthorized access" } } }
+      },
+      "Forbidden": {
+        "description": "Droits insuffisants",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "message": "Accès refusé — droits insuffisants." } } }
+      },
+      "NotFound": {
+        "description": "Ressource introuvable",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "message": "Row not found" } } }
+      },
+      "UnprocessableEntity": {
+        "description": "Erreur de validation",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "PaymentRequired": {
+        "description": "Abonnement requis (limite atteinte ou période d'essai expirée)",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Vérification de l'état de l'API",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "API opérationnelle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Connexion",
+        "description": "Authentifie un utilisateur (super_admin, admin ou caissier). Retourne un Bearer token valable 30 jours et les infos du restaurant associé.",
+        "operationId": "authLogin",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion réussie",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } }
+          },
+          "401": { "description": "Identifiants incorrects" },
+          "403": { "description": "Compte désactivé" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "delete": {
+        "tags": ["Auth"],
+        "summary": "Déconnexion",
+        "description": "Révoque le token Bearer courant.",
+        "operationId": "authLogout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Déconnexion réussie" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Profil utilisateur courant",
+        "operationId": "authMe",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Profil + restaurant associé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "email": { "type": "string" },
+                    "fullName": { "type": "string", "nullable": true },
+                    "role": { "type": "string" },
+                    "restaurantId": { "type": "integer", "nullable": true },
+                    "restaurant": { "$ref": "#/components/schemas/Restaurant", "nullable": true }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "tags": ["Inscription"],
+        "summary": "Créer un compte restaurant",
+        "description": "Crée un restaurant et son administrateur en une seule requête. Démarre automatiquement une période d'essai de 14 jours. Retourne un Bearer token prêt à l'emploi.",
+        "operationId": "register",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Compte créé, période d'essai démarrée",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } }
+          },
+          "409": { "description": "Email ou sous-domaine déjà utilisé" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/register/check-slug": {
+      "get": {
+        "tags": ["Inscription"],
+        "summary": "Vérifier la disponibilité d'un sous-domaine",
+        "operationId": "checkSlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+            "example": "mon-bistrot"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Résultat de la vérification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "available": { "type": "boolean", "example": true },
+                    "reason": { "type": "string", "nullable": true, "example": "Format invalide" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/plans": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Liste des plans tarifaires publics",
+        "description": "Retourne les plans actifs et publics, triés par `sortOrder`. Utilisé par la page Pricing.",
+        "operationId": "publicGetPlans",
+        "responses": {
+          "200": {
+            "description": "Plans disponibles",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Plan" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/restaurant": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Infos publiques du restaurant (tenant)",
+        "description": "Résout le tenant depuis le sous-domaine ou `X-Tenant-Slug`.",
+        "operationId": "publicGetRestaurant",
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Informations du restaurant",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Restaurant" } } }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/public/categories": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Catégories visibles avec leurs plats",
+        "description": "Retourne uniquement les catégories `isVisible=true` avec les plats `isAvailable=true`.",
+        "operationId": "publicGetCategories",
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Catégories publiques",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Category" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/menu-items": {
+      "get": {
+        "tags": ["Public"],
+        "summary": "Plats disponibles",
+        "operationId": "publicGetMenuItems",
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Plats disponibles",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MenuItem" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/restaurant": {
+      "get": {
+        "tags": ["Admin — Restaurant"],
+        "summary": "Infos complètes du restaurant",
+        "operationId": "adminGetRestaurant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Restaurant avec plan",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Restaurant" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "put": {
+        "tags": ["Admin — Restaurant"],
+        "summary": "Mettre à jour le restaurant",
+        "description": "**Rôle requis : admin**",
+        "operationId": "adminUpdateRestaurant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RestaurantUpdateRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Restaurant mis à jour", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Restaurant" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/admin/restaurant/logo": {
+      "post": {
+        "tags": ["Admin — Restaurant"],
+        "summary": "Uploader le logo",
+        "description": "**Rôle requis : admin**",
+        "operationId": "adminUploadLogo",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["logo"],
+                "properties": { "logo": { "type": "string", "format": "binary" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "URL du logo uploadé",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "logoUrl": { "type": "string", "format": "uri" } } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/admin/subscription": {
+      "get": {
+        "tags": ["Admin — Abonnement"],
+        "summary": "État de l'abonnement courant",
+        "description": "Retourne le statut, l'abonnement actif et les plans disponibles.",
+        "operationId": "adminGetSubscription",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "État de l'abonnement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "restaurant": {
+                      "type": "object",
+                      "properties": {
+                        "subscriptionStatus": { "type": "string" },
+                        "trialEndsAt": { "type": "string", "nullable": true },
+                        "plan": { "$ref": "#/components/schemas/Plan", "nullable": true }
+                      }
+                    },
+                    "activeSubscription": { "$ref": "#/components/schemas/Subscription", "nullable": true },
+                    "availablePlans": { "type": "array", "items": { "$ref": "#/components/schemas/Plan" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Abonnement"],
+        "summary": "Initier un paiement CinetPay",
+        "description": "Crée une souscription en statut `pending` et retourne l'URL de paiement CinetPay vers laquelle rediriger l'utilisateur.\n\n**Rôle requis : admin**",
+        "operationId": "adminSubscribe",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SubscribeRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "URL de paiement CinetPay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "paymentUrl": { "type": "string", "format": "uri", "example": "https://api-checkout.cinetpay.com/..." },
+                    "transactionId": { "type": "string", "example": "sub_1748000000_a1b2c3d4" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Plan gratuit ou autre erreur" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin — Abonnement"],
+        "summary": "Annuler l'abonnement",
+        "description": "L'accès reste actif jusqu'à la fin de la période. **Rôle requis : admin**",
+        "operationId": "adminCancelSubscription",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": { "description": "Abonnement annulé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/admin/team": {
+      "get": {
+        "tags": ["Admin — Équipe"],
+        "summary": "Lister les caissiers",
+        "operationId": "adminGetTeam",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Liste des caissiers",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/TeamMember" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Équipe"],
+        "summary": "Ajouter un caissier",
+        "description": "**Rôle requis : admin**",
+        "operationId": "adminCreateTeamMember",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeamCreateRequest" } } }
+        },
+        "responses": {
+          "201": {
+            "description": "Caissier créé",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeamMember" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "description": "Email déjà utilisé" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/admin/team/{id}": {
+      "put": {
+        "tags": ["Admin — Équipe"],
+        "summary": "Modifier un caissier",
+        "description": "**Rôle requis : admin**",
+        "operationId": "adminUpdateTeamMember",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeamUpdateRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Caissier mis à jour", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TeamMember" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin — Équipe"],
+        "summary": "Supprimer un caissier",
+        "description": "**Rôle requis : admin**",
+        "operationId": "adminDeleteTeamMember",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": { "description": "Caissier supprimé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/admin/audit-logs": {
+      "get": {
+        "tags": ["Admin — Audit"],
+        "summary": "Journal d'audit",
+        "description": "Retourne l'historique paginé des actions effectuées sur ce restaurant. **Rôle requis : admin**",
+        "operationId": "adminGetAuditLogs",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/PerPageQuery" },
+          { "name": "action", "in": "query", "schema": { "type": "string" }, "example": "menu_item.updated" },
+          { "name": "userId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "resourceType", "in": "query", "schema": { "type": "string", "enum": ["category", "menu_item", "user", "restaurant"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journal paginé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/AuditLog" } },
+                    "meta": { "$ref": "#/components/schemas/PaginatedMeta" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/admin/categories": {
+      "get": {
+        "tags": ["Admin — Catégories"],
+        "summary": "Lister toutes les catégories",
+        "operationId": "adminGetCategories",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Catégories",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Category" } } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Catégories"],
+        "summary": "Créer une catégorie",
+        "description": "Vérifie la limite du plan avant création. Enregistre l'action dans le journal d'audit.",
+        "operationId": "adminCreateCategory",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CategoryCreateRequest" } } }
+        },
+        "responses": {
+          "201": { "description": "Catégorie créée", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Category" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "402": { "$ref": "#/components/responses/PaymentRequired" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/admin/categories/reorder": {
+      "patch": {
+        "tags": ["Admin — Catégories"],
+        "summary": "Réordonner les catégories",
+        "operationId": "adminReorderCategories",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReorderRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Ordre mis à jour" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/admin/categories/{id}": {
+      "put": {
+        "tags": ["Admin — Catégories"],
+        "summary": "Mettre à jour une catégorie",
+        "operationId": "adminUpdateCategory",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CategoryUpdateRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Catégorie mise à jour", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Category" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin — Catégories"],
+        "summary": "Supprimer une catégorie",
+        "description": "Supprime la catégorie et tous ses plats en cascade. **Rôle requis : admin**",
+        "operationId": "adminDeleteCategory",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "204": { "description": "Supprimé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/admin/menu-items": {
+      "get": {
+        "tags": ["Admin — Plats"],
+        "summary": "Lister les plats",
+        "operationId": "adminGetMenuItems",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "name": "categoryId", "in": "query", "schema": { "type": "integer" }, "description": "Filtrer par catégorie" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plats",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MenuItem" } } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Plats"],
+        "summary": "Créer un plat",
+        "description": "Accepte `multipart/form-data` pour l'upload d'image. Vérifie la limite du plan.",
+        "operationId": "adminCreateMenuItem",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/MenuItemCreateRequest" } } }
+        },
+        "responses": {
+          "201": { "description": "Plat créé", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MenuItem" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "402": { "$ref": "#/components/responses/PaymentRequired" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+    "/api/admin/menu-items/{id}": {
+      "get": {
+        "tags": ["Admin — Plats"],
+        "summary": "Récupérer un plat",
+        "operationId": "adminGetMenuItem",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": { "description": "Plat", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MenuItem" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Admin — Plats"],
+        "summary": "Modifier un plat",
+        "description": "Envoyer `image` uniquement si on souhaite changer la photo.",
+        "operationId": "adminUpdateMenuItem",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/MenuItemCreateRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Plat mis à jour", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MenuItem" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin — Plats"],
+        "summary": "Supprimer un plat",
+        "description": "Supprime aussi l'image associée. **Rôle requis : admin**",
+        "operationId": "adminDeleteMenuItem",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "204": { "description": "Supprimé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/admin/menu-items/{id}/toggle-availability": {
+      "patch": {
+        "tags": ["Admin — Plats"],
+        "summary": "Basculer la disponibilité",
+        "description": "Inverse `isAvailable`. Accessible à l'admin et au caissier.",
+        "operationId": "adminToggleAvailability",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disponibilité mise à jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "isAvailable": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/super-admin/stats": {
+      "get": {
+        "tags": ["Super Admin — Stats"],
+        "summary": "Statistiques de la plateforme",
+        "operationId": "saGetStats",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "KPIs plateforme",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuperAdminStats" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/super-admin/restaurants": {
+      "get": {
+        "tags": ["Super Admin — Restaurants"],
+        "summary": "Lister tous les restaurants",
+        "operationId": "saGetRestaurants",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/PerPageQuery" },
+          { "name": "search", "in": "query", "schema": { "type": "string" }, "description": "Recherche par nom ou slug" },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["active", "blocked", "trial"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurants paginés",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Restaurant" } },
+                    "meta": { "$ref": "#/components/schemas/PaginatedMeta" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/super-admin/restaurants/{id}": {
+      "get": {
+        "tags": ["Super Admin — Restaurants"],
+        "summary": "Détail d'un restaurant",
+        "operationId": "saGetRestaurant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "responses": {
+          "200": {
+            "description": "Restaurant + logs récents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "restaurant": { "$ref": "#/components/schemas/Restaurant" },
+                    "recentLogs": { "type": "array", "items": { "$ref": "#/components/schemas/AuditLog" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/super-admin/restaurants/{id}/block": {
+      "post": {
+        "tags": ["Super Admin — Restaurants"],
+        "summary": "Bloquer un restaurant",
+        "description": "Désactive le compte. Toutes les requêtes du tenant retourneront `403`.",
+        "operationId": "saBlockRestaurant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BlockRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Restaurant bloqué" },
+          "400": { "description": "Déjà bloqué" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/super-admin/restaurants/{id}/unblock": {
+      "post": {
+        "tags": ["Super Admin — Restaurants"],
+        "summary": "Débloquer un restaurant",
+        "operationId": "saUnblockRestaurant",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "responses": {
+          "200": { "description": "Restaurant débloqué" },
+          "400": { "description": "N'était pas bloqué" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/super-admin/plans": {
+      "get": {
+        "tags": ["Super Admin — Plans"],
+        "summary": "Lister tous les plans",
+        "description": "Tous les plans (actifs et inactifs), triés par `sortOrder`.",
+        "operationId": "saGetPlans",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Plans",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Plan" } } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Super Admin — Plans"],
+        "summary": "Créer un plan",
+        "operationId": "saCreatePlan",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PlanCreateRequest" } } }
+        },
+        "responses": {
+          "201": { "description": "Plan créé", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Plan" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "description": "Slug déjà utilisé" }
+        }
+      }
+    },
+    "/api/super-admin/plans/{id}": {
+      "put": {
+        "tags": ["Super Admin — Plans"],
+        "summary": "Modifier un plan",
+        "operationId": "saUpdatePlan",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PlanCreateRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "Plan mis à jour", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Plan" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Super Admin — Plans"],
+        "summary": "Supprimer un plan",
+        "operationId": "saDeletePlan",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdPath" }],
+        "responses": {
+          "200": { "description": "Plan supprimé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/webhooks/cinetpay": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Notification de paiement CinetPay",
+        "description": "CinetPay appelle cette URL après chaque paiement (succès ou échec). L'API re-vérifie le statut via l'API CinetPay avant d'activer l'abonnement.\n\n⚠️ Toujours répondre `200 OK` même en cas d'erreur (comportement requis par CinetPay).\n\n**Cette route ne nécessite pas d'authentification.** Elle valide le `cpm_site_id` contre la configuration.",
+        "operationId": "webhookCinetpay",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cpm_site_id": { "type": "string", "example": "123456789" },
+                  "cpm_trans_id": { "type": "string", "example": "sub_1748000000_a1b2c3d4" },
+                  "cpm_trans_status": { "type": "string", "enum": ["ACCEPTED", "REFUSED"], "example": "ACCEPTED" },
+                  "cpm_amount": { "type": "string", "example": "15000" },
+                  "cpm_currency": { "type": "string", "example": "XOF" },
+                  "cpm_result": { "type": "string", "example": "00" },
+                  "payment_method": { "type": "string", "example": "CREDIT_CARD" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reçu (toujours 200 pour CinetPay)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "OK" },
+                    "status": { "type": "string", "example": "ACCEPTED" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

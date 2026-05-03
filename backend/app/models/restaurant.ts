@@ -1,14 +1,17 @@
-// backend/app/models/restaurant.ts
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, HasOne } from '@adonisjs/lucid/types/relations'
+import Plan from '#models/plan'
+import Category from '#models/category'
 
-/**
- * Table singleton — un seul enregistrement représente le restaurant.
- * Les méthodes statiques facilitent la récupération de cet enregistrement unique.
- */
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'suspended'
+
 export default class Restaurant extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
+
+  @column()
+  declare slug: string
 
   @column()
   declare name: string
@@ -16,29 +19,13 @@ export default class Restaurant extends BaseModel {
   @column()
   declare slogan: string | null
 
-  /** Couleur principale de la marque (hex, ex: "#E85D04") */
   @column()
   declare brandColor: string
 
-  /** Clé du fichier logo dans le disk Drive */
   @column()
   declare logoKey: string | null
 
-  /** URL publique calculée côté controller lors de la sérialisation */
   logoUrl?: string | null
-
-  /** Horaires au format JSON structuré */
-  @column({
-    prepare: (value: Record<string, unknown>) => JSON.stringify(value),
-    consume: (value: string) => {
-      try {
-        return JSON.parse(value)
-      } catch {
-        return null
-      }
-    },
-  })
-  declare openingHours: Record<string, { open: string; close: string; closed?: boolean }> | null
 
   @column()
   declare address: string | null
@@ -49,24 +36,69 @@ export default class Restaurant extends BaseModel {
   @column()
   declare email: string | null
 
+  @column()
+  declare website: string | null
+
+  @column()
+  declare siret: string | null
+
+  @column()
+  declare country: string
+
+  @column()
+  declare currency: string
+
+  @column({
+    prepare: (v) => JSON.stringify(v),
+    consume: (v) => (typeof v === 'string' ? JSON.parse(v) : v),
+  })
+  declare openingHours: Record<string, { open: string; close: string; closed: boolean }> | null
+
+  @column()
+  declare planId: number | null
+
+  @column()
+  declare subscriptionStatus: SubscriptionStatus
+
+  @column.dateTime()
+  declare trialEndsAt: DateTime | null
+
+  @column()
+  declare cinetpayCustomerRef: string | null
+
+  @column()
+  declare isActive: boolean
+
+  @column.dateTime()
+  declare blockedAt: DateTime | null
+
+  @column()
+  declare blockedReason: string | null
+
+  @column()
+  declare blockedById: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 
-  /** Retourne le restaurant (crée un défaut s'il n'existe pas encore) */
-  static async getOrCreate(): Promise<Restaurant> {
-    let restaurant = await Restaurant.first()
-    if (!restaurant) {
-      restaurant = await Restaurant.create({
-        name: 'Mon Restaurant',
-        slogan: 'Bienvenue !',
-        brandColor: '#E85D04',
-        logoKey: null,
-        openingHours: null,
-      })
-    }
-    return restaurant
+  @belongsTo(() => Plan)
+  declare plan: BelongsTo<typeof Plan>
+
+  @hasMany(() => Category)
+  declare categories: HasMany<typeof Category>
+
+  get isTrialing() {
+    return (
+      this.subscriptionStatus === 'trialing' &&
+      this.trialEndsAt !== null &&
+      this.trialEndsAt > DateTime.now()
+    )
+  }
+
+  get isBlocked() {
+    return !this.isActive
   }
 }

@@ -7,6 +7,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']),
   APP_KEY: Env.schema.string(),
+  APP_URL: Env.schema.string.optional(),
   TZ: Env.schema.string.optional(),
 
   // Base de données
@@ -33,4 +34,10 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Limites
   MAX_IMAGE_SIZE_MB: Env.schema.number.optional(),
+
+  // CinetPay
+  CINETPAY_API_KEY: Env.schema.string.optional(),
+  CINETPAY_SITE_ID: Env.schema.string.optional(),
+  CINETPAY_NOTIFY_URL: Env.schema.string.optional(),
+  CINETPAY_RETURN_URL: Env.schema.string.optional(),
 })

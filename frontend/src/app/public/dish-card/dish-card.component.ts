@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common'
 import { trigger, state, style, animate, transition } from '@angular/animations'
 import type { MenuItem, MenuItemBadge } from '../../shared/models'
 
-const BADGE_CONFIG: Record<string, { label: string; icon: string; class: string }> = {
-  new:        { label: 'Nouveau',     icon: '✨', class: 'badge--new' },
-  popular:    { label: 'Populaire',   icon: '⭐', class: 'badge--popular' },
-  vegetarian: { label: 'Végétarien', icon: '🌿', class: 'badge--vegetarian' },
-  spicy:      { label: 'Épicé',       icon: '🌶️', class: 'badge--spicy' },
+const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: string }> = {
+  new:        { label: 'Nouveau',     icon: '✨', cssClass: 'badge-new' },
+  popular:    { label: 'Populaire',   icon: '⭐', cssClass: 'badge-popular' },
+  vegetarian: { label: 'Végétarien', icon: '🌿', cssClass: 'badge-vegetarian' },
+  spicy:      { label: 'Épicé',       icon: '🌶️', cssClass: 'badge-spicy' },
 }
 
 @Component({
@@ -27,52 +27,39 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; class: string 
   template: `
     <article
       class="dish-card"
-      [class.dish-card--unavailable]="!item.isAvailable"
+      [class.dish-card-unavailable]="!item.isAvailable"
       @cardReveal
       tabindex="0"
       [attr.aria-label]="item.name + ' — ' + formatPrice(item.priceInCents)"
     >
-      <!-- Image -->
-      <div class="dish-card__image-wrap">
+      <div class="dish-image-wrap">
         @if (item.imageUrl) {
-          <img
-            [src]="item.imageUrl"
-            [alt]="item.name"
-            class="dish-card__image"
-            loading="lazy"
-          />
+          <img [src]="item.imageUrl" [alt]="item.name" class="dish-image" loading="lazy" />
         } @else {
-          <div class="dish-card__image-fallback" aria-hidden="true">🍽️</div>
+          <div class="dish-image-fallback" aria-hidden="true">🍽️</div>
         }
-
-        <!-- Badge -->
         @if (item.badge && getBadge(item.badge)) {
           <span
             class="dish-badge"
-            [ngClass]="getBadge(item.badge)!.class"
+            [ngClass]="getBadge(item.badge)!.cssClass"
             [attr.aria-label]="getBadge(item.badge)!.label"
           >
             {{ getBadge(item.badge)!.icon }} {{ getBadge(item.badge)!.label }}
           </span>
         }
-
-        <!-- Indisponible -->
         @if (!item.isAvailable) {
-          <div class="dish-card__unavailable-overlay" aria-label="Indisponible">
+          <div class="dish-unavailable-overlay" aria-label="Indisponible">
             <span>Indisponible</span>
           </div>
         }
       </div>
-
-      <!-- Corps -->
-      <div class="dish-card__body">
-        <div class="dish-card__top">
-          <h3 class="dish-card__name">{{ item.name }}</h3>
-          <span class="dish-card__price" aria-label="Prix">{{ formatPrice(item.priceInCents) }}</span>
+      <div class="dish-body">
+        <div class="dish-top">
+          <h3 class="dish-name">{{ item.name }}</h3>
+          <span class="dish-price" aria-label="Prix">{{ formatPrice(item.priceInCents) }}</span>
         </div>
-
         @if (item.description) {
-          <p class="dish-card__desc">{{ item.description }}</p>
+          <p class="dish-desc">{{ item.description }}</p>
         }
       </div>
     </article>
@@ -84,43 +71,31 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; class: string 
       border: 1px solid var(--border);
       overflow: hidden;
       cursor: default;
-      transition:
-        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       outline-offset: 3px;
-
-      &:hover, &:focus-visible {
-        transform: translateY(-4px) scale(1.012);
-        box-shadow:
-          0 8px 16px rgba(0, 0, 0, 0.06),
-          0 20px 40px rgba(0, 0, 0, 0.1),
-          0 0 0 1px var(--color-brand-light);
-      }
-
-      &:hover .dish-card__image { transform: scale(1.06); }
-
-      &--unavailable {
-        pointer-events: none;
-      }
     }
+    .dish-card:hover,
+    .dish-card:focus-visible {
+      transform: translateY(-4px) scale(1.012);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.06), 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px var(--color-brand-light);
+    }
+    .dish-card:hover .dish-image { transform: scale(1.06); }
+    .dish-card-unavailable { pointer-events: none; }
 
-    /* ── Image ───────────────────────────────────────────────────────────── */
-    .dish-card__image-wrap {
+    .dish-image-wrap {
       position: relative;
       height: 200px;
       overflow: hidden;
       background: var(--surface-2);
     }
-
-    .dish-card__image {
+    .dish-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       display: block;
     }
-
-    .dish-card__image-fallback {
+    .dish-image-fallback {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -128,22 +103,20 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; class: string 
       font-size: 3.5rem;
       color: var(--text-muted);
     }
-
-    .dish-card__unavailable-overlay {
+    .dish-unavailable-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0,0,0,0.55);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255,255,255,0.9);
       font-size: 0.9375rem;
       font-weight: 600;
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
-    /* ── Badge ───────────────────────────────────────────────────────────── */
     .dish-badge {
       position: absolute;
       top: var(--space-3);
@@ -157,43 +130,23 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; class: string 
       display: flex;
       align-items: center;
       gap: 4px;
-
-      &.badge--new        { background: rgba(59, 130, 246, 0.9); color: white; }
-      &.badge--popular    { background: rgba(245, 158, 11, 0.9); color: white; }
-      &.badge--vegetarian { background: rgba(34, 197, 94, 0.9);  color: white; }
-      &.badge--spicy      { background: rgba(239, 68, 68, 0.9);  color: white; }
     }
+    .badge-new        { background: rgba(59,130,246,0.9);  color: white; }
+    .badge-popular    { background: rgba(245,158,11,0.9);  color: white; }
+    .badge-vegetarian { background: rgba(34,197,94,0.9);   color: white; }
+    .badge-spicy      { background: rgba(239,68,68,0.9);   color: white; }
 
-    /* ── Corps ───────────────────────────────────────────────────────────── */
-    .dish-card__body {
-      padding: var(--space-5);
-    }
-
-    .dish-card__top {
+    .dish-body { padding: var(--space-5); }
+    .dish-top {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       gap: var(--space-3);
       margin-bottom: var(--space-2);
     }
-
-    .dish-card__name {
-      font-size: 1.0625rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .dish-card__price {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: var(--color-brand);
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .dish-card__desc {
+    .dish-name { font-size: 1.0625rem; font-weight: 600; color: var(--text-primary); margin: 0; line-height: 1.3; }
+    .dish-price { font-size: 1.125rem; font-weight: 700; color: var(--color-brand); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .dish-desc {
       color: var(--text-muted);
       font-size: 0.875rem;
       line-height: 1.6;

@@ -28,13 +28,11 @@ const DAYS: { key: string; label: string }[] = [
       </header>
 
       <div class="two-col">
-        <!-- Colonne principale -->
         <div class="main-col">
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="card">
-              <h2 class="card__title">Identité</h2>
+              <h2 class="card-title">Identité</h2>
 
-              <!-- Logo -->
               <div class="form-group">
                 <label class="form-label">Logo du restaurant</label>
                 <div class="logo-zone" (click)="logoInput.click()" role="button" tabindex="0" (keydown.enter)="logoInput.click()">
@@ -74,7 +72,7 @@ const DAYS: { key: string; label: string }[] = [
             </div>
 
             <div class="card">
-              <h2 class="card__title">Contact</h2>
+              <h2 class="card-title">Contact</h2>
 
               <div class="form-group">
                 <label class="form-label" for="r-addr">Adresse</label>
@@ -106,10 +104,9 @@ const DAYS: { key: string; label: string }[] = [
           </form>
         </div>
 
-        <!-- Colonne horaires -->
         <div class="side-col">
           <div class="card">
-            <h2 class="card__title">Horaires d'ouverture</h2>
+            <h2 class="card-title">Horaires d'ouverture</h2>
             <div class="hours-list">
               @for (day of days; track day.key) {
                 <div class="hours-row">
@@ -135,7 +132,6 @@ const DAYS: { key: string; label: string }[] = [
     .page-subtitle { color: var(--text-muted); margin: 0; }
 
     .two-col { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: start; }
-
     @media (max-width: 768px) {
       .two-col { grid-template-columns: 1fr; }
     }
@@ -146,9 +142,8 @@ const DAYS: { key: string; label: string }[] = [
       border: 1px solid var(--border);
       padding: var(--space-6);
       margin-bottom: var(--space-5);
-
-      &__title { font-size: 1.125rem; font-weight: 600; margin: 0 0 var(--space-5); }
     }
+    .card-title { font-size: 1.125rem; font-weight: 600; margin: 0 0 var(--space-5); }
 
     .form-group { margin-bottom: var(--space-4); }
     .form-row { display: flex; gap: var(--space-4); }
@@ -158,8 +153,8 @@ const DAYS: { key: string; label: string }[] = [
       width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border);
       border-radius: var(--radius-md); font-size: 1rem; background: var(--surface-1);
       color: var(--text-primary); box-sizing: border-box;
-      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
     }
+    .form-control:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
 
     .color-input-row { display: flex; gap: var(--space-3); align-items: center; }
     .color-picker {
@@ -178,8 +173,8 @@ const DAYS: { key: string; label: string }[] = [
       display: flex;
       align-items: center;
       justify-content: center;
-      &:hover .logo-overlay { opacity: 1; }
     }
+    .logo-zone:hover .logo-overlay { opacity: 1; }
     .logo-preview { width: 100%; height: 100%; object-fit: cover; }
     .logo-overlay {
       position: absolute; inset: 0;
@@ -193,24 +188,29 @@ const DAYS: { key: string; label: string }[] = [
       opacity: 0;
       transition: opacity 0.2s;
     }
-    .logo-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); color: var(--text-muted); font-size: 0.8125rem; span:first-child { font-size: 2rem; } }
+    .logo-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); color: var(--text-muted); font-size: 0.8125rem; }
+    .logo-placeholder span:first-child { font-size: 2rem; }
     .file-input-hidden { display: none; }
     .uploading-hint { font-size: 0.8125rem; color: var(--text-muted); margin-top: var(--space-1); }
 
-    .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626; padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
-    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #16a34a; padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
+    .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error);   padding: var(--space-3); border-radius: var(--radius-md); font-size: .875rem; margin-bottom: var(--space-4); }
+    .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); padding: var(--space-3); border-radius: var(--radius-md); font-size: .875rem; margin-bottom: var(--space-4); }
 
     .btn {
       display: inline-flex; align-items: center; gap: var(--space-2);
       border-radius: var(--radius-md); font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
       padding: 0.625rem 1.25rem; font-size: 0.9375rem;
-      &-primary { background: var(--color-brand); color: white; &:hover:not(:disabled) { background: var(--color-brand-dark); } &:disabled { opacity: 0.6; cursor: not-allowed; } }
-      &-large { padding: 0.875rem 2rem; font-size: 1rem; }
     }
-    .btn-icon { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); cursor: pointer; &:hover { background: var(--surface-2); } }
+    .btn-primary { background: var(--color-brand); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--color-brand-dark); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-large { padding: 0.875rem 2rem; font-size: 1rem; }
+    .btn-icon { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); cursor: pointer; }
+    .btn-icon:hover { background: var(--surface-2); }
 
     .hours-list { display: flex; flex-direction: column; gap: var(--space-3); }
-    .hours-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); &:last-child { border-bottom: none; } }
+    .hours-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
+    .hours-row:last-child { border-bottom: none; }
     .hours-day { font-weight: 500; flex: 1; font-size: 0.9375rem; }
     .hours-time { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
     .hours-closed { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }

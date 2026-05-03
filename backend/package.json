@@ -37,11 +37,14 @@
     "@adonisjs/auth": "^9.2.3",
     "@adonisjs/core": "^6.12.0",
     "@adonisjs/cors": "^2.2.1",
-    "@adonisjs/drive": "^2.3.0",
+    "@adonisjs/drive": "^3.4.1",
+    "@aws-sdk/client-s3": "^3.577.0",
+    "@aws-sdk/s3-request-presigner": "^3.577.0",
     "@adonisjs/lucid": "^21.3.0",
     "luxon": "^3.4.4",
     "mysql2": "^3.9.7",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "@vinejs/vine": "^2.1.0"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^7.7.0",
@@ -53,6 +56,7 @@
     "@types/node": "^22.0.0",
     "hot-hook": "^0.3.1",
     "pino-pretty": "^11.2.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
     "typescript": "~5.6.3"
   },

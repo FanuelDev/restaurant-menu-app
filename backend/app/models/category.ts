@@ -1,12 +1,15 @@
-// backend/app/models/category.ts
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, hasMany, belongsTo } from '@adonisjs/lucid/orm'
+import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import MenuItem from '#models/menu_item'
+import Restaurant from '#models/restaurant'
 
 export default class Category extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
+
+  @column()
+  declare restaurantId: number
 
   @column()
   declare name: string
@@ -14,16 +17,17 @@ export default class Category extends BaseModel {
   @column()
   declare description: string | null
 
-  /** Ordre d'affichage dans le menu client (drag-and-drop côté admin) */
   @column()
   declare sortOrder: number
 
-  /** Masque la catégorie entière sans la supprimer */
   @column()
   declare isVisible: boolean
 
   @hasMany(() => MenuItem)
   declare menuItems: HasMany<typeof MenuItem>
+
+  @belongsTo(() => Restaurant)
+  declare restaurant: BelongsTo<typeof Restaurant>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

@@ -8,7 +8,7 @@ export default defineConfig({
   commands: [
     () => import('@adonisjs/core/commands'),
     () => import('@adonisjs/lucid/commands'),
-    () => import('@adonisjs/drive/commands'),
+    // () => import('@adonisjs/drive/commands'),
   ],
 
   /*

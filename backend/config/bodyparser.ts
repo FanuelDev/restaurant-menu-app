@@ -1,5 +1,5 @@
 // backend/config/bodyparser.ts
-import { defineConfig, multipart } from '@adonisjs/core/bodyparser'
+import { defineConfig } from '@adonisjs/core/bodyparser'
 
 const bodyParserConfig = defineConfig({
   allowedMethods: ['POST', 'PUT', 'PATCH', 'DELETE'],
@@ -19,13 +19,12 @@ const bodyParserConfig = defineConfig({
     ],
   },
 
-  multipart: multipart({
+  multipart: {
     convertEmptyStringsToNull: true,
-    // 10 Mo max (sera re-validé dans ImageUploadService)
     limit: '10mb',
     types: ['multipart/form-data'],
     processManually: [],
-  }),
+  },
 })
 
 export default bodyParserConfig

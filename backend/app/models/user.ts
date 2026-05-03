@@ -1,10 +1,13 @@
-// backend/app/models/user.ts
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, beforeSave } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Restaurant from '#models/restaurant'
+
+export type UserRole = 'super_admin' | 'admin' | 'cashier'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -16,6 +19,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare id: number
 
   @column()
+  declare restaurantId: number | null
+
+  @column()
+  declare role: UserRole
+
+  @column()
   declare fullName: string | null
 
   @column()
@@ -25,7 +34,19 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare password: string
 
   @column()
-  declare role: 'admin' | 'staff'
+  declare phone: string | null
+
+  @column()
+  declare isActive: boolean
+
+  @column({ serializeAs: null })
+  declare passwordResetToken: string | null
+
+  @column.dateTime({ serializeAs: null })
+  declare passwordResetTokenExpiresAt: DateTime | null
+
+  @column.dateTime()
+  declare lastLoginAt: DateTime | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -33,9 +54,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 
-  /**
-   * Provider de tokens d'accès (Bearer Token stocké en base)
-   */
+  @belongsTo(() => Restaurant)
+  declare restaurant: BelongsTo<typeof Restaurant>
+
   static accessTokens = DbAccessTokensProvider.forModel(User, {
     expiresIn: '30 days',
     prefix: 'oat_',
@@ -43,4 +64,16 @@ export default class User extends compose(BaseModel, AuthFinder) {
     type: 'auth_token',
     tokenSecretLength: 40,
   })
+
+  get isSuperAdmin() {
+    return this.role === 'super_admin'
+  }
+
+  get isAdmin() {
+    return this.role === 'admin'
+  }
+
+  get isCashier() {
+    return this.role === 'cashier'
+  }
 }
