@@ -100,6 +100,10 @@ export default class SubscriptionService {
   /** Appelé par le webhook CinetPay — active l'abonnement après paiement confirmé */
   async activateSubscription(transactionId: string, rawData: Record<string, unknown>): Promise<void> {
     const subscription = await Subscription.findByOrFail('cinetpayTransactionId', transactionId)
+
+    // Idempotency guard: skip if already processed (webhook may fire more than once)
+    if (subscription.status === 'active') return
+
     const plan = await Plan.findOrFail(subscription.planId)
 
     const now = DateTime.now()

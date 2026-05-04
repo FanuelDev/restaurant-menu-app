@@ -1,8 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, createHash } from 'node:crypto'
 import User from '#models/user'
 import { loginValidator, forgotPasswordValidator, resetPasswordValidator } from '#validators/auth_validator'
+
+function hashResetToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
 
 export default class AuthController {
   /** POST /api/auth/login */
@@ -74,16 +78,21 @@ export default class AuthController {
       return response.ok({ message: 'Si cet email existe, un lien a été envoyé.' })
     }
 
-    const token = randomBytes(32).toString('hex')
-    user.passwordResetToken = token
+    const rawToken = randomBytes(32).toString('hex')
+    // Store SHA-256 hash — never the raw token
+    user.passwordResetToken = hashResetToken(rawToken)
     user.passwordResetTokenExpiresAt = DateTime.now().plus({ hours: 1 })
     await user.save()
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200'
-    const resetUrl = `${frontendUrl}/reset-password?token=${token}`
+    // rawToken goes in the email link — hash stays in DB
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`
 
     // TODO: Remplacer par envoi d'email via @adonisjs/mail
-    console.log(`[PASSWORD RESET] Lien pour ${email} : ${resetUrl}`)
+    // En production : envoyer resetUrl par email, ne jamais logger le token
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV ONLY] Reset link: ${resetUrl}`)
+    }
 
     return response.ok({ message: 'Si cet email existe, un lien a été envoyé.' })
   }
@@ -92,8 +101,9 @@ export default class AuthController {
   async resetPassword({ request, response }: HttpContext) {
     const { token, password } = await request.validateUsing(resetPasswordValidator)
 
+    // Hash the incoming token to compare against the stored hash
     const user = await User.query()
-      .where('password_reset_token', token)
+      .where('password_reset_token', hashResetToken(token))
       .where('password_reset_token_expires_at', '>', DateTime.now().toSQL()!)
       .first()
 

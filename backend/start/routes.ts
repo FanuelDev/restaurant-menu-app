@@ -1,6 +1,11 @@
 import router from '@adonisjs/core/services/router'
 import app from '@adonisjs/core/services/app'
 import { middleware } from '#start/kernel'
+import {
+  loginRateLimiter,
+  forgotPasswordRateLimiter,
+  registerRateLimiter,
+} from '#middleware/rate_limit_middleware'
 
 // ─── Lazy imports ─────────────────────────────────────────────────────────────
 const AuthController = () => import('#controllers/auth_controller')
@@ -49,13 +54,17 @@ router.post('/webhooks/cinetpay', [WebhooksController, 'cinetpay'])
 
 // ─── Auth (no tenant required) ────────────────────────────────────────────────
 router.post('/api/auth/login', [AuthController, 'login'])
+  .use((ctx, next) => loginRateLimiter.handle(ctx, next))
 router.post('/api/auth/forgot-password', [AuthController, 'forgotPassword'])
+  .use((ctx, next) => forgotPasswordRateLimiter.handle(ctx, next))
 router.post('/api/auth/reset-password', [AuthController, 'resetPassword'])
+  .use((ctx, next) => loginRateLimiter.handle(ctx, next))
 router.delete('/api/auth/logout', [AuthController, 'logout']).use(middleware.auth())
 router.get('/api/auth/me', [AuthController, 'me']).use(middleware.auth())
 
 // ─── Self-service registration ────────────────────────────────────────────────
 router.post('/api/register', [RegisterController, 'store'])
+  .use((ctx, next) => registerRateLimiter.handle(ctx, next))
 router.get('/api/register/check-slug', [RegisterController, 'checkSlug'])
 
 // ─── Public plans pricing page (no tenant, no auth) ──────────────────────────

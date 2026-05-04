@@ -18,7 +18,7 @@ import { AuthService } from '../../shared/services/auth.service'
           <h1 class="page-title">Bonjour, {{ firstName() }}</h1>
           <p class="page-subtitle">Voici un aperçu de votre menu aujourd'hui</p>
         </div>
-        <a routerLink="/" target="_blank" class="btn btn-outline">
+        <a routerLink="/menu" target="_blank" class="btn btn-outline">
           <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7">
             <path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/>
             <circle cx="9" cy="9" r="2.5"/>
@@ -151,7 +151,7 @@ import { AuthService } from '../../shared/services/auth.service'
               </div>
               <span>Charte</span>
             </a>
-            <a routerLink="/" target="_blank" class="qa-item">
+            <a routerLink="/menu" target="_blank" class="qa-item">
               <div class="qa-icon">
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
                   <path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/>

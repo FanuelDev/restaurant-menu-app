@@ -4,6 +4,7 @@ import server from '@adonisjs/core/services/server'
 server.use([
   () => import('@adonisjs/core/bodyparser_middleware'),
   () => import('@adonisjs/cors/cors_middleware'),
+  () => import('#middleware/security_headers_middleware'),
 ])
 
 router.use([

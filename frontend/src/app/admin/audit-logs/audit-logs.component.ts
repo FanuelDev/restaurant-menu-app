@@ -21,12 +21,13 @@ const ACTION_LABELS: Record<string, string> = {
   'subscription.canceled': 'Abonnement annulé',
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  created: '#27ae60',
-  updated: '#3498db',
-  deleted: '#e74c3c',
-  toggled: '#f39c12',
-  canceled: '#e74c3c',
+const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
+  created:  { bg: '#dcfce7', color: '#16a34a' },
+  updated:  { bg: '#dbeafe', color: '#2563eb' },
+  deleted:  { bg: '#fee2e2', color: '#dc2626' },
+  toggled:  { bg: '#fef9c3', color: '#ca8a04' },
+  canceled: { bg: '#fee2e2', color: '#dc2626' },
+  uploaded: { bg: '#f3e8ff', color: '#9333ea' },
 }
 
 @Component({
@@ -34,48 +35,114 @@ const ACTION_COLORS: Record<string, string> = {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="audit-page">
-      <h1>Journal d'audit</h1>
+    <div class="page-container-lg">
 
-      <div class="filters">
-        <select [(ngModel)]="filterAction" (ngModelChange)="applyFilters()">
-          <option value="">Toutes les actions</option>
-          @for (entry of actionEntries; track entry.key) {
-            <option [value]="entry.key">{{ entry.label }}</option>
-          }
-        </select>
-        <select [(ngModel)]="filterResource" (ngModelChange)="applyFilters()">
-          <option value="">Tous les types</option>
-          <option value="category">Catégories</option>
-          <option value="menu_item">Plats</option>
-          <option value="user">Utilisateurs</option>
-          <option value="restaurant">Restaurant</option>
-        </select>
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Journal d'audit</h1>
+          <p class="page-subtitle">Historique de toutes les actions effectuées sur votre compte</p>
+        </div>
       </div>
 
+      <!-- Filters -->
+      <div class="filters-row">
+        <div class="select-wrap">
+          <select class="form-control" [(ngModel)]="filterAction" (ngModelChange)="applyFilters()">
+            <option value="">Toutes les actions</option>
+            @for (entry of actionEntries; track entry.key) {
+              <option [value]="entry.key">{{ entry.label }}</option>
+            }
+          </select>
+          <span class="select-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </div>
+        <div class="select-wrap">
+          <select class="form-control" [(ngModel)]="filterResource" (ngModelChange)="applyFilters()">
+            <option value="">Tous les types</option>
+            <option value="category">Catégories</option>
+            <option value="menu_item">Plats</option>
+            <option value="user">Utilisateurs</option>
+            <option value="restaurant">Restaurant</option>
+          </select>
+          <span class="select-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- Skeleton loader -->
       @if (loading()) {
-        <div class="loading">Chargement...</div>
+        <div class="log-list">
+          @for (i of skeletons; track i) {
+            <div class="skeleton-row">
+              <div class="sk-dot shimmer"></div>
+              <div class="sk-body">
+                <div class="sk-line shimmer" style="width:140px;height:14px"></div>
+                <div class="sk-line shimmer" style="width:90px;height:11px;margin-top:5px"></div>
+              </div>
+              <div class="sk-meta">
+                <div class="sk-line shimmer" style="width:120px;height:11px"></div>
+                <div class="sk-line shimmer" style="width:60px;height:11px;margin-top:4px"></div>
+              </div>
+            </div>
+          }
+        </div>
+
+      <!-- Empty state -->
       } @else if (result()?.data?.length === 0) {
-        <div class="empty">Aucune entrée dans le journal.</div>
+        <div class="empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <p class="empty-title">Aucune entrée</p>
+          <p class="empty-desc">Le journal est vide pour les filtres sélectionnés.</p>
+        </div>
+
+      <!-- Log list -->
       } @else {
         <div class="log-list">
           @for (log of result()!.data; track log.id) {
-            <div class="log-entry" (click)="toggleDetails(log.id)">
+            <div class="log-entry" (click)="toggleDetails(log.id)" [class.is-expanded]="expandedId() === log.id">
               <div class="log-main">
-                <span class="action-dot" [style.background]="actionColor(log.action)"></span>
-                <div class="log-info">
-                  <div class="log-action">{{ actionLabel(log.action) }}</div>
-                  @if (log.resourceName) {
-                    <div class="log-resource">{{ log.resourceName }}</div>
-                  }
-                </div>
+                <span class="action-badge" [style.background]="actionBg(log.action)" [style.color]="actionFg(log.action)">
+                  {{ actionLabel(log.action) }}
+                </span>
+                @if (log.resourceName) {
+                  <span class="log-resource">{{ log.resourceName }}</span>
+                }
+                <div class="log-spacer"></div>
                 <div class="log-meta">
                   <span class="log-user">{{ log.userEmail }}</span>
-                  <span class="log-role badge-{{ log.userRole }}">{{ log.userRole }}</span>
-                  <span class="log-date">{{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <span class="role-pill" [class.role-admin]="log.userRole === 'admin'" [class.role-cashier]="log.userRole === 'cashier'">
+                    {{ log.userRole === 'admin' ? 'Admin' : 'Caissier' }}
+                  </span>
+                  <span class="log-date">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    {{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
                 </div>
+                <span class="expand-icon" [class.rotated]="expandedId() === log.id">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
               </div>
-              @if (expandedId() === log.id && (log.oldValues || log.newValues)) {
+
+              @if (expandedId() === log.id && (log.oldValues || log.newValues || log.ipAddress)) {
                 <div class="log-details">
                   @if (log.oldValues) {
                     <div class="diff-block diff-old">
@@ -90,7 +157,12 @@ const ACTION_COLORS: Record<string, string> = {
                     </div>
                   }
                   @if (log.ipAddress) {
-                    <div class="log-ip">IP : {{ log.ipAddress }}</div>
+                    <div class="log-ip">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                      </svg>
+                      IP : {{ log.ipAddress }}
+                    </div>
                   }
                 </div>
               }
@@ -98,68 +170,267 @@ const ACTION_COLORS: Record<string, string> = {
           }
         </div>
 
+        <!-- Pagination -->
         @if (result()!.meta.lastPage > 1) {
-          <div class="pagination">
-            <button [disabled]="currentPage() === 1" (click)="goPage(currentPage() - 1)">← Précédent</button>
-            <span>Page {{ currentPage() }} / {{ result()!.meta.lastPage }}</span>
-            <button [disabled]="currentPage() === result()!.meta.lastPage" (click)="goPage(currentPage() + 1)">Suivant →</button>
+          <div class="pagination-row">
+            <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === 1" (click)="goPage(currentPage() - 1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Précédent
+            </button>
+            <span class="page-info">Page {{ currentPage() }} sur {{ result()!.meta.lastPage }}</span>
+            <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === result()!.meta.lastPage" (click)="goPage(currentPage() + 1)">
+              Suivant
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
           </div>
         }
       }
     </div>
   `,
   styles: [`
-    .audit-page { max-width: 960px; }
-
-    .filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; }
-
-    .log-list { display: flex; flex-direction: column; gap: var(--space-2); }
-    .log-entry {
-      background: white; border: 1px solid var(--border);
-      border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
-      animation: slideUpFade .35s var(--ease-spring) both;
-      transition: box-shadow var(--t-fast);
-      &:hover { box-shadow: var(--shadow-sm); }
+    .filters-row {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
     }
+
+    .select-wrap {
+      position: relative;
+      min-width: 200px;
+    }
+    .select-wrap .form-control {
+      padding-right: var(--space-10);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .select-chevron {
+      position: absolute;
+      right: var(--space-3);
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Skeleton */
+    .skeleton-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-2);
+    }
+    .sk-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sk-body { flex: 1; }
+    .sk-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .sk-line { border-radius: 6px; }
+
+    /* Log list */
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .log-entry {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow var(--t-fast), border-color var(--t-fast);
+    }
+    .log-entry:hover { box-shadow: var(--shadow-sm); }
+    .log-entry.is-expanded { border-color: var(--primary-200, #c7d2fe); }
 
     .log-main {
-      display: flex; align-items: center; gap: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
-      &:hover { background: var(--gray-50); }
+    }
+    .log-main:hover { background: var(--gray-50); }
+
+    .action-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .25rem .6rem;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .action-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .log-info { flex: 1; min-width: 0; }
-    .log-action   { font-weight: 600; color: var(--text-primary); font-size: .875rem; }
-    .log-resource { font-size: .75rem; color: var(--text-muted); margin-top: 1px; }
-
-    .log-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-    .log-user { font-size: .78rem; color: var(--text-secondary); }
-    .log-role {
-      font-size: .70rem; padding: .15rem .4rem; border-radius: var(--radius-full);
-      background: var(--gray-100); color: var(--gray-600);
+    .log-resource {
+      font-size: .8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
     }
-    .badge-admin   { background: var(--info-bg);    color: var(--info);    }
-    .badge-cashier { background: var(--success-bg); color: var(--success); }
-    .log-date { font-size: .70rem; color: var(--text-muted); }
 
+    .log-spacer { flex: 1; }
+
+    .log-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-shrink: 0;
+    }
+
+    .log-user {
+      font-size: .78rem;
+      color: var(--text-secondary);
+    }
+
+    .role-pill {
+      font-size: .70rem;
+      font-weight: 600;
+      padding: .2rem .5rem;
+      border-radius: var(--radius-full);
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+    .role-admin   { background: #dbeafe; color: #2563eb; }
+    .role-cashier { background: #dcfce7; color: #16a34a; }
+
+    .log-date {
+      font-size: .75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+    }
+
+    .expand-icon {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      transition: transform .2s ease;
+      flex-shrink: 0;
+    }
+    .expand-icon.rotated { transform: rotate(180deg); }
+
+    /* Details panel */
     .log-details {
-      padding: var(--space-4) var(--space-4);
-      background: var(--gray-50); border-top: 1px solid var(--border);
-      display: flex; gap: var(--space-4); flex-wrap: wrap;
+      padding: var(--space-4) var(--space-5);
+      background: var(--gray-50);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+      align-items: flex-start;
     }
-    .diff-block { flex: 1; min-width: 200px; }
-    .diff-label { font-size: .70rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: var(--space-2); }
+    .diff-block { flex: 1; min-width: 180px; }
+    .diff-label {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
     .diff-old { border-left: 3px solid var(--error);   padding-left: var(--space-3); }
     .diff-new { border-left: 3px solid var(--success); padding-left: var(--space-3); }
-    .log-details pre { font-size: .75rem; white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); margin: 0; font-family: 'SF Mono', 'Monaco', monospace; }
-    .log-ip { font-size: .75rem; color: var(--text-muted); align-self: flex-end; }
-
-    .pagination {
-      display: flex; align-items: center; justify-content: center;
-      gap: var(--space-4); margin-top: var(--space-5);
+    .log-details pre {
+      font-size: .73rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-secondary);
+      margin: 0;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
-    .pagination span { font-size: .875rem; color: var(--text-muted); }
+    .log-ip {
+      font-size: .75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+    }
+    .empty-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-xl);
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .empty-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-2);
+    }
+    .empty-desc {
+      font-size: .875rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Pagination */
+    .pagination-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    .page-info {
+      font-size: .875rem;
+      color: var(--text-muted);
+    }
+    .btn-ghost {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--gray-50);
+      border-color: var(--gray-300);
+    }
+    .btn-ghost:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    .btn-sm {
+      padding: .375rem var(--space-4);
+      font-size: .8rem;
+    }
   `],
 })
 export class AuditLogsComponent implements OnInit {
@@ -173,6 +444,7 @@ export class AuditLogsComponent implements OnInit {
   filterAction = ''
   filterResource = ''
 
+  readonly skeletons = [1, 2, 3, 4, 5, 6]
   readonly actionEntries = Object.entries(ACTION_LABELS).map(([key, label]) => ({ key, label }))
 
   ngOnInit(): void {
@@ -211,8 +483,13 @@ export class AuditLogsComponent implements OnInit {
     return ACTION_LABELS[action] ?? action
   }
 
-  actionColor(action: string): string {
+  actionBg(action: string): string {
     const suffix = action.split('.')[1] ?? ''
-    return ACTION_COLORS[suffix] ?? '#888'
+    return ACTION_COLORS[suffix]?.bg ?? '#f3f4f6'
+  }
+
+  actionFg(action: string): string {
+    const suffix = action.split('.')[1] ?? ''
+    return ACTION_COLORS[suffix]?.color ?? '#6b7280'
   }
 }

@@ -15,11 +15,7 @@ export default class RoleMiddleware {
     const user = auth.user!
 
     if (!allowedRoles.includes(user.role)) {
-      return response.forbidden({
-        message: 'Accès refusé — droits insuffisants.',
-        required: allowedRoles,
-        current: user.role,
-      })
+      return response.forbidden({ message: 'Accès refusé.' })
     }
 
     if (!user.isActive) {

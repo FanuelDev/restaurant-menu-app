@@ -1,14 +1,32 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import AuditLog from '#models/audit_log'
 
+const VALID_ACTIONS = new Set([
+  'category.created', 'category.updated', 'category.deleted',
+  'menu_item.created', 'menu_item.updated', 'menu_item.deleted', 'menu_item.toggled',
+  'user.created', 'user.updated', 'user.deleted',
+  'restaurant.updated', 'restaurant.logo_uploaded',
+  'subscription.created', 'subscription.canceled',
+])
+
+const VALID_RESOURCE_TYPES = new Set([
+  'category', 'menu_item', 'user', 'restaurant', 'subscription',
+])
+
 export default class AuditLogsController {
   /** GET /api/admin/audit-logs */
   async index({ request, response, restaurant }: HttpContext) {
-    const page = request.input('page', 1)
-    const perPage = Math.min(request.input('perPage', 50), 100)
-    const action = request.input('action')
-    const userId = request.input('userId')
-    const resourceType = request.input('resourceType')
+    const page = Math.max(1, Number(request.input('page', 1)) || 1)
+    const perPage = Math.min(Math.max(1, Number(request.input('perPage', 50)) || 50), 100)
+
+    // Whitelist-only filtering — reject unknown values silently (treat as "no filter")
+    const rawAction = String(request.input('action', '') ?? '')
+    const rawUserId = request.input('userId')
+    const rawResource = String(request.input('resourceType', '') ?? '')
+
+    const action = VALID_ACTIONS.has(rawAction) ? rawAction : null
+    const resourceType = VALID_RESOURCE_TYPES.has(rawResource) ? rawResource : null
+    const userId = rawUserId && /^\d+$/.test(String(rawUserId)) ? Number(rawUserId) : null
 
     const query = AuditLog.query()
       .where('restaurant_id', restaurant.id)

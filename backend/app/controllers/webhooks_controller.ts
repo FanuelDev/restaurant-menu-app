@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import CinetPayService from '#services/cinetpay_service'
+import CinetPayService, { type CinetPayNotification } from '#services/cinetpay_service'
 import SubscriptionService from '#services/subscription_service'
 
 export default class WebhooksController {
@@ -12,7 +12,7 @@ export default class WebhooksController {
    * On re-vérifie via l'API CinetPay (ne pas faire confiance au payload seul).
    */
   async cinetpay({ request, response }: HttpContext) {
-    const payload = request.body()
+    const payload = request.body() as CinetPayNotification
 
     // Vérification basique du site_id
     if (!this.#cinetpay.validateWebhookSignature(payload)) {

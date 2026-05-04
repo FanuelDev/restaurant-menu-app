@@ -6,6 +6,12 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
+      import('./public/landing/landing.component').then((m) => m.LandingComponent),
+    title: 'MenuApp — Menu digital QR pour restaurants',
+  },
+  {
+    path: 'menu',
+    loadComponent: () =>
       import('./public/menu-page/menu-page.component').then((m) => m.MenuPageComponent),
     title: 'Notre Menu',
   },

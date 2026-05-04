@@ -109,7 +109,7 @@ import { AuthService } from '../../shared/services/auth.service'
 
         <!-- Lien vitrine -->
         <div class="sb-vitrine">
-          <a routerLink="/" target="_blank" class="sb-link sb-link-ghost" [title]="collapsed() ? 'Voir la vitrine' : ''">
+          <a routerLink="/menu" target="_blank" class="sb-link sb-link-ghost" [title]="collapsed() ? 'Voir la vitrine' : ''">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/>
               <circle cx="9" cy="9" r="2.5"/>
