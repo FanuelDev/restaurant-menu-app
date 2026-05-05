@@ -17,6 +17,7 @@ export class RestaurantService {
       tap((r) => {
         this.restaurant.set(r)
         this.applyBrandColor(r.brandColor)
+        this.applyRestaurantMeta(r)
       })
     )
   }
@@ -45,9 +46,32 @@ export class RestaurantService {
     ).pipe(
       tap(({ logoUrl }) => {
         const current = this.restaurant()
-        if (current) {
-          this.restaurant.set({ ...current, logoUrl })
-        }
+        if (current) this.restaurant.set({ ...current, logoUrl })
+      })
+    )
+  }
+
+  uploadCover(file: File): Observable<{ coverImageUrl: string | null }> {
+    const form = new FormData()
+    form.append('cover', file)
+    return this.http.post<{ coverImageUrl: string | null }>(
+      `${environment.apiUrl}/admin/restaurant/cover`,
+      form
+    ).pipe(
+      tap(({ coverImageUrl }) => {
+        const current = this.restaurant()
+        if (current) this.restaurant.set({ ...current, coverImageUrl })
+      })
+    )
+  }
+
+  deleteCover(): Observable<{ coverImageUrl: null }> {
+    return this.http.delete<{ coverImageUrl: null }>(
+      `${environment.apiUrl}/admin/restaurant/cover`
+    ).pipe(
+      tap(() => {
+        const current = this.restaurant()
+        if (current) this.restaurant.set({ ...current, coverImageUrl: null })
       })
     )
   }
@@ -60,6 +84,35 @@ export class RestaurantService {
     document.documentElement.style.setProperty('--color-brand', hex)
     document.documentElement.style.setProperty('--color-brand-dark', this.darken(hex, 15))
     document.documentElement.style.setProperty('--color-brand-light', this.lighten(hex, 40))
+    // Teinte pastel pour les arrière-plans légers (hover, chip active bg en transparence)
+    document.documentElement.style.setProperty('--color-brand-subtle', hex + '18')
+  }
+
+  /**
+   * Adapte le titre de la page et le meta theme-color au restaurant.
+   * Améliore l'expérience mobile (barre de navigation du navigateur colorée).
+   */
+  private applyRestaurantMeta(r: Restaurant): void {
+    // Titre de page
+    document.title = `${r.name} — Menu`
+
+    // theme-color pour mobile (couleur de la barre d'adresse sur Android/iOS)
+    let metaTheme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    if (!metaTheme) {
+      metaTheme = document.createElement('meta')
+      metaTheme.name = 'theme-color'
+      document.head.appendChild(metaTheme)
+    }
+    metaTheme.content = r.brandColor
+
+    // og:title pour les partages
+    let metaOg = document.querySelector<HTMLMetaElement>('meta[property="og:title"]')
+    if (!metaOg) {
+      metaOg = document.createElement('meta')
+      metaOg.setAttribute('property', 'og:title')
+      document.head.appendChild(metaOg)
+    }
+    metaOg.content = `${r.name} — Découvrez notre menu`
   }
 
   // ── Utilitaires couleur ────────────────────────────────────────────────────

@@ -89,6 +89,10 @@ router
       .use(middleware.role(['admin']))
     router.post('/restaurant/logo', [RestaurantController, 'uploadLogo'])
       .use(middleware.role(['admin']))
+    router.post('/restaurant/cover', [RestaurantController, 'uploadCover'])
+      .use(middleware.role(['admin']))
+    router.delete('/restaurant/cover', [RestaurantController, 'deleteCover'])
+      .use(middleware.role(['admin']))
 
     // Subscription
     router.get('/subscription', [SubscriptionsController, 'show'])

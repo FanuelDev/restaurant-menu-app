@@ -80,7 +80,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
                     <span class="period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
                   </div>
                   <ul class="features">
-                    @for (f of plan.features; track f) { <li>✓ {{ f }}</li> }
+                    @for (f of enabledFeatures(plan); track f) { <li>✓ {{ f }}</li> }
                   </ul>
                   @if (isCurrentPlan(plan)) {
                     <div class="current-badge">Plan actuel</div>
@@ -237,6 +237,11 @@ export class SubscriptionComponent implements OnInit {
       next: (d) => { this.data.set(d); this.loading.set(false) },
       error: () => this.loading.set(false),
     })
+  }
+
+  enabledFeatures(plan: Plan): string[] {
+    if (!plan.features) return []
+    return Object.entries(plan.features).filter(([, v]) => v).map(([k]) => k)
   }
 
   isCurrentPlan(plan: Plan): boolean {

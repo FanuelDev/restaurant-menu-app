@@ -1,6 +1,8 @@
-import { Component, signal, AfterViewInit, OnDestroy, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, signal, computed, AfterViewInit, OnDestroy, OnInit, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core'
 import { isPlatformBrowser, CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { SubscriptionService } from '../../shared/services/subscription.service'
+import type { Plan, BillingCycle } from '../../shared/models'
 
 const FEATURES = [
   {
@@ -89,32 +91,6 @@ const TESTIMONIALS = [
   },
 ]
 
-const PLANS = [
-  {
-    name: 'Starter',
-    price: 0,
-    desc: 'Pour tester et démarrer votre présence digitale',
-    features: ['5 catégories', '30 plats', '1 utilisateur', 'QR code de base', 'Mises à jour illimitées'],
-    cta: 'Démarrer gratuitement',
-    highlighted: false,
-  },
-  {
-    name: 'Pro',
-    price: 9900,
-    desc: 'Pour les restaurants en croissance active',
-    features: ['20 catégories', '200 plats', '3 utilisateurs', 'Badges & disponibilités', 'Support prioritaire', 'Journal d\'audit'],
-    cta: 'Essai 14 jours gratuit',
-    highlighted: true,
-  },
-  {
-    name: 'Premium',
-    price: 24900,
-    desc: 'Pour les chaînes et grands établissements',
-    features: ['Catégories illimitées', 'Plats illimités', 'Équipe illimitée', 'API access', 'Multi-restaurants', 'Onboarding dédié'],
-    cta: 'Nous contacter',
-    highlighted: false,
-  },
-]
 
 const FAQS = [
   { q: 'Comment fonctionne l\'essai gratuit ?', a: 'Votre essai démarre dès l\'inscription, sans carte bancaire. Pendant 14 jours, vous avez accès à toutes les fonctionnalités Pro. À la fin, vous choisissez le plan qui vous convient.' },
@@ -526,40 +502,59 @@ const FAQS = [
           <button [class.ptog-active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">Mensuel</button>
           <button [class.ptog-active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
             Annuel
-            <span class="ptog-save">−17%</span>
+            @if (bestSavingPct() > 0) {
+              <span class="ptog-save">−{{ bestSavingPct() }}%</span>
+            }
           </button>
         </div>
 
-        <div class="pricing-grid">
-          @for (plan of plans; track plan.name; let i = $index) {
-            <div class="price-card reveal" [class.price-card-featured]="plan.highlighted" [attr.data-delay]="i">
-              @if (plan.highlighted) { <div class="price-badge">Recommandé</div> }
-              <div class="price-name">{{ plan.name }}</div>
-              <div class="price-amount">
-                @if (plan.price === 0) {
-                  <span class="price-val">Gratuit</span>
-                } @else {
-                  <span class="price-val">{{ formatPrice(plan.price) }}</span>
-                  <span class="price-period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+        @if (plansLoading()) {
+          <div class="pricing-grid">
+            @for (_ of [1,2,3]; track $index) {
+              <div class="price-card" style="opacity:.5">
+                <div class="skeleton" style="height:20px;width:55%;margin-bottom:16px;border-radius:6px;background:var(--gray-200)"></div>
+                <div class="skeleton" style="height:40px;width:40%;margin-bottom:16px;border-radius:6px;background:var(--gray-200)"></div>
+                <div class="skeleton" style="height:14px;width:80%;margin-bottom:8px;border-radius:4px;background:var(--gray-200)"></div>
+                <div class="skeleton" style="height:14px;width:65%;margin-bottom:24px;border-radius:4px;background:var(--gray-200)"></div>
+                @for (_ of [1,2,3]; track $index) {
+                  <div class="skeleton" style="height:12px;width:85%;margin-bottom:12px;border-radius:4px;background:var(--gray-200)"></div>
                 }
+                <div class="skeleton" style="height:44px;border-radius:99px;margin-top:24px;background:var(--gray-200)"></div>
               </div>
-              <p class="price-desc">{{ plan.desc }}</p>
-              <ul class="price-features">
-                @for (f of plan.features; track f) {
-                  <li>
-                    <span class="price-check">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </span>
-                    {{ f }}
-                  </li>
-                }
-              </ul>
-              <a routerLink="/register" class="price-cta" [class.price-cta-featured]="plan.highlighted">
-                {{ plan.cta }}
-              </a>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        } @else {
+          <div class="pricing-grid" [style.--plan-cols]="plans().length">
+            @for (plan of plans(); track plan.id; let i = $index) {
+              <div class="price-card price-card-appear" [class.price-card-featured]="isFeatured(i)" [style.animation-delay]="(i * 100) + 'ms'">
+                @if (isFeatured(i)) { <div class="price-badge">Recommandé</div> }
+                <div class="price-name">{{ plan.name }}</div>
+                <div class="price-amount">
+                  @if (plan.priceMonthlyCents === 0) {
+                    <span class="price-val">Gratuit</span>
+                  } @else {
+                    <span class="price-val">{{ formatPrice(plan, cycle()) }}</span>
+                    <span class="price-period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+                  }
+                </div>
+                <p class="price-desc">{{ plan.description }}</p>
+                <ul class="price-features">
+                  @for (f of enabledFeatures(plan); track f) {
+                    <li>
+                      <span class="price-check" [class.price-check-featured]="isFeatured(i)">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </span>
+                      {{ f }}
+                    </li>
+                  }
+                </ul>
+                <a routerLink="/register" class="price-cta" [class.price-cta-featured]="isFeatured(i)">
+                  {{ plan.priceMonthlyCents === 0 ? 'Démarrer gratuitement' : 'Essai 14 jours gratuit' }}
+                </a>
+              </div>
+            }
+          </div>
+        }
 
         <p class="pricing-note reveal">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1138,8 +1133,20 @@ const FAQS = [
       background: var(--success-bg); color: var(--success); font-size: .7rem;
       padding: 2px 6px; border-radius: var(--radius-full); font-weight: 700;
     }
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5); margin-bottom: var(--space-6); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(min(var(--plan-cols, 3), 3), 1fr);
+      gap: var(--space-5); margin-bottom: var(--space-6);
+    }
     @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto var(--space-6); } }
+
+    @keyframes priceCardIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .price-card-appear {
+      animation: priceCardIn .55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
     .price-card {
       background: white; border: 2px solid var(--border);
       border-radius: var(--radius-xl); padding: var(--space-8) var(--space-8);
@@ -1169,7 +1176,7 @@ const FAQS = [
       width: 20px; height: 20px; border-radius: 50%; background: var(--success-bg); color: var(--success);
       display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
     }
-    .price-card-featured .price-check { background: var(--brand-subtle); color: var(--brand); }
+    .price-check-featured { background: var(--brand-subtle) !important; color: var(--brand) !important; }
     .price-cta {
       display: block; text-align: center; text-decoration: none;
       padding: var(--space-4) var(--space-6); border-radius: var(--radius-full);
@@ -1303,19 +1310,35 @@ const FAQS = [
     }
   `],
 })
-export class LandingComponent implements AfterViewInit, OnDestroy {
-  private readonly platformId = inject(PLATFORM_ID)
+export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
+  private readonly platformId        = inject(PLATFORM_ID)
+  private readonly subscriptionSvc   = inject(SubscriptionService)
 
   readonly features     = FEATURES
   readonly steps        = STEPS
   readonly testimonials = TESTIMONIALS
-  readonly plans        = PLANS
   readonly faqs         = FAQS
 
-  readonly scrolled  = signal(false)
+  readonly plans        = signal<Plan[]>([])
+  readonly plansLoading = signal(true)
+
+  readonly scrolled   = signal(false)
   readonly mobileOpen = signal(false)
-  readonly cycle     = signal<'monthly' | 'yearly'>('monthly')
-  readonly openFaq   = signal<number | null>(null)
+  readonly cycle      = signal<BillingCycle>('monthly')
+  readonly openFaq    = signal<number | null>(null)
+
+  /** Index of the featured (highlighted) plan — middle by position */
+  readonly featuredIndex = computed(() => Math.floor(this.plans().length / 2))
+
+  /** Best yearly saving % across paid plans — shown in the toggle pill */
+  readonly bestSavingPct = computed(() => {
+    const paid = this.plans().filter(p => p.priceMonthlyCents > 0)
+    if (!paid.length) return 0
+    return Math.max(...paid.map(p => {
+      if (!p.priceMonthlyCents || !p.priceYearlyCents) return 0
+      return Math.max(0, Math.round((1 - p.priceYearlyCents / (p.priceMonthlyCents * 12)) * 100))
+    }))
+  })
 
   readonly trustedNames = ['Le Bistrot Lagune', 'Chez Maman Abidjan', 'Le Doyen Dakar', 'Saveurs du Sahel', 'Kiosque Yaoundé', 'Les Délices Bamako']
 
@@ -1333,6 +1356,25 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
 
   private observer?: IntersectionObserver
   private readonly onScroll = () => this.scrolled.set(window.scrollY > 20)
+
+  ngOnInit(): void {
+    this.subscriptionSvc.getPublicPlans().subscribe({
+      next: (plans) => { this.plans.set(plans); this.plansLoading.set(false) },
+      error: () => this.plansLoading.set(false),
+    })
+  }
+
+  isFeatured(index: number): boolean {
+    return index === this.featuredIndex()
+  }
+
+  /** Only the enabled features (true values) as label strings */
+  enabledFeatures(plan: Plan): string[] {
+    if (!plan.features) return []
+    return Object.entries(plan.features)
+      .filter(([, v]) => v)
+      .map(([k]) => k)
+  }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return
@@ -1361,7 +1403,8 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     this.openFaq.update((cur) => cur === i ? null : i)
   }
 
-  formatPrice(cents: number): string {
+  formatPrice(plan: Plan, cycle: BillingCycle): string {
+    const cents = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
     return new Intl.NumberFormat('fr-FR').format(cents / 100) + ' FCFA'
   }
 }

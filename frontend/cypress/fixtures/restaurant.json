@@ -1,0 +1,14 @@
+{
+  "demo": {
+    "slug": "demo",
+    "name": "Le Comptoir des Saveurs",
+    "brandColor": "#1bb148",
+    "phone": "+225 07 00 00 01 01",
+    "address": "12 avenue des Cocotiers, Cocody, Abidjan"
+  },
+  "savana": {
+    "slug": "savana",
+    "name": "Restaurant La Savana",
+    "brandColor": "#C0392B"
+  }
+}

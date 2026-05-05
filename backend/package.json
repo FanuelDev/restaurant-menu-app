@@ -12,7 +12,7 @@
     "migration:run": "node --import=tsx/esm ace.js migration:run",
     "migration:rollback": "node --import=tsx/esm ace.js migration:rollback",
     "migration:status": "node --import=tsx/esm ace.js migration:status",
-    "migration:fresh": "node --import=tsx/esm ace.js migration:fresh",
+    "migration:refresh": "node --import=tsx/esm ace.js migration:refresh",
     "db:seed": "node --import=tsx/esm ace.js db:seed"
   },
   "imports": {

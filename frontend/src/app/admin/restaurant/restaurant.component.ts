@@ -53,6 +53,36 @@ const DAYS: { key: string; label: string }[] = [
               </div>
 
               <div class="form-group">
+                <label class="form-label">Image de fond du menu (hero)</label>
+                <div class="cover-zone" (click)="coverInput.click()" role="button" tabindex="0" (keydown.enter)="coverInput.click()">
+                  @if (coverPreview() || restaurant()?.coverImageUrl) {
+                    <img [src]="coverPreview() || restaurant()!.coverImageUrl!" alt="Cover" class="cover-preview" />
+                    <div class="cover-overlay">
+                      <span>Changer l'image</span>
+                    </div>
+                  } @else {
+                    <div class="cover-placeholder">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <span>Ajouter une photo de couverture</span>
+                      <small>Image d'ambiance affichée en fond du menu</small>
+                    </div>
+                  }
+                </div>
+                <input #coverInput type="file" accept="image/*" class="file-input-hidden" (change)="onCoverChange($event)" />
+                <div class="cover-actions">
+                  @if (coverSaving()) {
+                    <span class="uploading-hint">Upload en cours…</span>
+                  }
+                  @if (restaurant()?.coverImageUrl && !coverSaving()) {
+                    <button type="button" class="btn btn-ghost btn-sm cover-delete-btn" (click)="deleteCover($event)">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>
+                      Supprimer (revenir au défaut)
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
                 <label class="form-label" for="r-name">Nom du restaurant *</label>
                 <input id="r-name" type="text" class="form-control" formControlName="name" />
               </div>
@@ -163,6 +193,35 @@ const DAYS: { key: string; label: string }[] = [
       cursor: pointer; padding: 2px;
     }
 
+    /* Cover image */
+    .cover-zone {
+      width: 100%; height: 160px;
+      border: 2px dashed var(--border); border-radius: var(--radius-lg);
+      overflow: hidden; cursor: pointer; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gray-50);
+      transition: border-color var(--t-fast);
+    }
+    .cover-zone:hover { border-color: var(--brand); }
+    .cover-preview { width: 100%; height: 100%; object-fit: cover; }
+    .cover-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,.45);
+      color: white; font-size: .875rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s;
+    }
+    .cover-zone:hover .cover-overlay { opacity: 1; }
+    .cover-placeholder {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-2); color: var(--text-muted); text-align: center; padding: var(--space-4);
+      svg { color: var(--gray-400); }
+      span { font-size: .875rem; font-weight: 500; }
+      small { font-size: .78rem; color: var(--text-muted); }
+    }
+    .cover-actions { margin-top: var(--space-2); display: flex; align-items: center; gap: var(--space-3); }
+    .cover-delete-btn { color: var(--error, #dc2626); }
+    .cover-delete-btn:hover { color: var(--error, #dc2626); background: rgba(220,38,38,.08); }
+
     .logo-zone {
       width: 120px; height: 120px;
       border: 2px dashed var(--border);
@@ -221,11 +280,13 @@ export class RestaurantComponent implements OnInit {
   private readonly fb = inject(FormBuilder)
 
   readonly restaurant = this.restaurantService.restaurant
-  readonly saving = signal(false)
-  readonly logoSaving = signal(false)
-  readonly saveError = signal<string | null>(null)
+  readonly saving      = signal(false)
+  readonly logoSaving  = signal(false)
+  readonly coverSaving = signal(false)
+  readonly saveError   = signal<string | null>(null)
   readonly saveSuccess = signal(false)
-  readonly logoPreview = signal<string | null>(null)
+  readonly logoPreview  = signal<string | null>(null)
+  readonly coverPreview = signal<string | null>(null)
 
   readonly days = DAYS
 
@@ -285,6 +346,28 @@ export class RestaurantComponent implements OnInit {
         alert('Erreur lors de l\'upload du logo.')
       },
     })
+  }
+
+  onCoverChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => this.coverPreview.set(e.target?.result as string)
+    reader.readAsDataURL(file)
+
+    this.coverSaving.set(true)
+    this.restaurantService.uploadCover(file).subscribe({
+      next: () => { this.coverSaving.set(false) },
+      error: () => { this.coverSaving.set(false); alert('Erreur lors de l\'upload de l\'image.') },
+    })
+  }
+
+  deleteCover(event: Event): void {
+    event.stopPropagation()
+    if (!confirm('Supprimer l\'image de fond ? L\'image par défaut sera utilisée.')) return
+    this.coverPreview.set(null)
+    this.restaurantService.deleteCover().subscribe()
   }
 
   onSubmit(): void {

@@ -25,6 +25,9 @@ export default class Restaurant extends BaseModel {
   @column()
   declare logoKey: string | null
 
+  @column()
+  declare coverKey: string | null
+
   logoUrl?: string | null
 
   @column()

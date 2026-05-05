@@ -48,7 +48,7 @@ export interface Plan {
   maxCategories: number
   maxMenuItems: number
   maxUsers: number
-  features: string[]
+  features: Record<string, boolean> | null
   isActive: boolean
   isPublic: boolean
   sortOrder: number
@@ -61,6 +61,7 @@ export interface Restaurant {
   slogan: string | null
   brandColor: string
   logoUrl: string | null
+  coverImageUrl?: string | null
   address: string | null
   phone: string | null
   email: string | null

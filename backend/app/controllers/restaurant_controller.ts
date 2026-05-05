@@ -13,6 +13,7 @@ async function serializeRestaurant(restaurant: Restaurant) {
     slogan: restaurant.slogan,
     brandColor: restaurant.brandColor,
     logoUrl: await imageService.getUrl(restaurant.logoKey),
+    coverImageUrl: await imageService.getUrl(restaurant.coverKey),
     openingHours: restaurant.openingHours,
     address: restaurant.address,
     phone: restaurant.phone,
@@ -59,5 +60,28 @@ export default class RestaurantController {
     await restaurant.save()
 
     return response.ok({ logoUrl: await imageService.getUrl(key) })
+  }
+
+  /** POST /api/admin/restaurant/cover */
+  async uploadCover({ request, response, restaurant }: HttpContext) {
+    const file = request.file('cover')
+    if (!file) {
+      return response.unprocessableEntity({ message: 'Aucun fichier fourni.' })
+    }
+
+    await imageService.delete(restaurant.coverKey)
+    const { key } = await imageService.upload(file, 'covers')
+    restaurant.coverKey = key
+    await restaurant.save()
+
+    return response.ok({ coverImageUrl: await imageService.getUrl(key) })
+  }
+
+  /** DELETE /api/admin/restaurant/cover */
+  async deleteCover({ response, restaurant }: HttpContext) {
+    await imageService.delete(restaurant.coverKey)
+    restaurant.coverKey = null
+    await restaurant.save()
+    return response.ok({ coverImageUrl: null })
   }
 }

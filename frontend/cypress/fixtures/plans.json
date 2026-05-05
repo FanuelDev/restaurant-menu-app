@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "name": "Gratuit",
+    "slug": "free",
+    "description": "Idéal pour démarrer sans engagement",
+    "priceMonthlyCents": 0,
+    "priceYearlyCents": 0,
+    "maxCategories": 3,
+    "maxMenuItems": 15,
+    "maxUsers": 1,
+    "features": {
+      "3 catégories de menu": true,
+      "15 plats maximum": true,
+      "1 utilisateur": true,
+      "Page menu QR publique": true,
+      "Statistiques avancées": false,
+      "Support prioritaire": false
+    },
+    "isActive": true,
+    "isPublic": true,
+    "sortOrder": 0
+  },
+  {
+    "id": 2,
+    "name": "Pro",
+    "slug": "pro",
+    "description": "Pour les restaurants en croissance",
+    "priceMonthlyCents": 1500000,
+    "priceYearlyCents": 15000000,
+    "maxCategories": 20,
+    "maxMenuItems": 200,
+    "maxUsers": 5,
+    "features": {
+      "20 catégories de menu": true,
+      "200 plats maximum": true,
+      "5 caissiers": true,
+      "Page menu QR publique": true,
+      "Statistiques avancées": true,
+      "Support prioritaire": true
+    },
+    "isActive": true,
+    "isPublic": true,
+    "sortOrder": 1
+  },
+  {
+    "id": 3,
+    "name": "Enterprise",
+    "slug": "enterprise",
+    "description": "Puissance illimitée pour les grandes enseignes",
+    "priceMonthlyCents": 5000000,
+    "priceYearlyCents": 50000000,
+    "maxCategories": -1,
+    "maxMenuItems": -1,
+    "maxUsers": -1,
+    "features": {
+      "Catégories & plats illimités": true,
+      "Caissiers illimités": true,
+      "Page menu QR publique": true,
+      "Statistiques avancées": true,
+      "API dédiée": true,
+      "Support 24/7 & SLA garanti": true
+    },
+    "isActive": true,
+    "isPublic": true,
+    "sortOrder": 2
+  }
+]

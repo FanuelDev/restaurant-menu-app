@@ -147,8 +147,8 @@ import type { Plan } from '../../shared/models'
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Fonctionnalités <span class="form-hint">(une par ligne)</span></label>
-              <textarea [(ngModel)]="featuresText" rows="4" class="form-control" placeholder="20 catégories&#10;200 plats&#10;Support prioritaire"></textarea>
+              <label class="form-label">Fonctionnalités <span class="form-hint">(une par ligne · préfixe <code>- </code> pour désactiver)</span></label>
+              <textarea [(ngModel)]="featuresText" rows="5" class="form-control" placeholder="QR Code&#10;Badges &amp; disponibilités&#10;Journal d'audit&#10;- Accès API"></textarea>
             </div>
             <div class="form-toggles">
               <label class="toggle-label">
@@ -316,7 +316,9 @@ export class SaPlansComponent implements OnInit {
   openEdit(plan: Plan): void {
     this.editingPlan.set(plan)
     this.form = { name: plan.name, slug: plan.slug, description: plan.description ?? '', priceMonthlyCents: plan.priceMonthlyCents, priceYearlyCents: plan.priceYearlyCents, maxCategories: plan.maxCategories, maxMenuItems: plan.maxMenuItems, maxUsers: plan.maxUsers, isActive: plan.isActive, isPublic: plan.isPublic }
-    this.featuresText = plan.features.join('\n')
+    this.featuresText = plan.features
+      ? Object.entries(plan.features).map(([k, v]) => v ? k : `- ${k}`).join('\n')
+      : ''
     this.modalError.set(null)
     this.showModal.set(true)
   }
@@ -326,7 +328,12 @@ export class SaPlansComponent implements OnInit {
   submitModal(): void {
     this.modalLoading.set(true)
     this.modalError.set(null)
-    const payload = { ...this.form, features: this.featuresText.split('\n').map((l) => l.trim()).filter(Boolean) }
+    const features: Record<string, boolean> = {}
+    this.featuresText.split('\n').map((l) => l.trim()).filter(Boolean).forEach((line) => {
+      if (line.startsWith('- ')) { features[line.slice(2).trim()] = false }
+      else { features[line] = true }
+    })
+    const payload = { ...this.form, features }
     const editing = this.editingPlan()
     const op = editing ? this.saService.updatePlan(editing.id, payload) : this.saService.createPlan(payload)
     op.subscribe({

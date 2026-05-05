@@ -9,6 +9,7 @@ export default defineConfig({
     generateRequestId: true,
     allowMethodSpoofing: false,
     useAsyncLocalStorage: false,
+    trustProxy: () => false,
     qs: {
       parse: {
         depth: 5,

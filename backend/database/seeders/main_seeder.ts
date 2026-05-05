@@ -6,21 +6,67 @@ import Restaurant from '#models/restaurant'
 import User from '#models/user'
 import Category from '#models/category'
 import MenuItem from '#models/menu_item'
+import Subscription from '#models/subscription'
+import type { MenuItemBadge } from '#models/menu_item'
+
+// ─── Helper : upsert category by name + restaurant ───────────────────────────
+async function upsertCategory(restaurantId: number, data: {
+  name: string; description: string; sortOrder: number; isVisible: boolean
+}): Promise<Category> {
+  const existing = await Category.query()
+    .where('restaurant_id', restaurantId)
+    .where('name', data.name)
+    .first()
+  if (existing) {
+    Object.assign(existing, data)
+    await existing.save()
+    return existing
+  }
+  return Category.create({ ...data, restaurantId })
+}
+
+// ─── Helper : upsert menu item by name + category ────────────────────────────
+async function upsertItem(restaurantId: number, data: {
+  categoryId: number; name: string; description: string
+  priceInCents: number; isAvailable: boolean; badge: MenuItemBadge; sortOrder: number
+}): Promise<void> {
+  const existing = await MenuItem.query()
+    .where('restaurant_id', restaurantId)
+    .where('category_id', data.categoryId)
+    .where('name', data.name)
+    .first()
+  if (existing) {
+    Object.assign(existing, data)
+    await existing.save()
+  } else {
+    await MenuItem.create({ ...data, restaurantId })
+  }
+}
 
 export default class MainSeeder extends BaseSeeder {
   async run() {
-    // ── Plans ─────────────────────────────────────────────────────────────────
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 1. PLANS
+    // ══════════════════════════════════════════════════════════════════════════
     const plansData = [
       {
         name: 'Gratuit',
         slug: 'free',
-        description: 'Démarrez sans engagement',
+        description: 'Idéal pour démarrer sans engagement',
         priceMonthlyCents: 0,
         priceYearlyCents: 0,
         maxCategories: 3,
         maxMenuItems: 15,
         maxUsers: 1,
-        features: ['3 catégories', '15 plats', '1 utilisateur', 'Page menu publique'],
+        features: {
+          '3 catégories de menu': true,
+          '15 plats maximum': true,
+          '1 utilisateur': true,
+          'Page menu QR publique': true,
+          'Statistiques avancées': false,
+          'Support prioritaire': false,
+        } as Record<string, boolean>,
         isActive: true,
         isPublic: true,
         sortOrder: 0,
@@ -34,7 +80,14 @@ export default class MainSeeder extends BaseSeeder {
         maxCategories: 20,
         maxMenuItems: 200,
         maxUsers: 5,
-        features: ['20 catégories', '200 plats', '5 caissiers', 'Statistiques', 'Support prioritaire'],
+        features: {
+          '20 catégories de menu': true,
+          '200 plats maximum': true,
+          '5 caissiers': true,
+          'Page menu QR publique': true,
+          'Statistiques avancées': true,
+          'Support prioritaire': true,
+        } as Record<string, boolean>,
         isActive: true,
         isPublic: true,
         sortOrder: 1,
@@ -48,7 +101,14 @@ export default class MainSeeder extends BaseSeeder {
         maxCategories: -1,
         maxMenuItems: -1,
         maxUsers: -1,
-        features: ['Illimité', 'API dédiée', 'Support 24/7', 'SLA garanti', 'Onboarding personnalisé'],
+        features: {
+          'Catégories & plats illimités': true,
+          'Caissiers illimités': true,
+          'Page menu QR publique': true,
+          'Statistiques avancées': true,
+          'API dédiée': true,
+          'Support 24/7 & SLA garanti': true,
+        } as Record<string, boolean>,
         isActive: true,
         isPublic: true,
         sortOrder: 2,
@@ -58,9 +118,14 @@ export default class MainSeeder extends BaseSeeder {
     for (const data of plansData) {
       await Plan.updateOrCreate({ slug: data.slug }, data)
     }
-    console.log('✅ Plans créés : Free, Pro, Enterprise')
+    console.log('✅ Plans : Free, Pro, Enterprise')
 
-    // ── Super admin ───────────────────────────────────────────────────────────
+    const freePlan = await Plan.findByOrFail('slug', 'free')
+    const proPlan  = await Plan.findByOrFail('slug', 'pro')
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 2. SUPER ADMIN
+    // ══════════════════════════════════════════════════════════════════════════
     const [superAdmin] = await User.updateOrCreateMany('email', [
       {
         email: 'superadmin@menuapp.com',
@@ -73,155 +138,279 @@ export default class MainSeeder extends BaseSeeder {
     ])
     console.log(`✅ Super admin : ${superAdmin.email} / SuperAdmin1234!`)
 
-    // ── Sample restaurant ─────────────────────────────────────────────────────
-    const freePlan = await Plan.findByOrFail('slug', 'free')
-    const proPlan = await Plan.findByOrFail('slug', 'pro')
-
-    const [restaurant] = await Restaurant.updateOrCreateMany('slug', [
+    // ══════════════════════════════════════════════════════════════════════════
+    // 3. RESTAURANT 1 — Le Comptoir des Saveurs (Pro, active)
+    // ══════════════════════════════════════════════════════════════════════════
+    const [r1] = await Restaurant.updateOrCreateMany('slug', [
       {
         slug: 'demo',
         name: 'Le Comptoir des Saveurs',
-        slogan: 'Une cuisine sincère, des produits d\'exception',
+        slogan: "Une cuisine sincère, des produits d'exception",
         brandColor: '#C0392B',
-        address: '12 rue de la Gastronomie, Abidjan',
-        phone: '+225 07 00 00 00 00',
+        address: '12 avenue des Cocotiers, Cocody, Abidjan',
+        phone: '+225 07 00 00 01 01',
         email: 'contact@comptoir.ci',
+        website: 'https://comptoir.ci',
         country: 'CI',
         currency: 'XOF',
         planId: proPlan.id,
-        subscriptionStatus: 'trialing',
-        trialEndsAt: DateTime.now().plus({ days: 14 }),
+        subscriptionStatus: 'active',
+        trialEndsAt: null,
         isActive: true,
         openingHours: {
-          monday: { open: '12:00', close: '22:30', closed: false },
-          tuesday: { open: '12:00', close: '22:30', closed: false },
+          monday:    { open: '12:00', close: '22:30', closed: false },
+          tuesday:   { open: '12:00', close: '22:30', closed: false },
           wednesday: { open: '12:00', close: '22:30', closed: false },
-          thursday: { open: '12:00', close: '22:30', closed: false },
-          friday: { open: '12:00', close: '23:00', closed: false },
-          saturday: { open: '11:00', close: '23:30', closed: false },
-          sunday: { open: '11:00', close: '15:00', closed: false },
+          thursday:  { open: '12:00', close: '22:30', closed: false },
+          friday:    { open: '12:00', close: '23:00', closed: false },
+          saturday:  { open: '11:00', close: '23:30', closed: false },
+          sunday:    { open: '11:00', close: '15:00', closed: false },
         },
       },
     ])
-    console.log(`✅ Restaurant demo : ${restaurant.slug} (${restaurant.name})`)
+    console.log(`✅ Restaurant 1 : ${r1.name} (slug: ${r1.slug})`)
 
-    // ── Restaurant admin user ─────────────────────────────────────────────────
-    const [adminUser] = await User.updateOrCreateMany('email', [
+    // Active subscription for r1
+    const existingSub1 = await Subscription.query().where('restaurant_id', r1.id).where('status', 'active').first()
+    if (!existingSub1) {
+      await Subscription.create({
+        restaurantId: r1.id,
+        planId: proPlan.id,
+        cinetpayTransactionId: `seed_sub_${r1.id}_pro`,
+        cinetpayPaymentToken: null,
+        billingCycle: 'yearly',
+        status: 'active',
+        amountCents: proPlan.priceYearlyCents,
+        currency: 'XOF',
+        currentPeriodStart: DateTime.now(),
+        currentPeriodEnd: DateTime.now().plus({ years: 1 }),
+        canceledAt: null,
+        paymentMetadata: { source: 'seeder' },
+      })
+    }
+
+    // Users for r1
+    const [admin1] = await User.updateOrCreateMany('email', [
       {
         email: 'admin@demo.ci',
         password: 'Admin1234!',
         fullName: 'Kouamé Ange',
         role: 'admin',
-        restaurantId: restaurant.id,
+        restaurantId: r1.id,
         isActive: true,
       },
     ])
-
-    const [cashierUser] = await User.updateOrCreateMany('email', [
+    const [cashier1] = await User.updateOrCreateMany('email', [
       {
         email: 'caissier@demo.ci',
         password: 'Caissier1234!',
         fullName: 'Fatou Diallo',
         role: 'cashier',
-        restaurantId: restaurant.id,
+        restaurantId: r1.id,
         isActive: true,
       },
     ])
-    console.log(`✅ Admin restaurant : ${adminUser.email} / Admin1234!`)
-    console.log(`✅ Caissier : ${cashierUser.email} / Caissier1234!`)
+    const [cashier1b] = await User.updateOrCreateMany('email', [
+      {
+        email: 'caissier2@demo.ci',
+        password: 'Caissier1234!',
+        fullName: 'Jean-Baptiste Konan',
+        role: 'cashier',
+        restaurantId: r1.id,
+        isActive: true,
+      },
+    ])
+    console.log(`   👤 ${admin1.email} / Admin1234! (admin)`)
+    console.log(`   👤 ${cashier1.email} / Caissier1234! (caissier)`)
+    console.log(`   👤 ${cashier1b.email} / Caissier1234! (caissier)`)
 
-    // ── Second demo restaurant (free plan) ────────────────────────────────────
-    const [restaurant2] = await Restaurant.updateOrCreateMany('slug', [
+    // ── Categories & items for r1 ─────────────────────────────────────────────
+    const r1Cats = {
+      entrees:  await upsertCategory(r1.id, { name: 'Entrées', description: 'Pour bien commencer', sortOrder: 1, isVisible: true }),
+      poissons: await upsertCategory(r1.id, { name: 'Poissons', description: 'Arrivage quotidien du port', sortOrder: 2, isVisible: true }),
+      viandes:  await upsertCategory(r1.id, { name: 'Viandes', description: 'Sélection de bouchers partenaires', sortOrder: 3, isVisible: true }),
+      pizzas:   await upsertCategory(r1.id, { name: 'Pizzas', description: 'Four à bois artisanal', sortOrder: 4, isVisible: true }),
+      desserts: await upsertCategory(r1.id, { name: 'Desserts', description: 'Douceurs maison', sortOrder: 5, isVisible: true }),
+      boissons: await upsertCategory(r1.id, { name: 'Boissons', description: 'Vins, softs & cocktails', sortOrder: 6, isVisible: true }),
+    }
+
+    const r1Items: Array<{ cat: keyof typeof r1Cats; name: string; description: string; price: number; available: boolean; badge: MenuItemBadge; order: number }> = [
+      // Entrées
+      { cat: 'entrees', name: 'Soupe de tomate confite', description: "Tomates rôties au four, huile d'olive extra-vierge, basilic frais", price: 250000, available: true, badge: 'popular', order: 1 },
+      { cat: 'entrees', name: 'Tartare de thon mi-cuit', description: "Thon rouge frais, avocat crémeux, mangue en brunoise, vinaigrette citron-sésame", price: 380000, available: true, badge: 'new', order: 2 },
+      { cat: 'entrees', name: 'Salade César revisitée', description: "Laitue romaine croquante, poulet grillé, parmesan 24 mois, croûtons au beurre, sauce César maison", price: 320000, available: true, badge: 'vegetarian', order: 3 },
+      { cat: 'entrees', name: 'Velouté de patate douce', description: "Patate douce rôtie, lait de coco, gingembre frais, crème fleurette", price: 280000, available: true, badge: null, order: 4 },
+      { cat: 'entrees', name: "Foie gras de canard mi-cuit", description: "Foie gras maison, chutney de mangue, brioche toastée, fleur de sel", price: 650000, available: true, badge: 'new', order: 5 },
+
+      // Poissons
+      { cat: 'poissons', name: "Bar en croûte d'herbes", description: "Bar de ligne entier, croûte persil-citron, beurre blanc aux câpres, légumes du marché", price: 620000, available: true, badge: 'popular', order: 1 },
+      { cat: 'poissons', name: 'Crevettes royales flambées', description: "Crevettes géantes sautées au cognac, ail confit, persil plat, riz basmati au safran", price: 480000, available: true, badge: 'spicy', order: 2 },
+      { cat: 'poissons', name: 'Tilapia grillé entier', description: "Tilapia frais du lac, marinade citron-piment, attiéké maison, sauce tomate relevée", price: 350000, available: true, badge: null, order: 3 },
+      { cat: 'poissons', name: 'Langouste thermidor', description: "Langouste fraîche, sauce crème moutarde, parmesan gratiné, accompagnée de légumes vapeur", price: 1200000, available: false, badge: 'popular', order: 4 },
+
+      // Viandes
+      { cat: 'viandes', name: 'Côte de bœuf maturée (400g)', description: "Bœuf local maturé 28 jours, sauce chimichurri, frites maison, salade verte", price: 950000, available: true, badge: 'popular', order: 1 },
+      { cat: 'viandes', name: 'Poulet braisé sauce arachide', description: "Poulet fermier rôti lentement, sauce arachide onctueuse, attiéké frais, banane plantain", price: 370000, available: true, badge: null, order: 2 },
+      { cat: 'viandes', name: "Agneau en tajine d'abricots", description: "Épaule d'agneau fondante, abricots confits, amandes grillées, couscous aux herbes", price: 720000, available: true, badge: 'new', order: 3 },
+      { cat: 'viandes', name: 'Magret de canard rôti', description: "Magret cuit rosé, réduction au miel-gingembre, purée de patate douce, haricots verts", price: 680000, available: false, badge: null, order: 4 },
+      { cat: 'viandes', name: 'Côtelettes d\'agneau grillées', description: "Côtelettes marinées aux herbes de Provence, tapenade d'olives, pommes sarladaises", price: 850000, available: true, badge: 'spicy', order: 5 },
+
+      // Pizzas
+      { cat: 'pizzas', name: 'Margherita bufala', description: "Tomate San Marzano, mozzarella di bufala, basilic frais, huile d'olive sicilienne — 32 cm", price: 400000, available: true, badge: 'vegetarian', order: 1 },
+      { cat: 'pizzas', name: 'Quattro stagioni', description: "Jambon cru, champignons, artichauts, olives noires, mozzarella, tomate fraîche — 32 cm", price: 480000, available: true, badge: 'popular', order: 2 },
+      { cat: 'pizzas', name: 'Diavola épicée', description: "Salami piquant, piment calabrais, mozzarella fumée, tomate, origan — 32 cm", price: 460000, available: true, badge: 'spicy', order: 3 },
+      { cat: 'pizzas', name: 'Pizza du Chef du moment', description: "Création hebdomadaire selon les arrivages — demandez au serveur pour les détails du jour", price: 550000, available: true, badge: 'new', order: 4 },
+
+      // Desserts
+      { cat: 'desserts', name: 'Fondant au chocolat Valrhona', description: "Cœur coulant 70%, glace vanille Bourbon, caramel beurre salé, tuile croustillante", price: 220000, available: true, badge: 'popular', order: 1 },
+      { cat: 'desserts', name: 'Tarte tropézienne aux mangues', description: "Mangues Amélie fraîches, crème légère à la vanille, pâte sablée maison", price: 190000, available: true, badge: null, order: 2 },
+      { cat: 'desserts', name: 'Crème brûlée à la citronnelle', description: "Crème onctueuse infusée à la citronnelle, caramel craquant, zestes de citron vert", price: 175000, available: true, badge: 'new', order: 3 },
+      { cat: 'desserts', name: 'Tiramisu café-Baileys', description: "Mascarpone maison, café fort, Baileys, cacao de Madagascar", price: 200000, available: true, badge: 'popular', order: 4 },
+      { cat: 'desserts', name: 'Plateau de fromages affinés', description: "Sélection de 4 fromages, confiture de figues, miel d'acacia, noix fraîches", price: 350000, available: false, badge: null, order: 5 },
+
+      // Boissons
+      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Évian plate ou Perrier pétillante", price: 75000, available: true, badge: null, order: 1 },
+      { cat: 'boissons', name: 'Jus de bissap maison', description: "Hibiscus frais infusé, gingembre, menthe, sucre de canne — servi frais", price: 150000, available: true, badge: 'popular', order: 2 },
+      { cat: 'boissons', name: 'Jus de fruits frais pressés', description: "Orange, ananas, mangue, ou maracuja — au choix, pressé à la commande", price: 200000, available: true, badge: null, order: 3 },
+      { cat: 'boissons', name: 'Bière locale (33cl)', description: "Flag, Castel ou Bock fraîche — servie en bouteille ou pression", price: 150000, available: true, badge: null, order: 4 },
+      { cat: 'boissons', name: 'Vin rouge (verre 15cl)', description: "Sélection du sommelier — Bordeaux AOC ou Côtes du Rhône selon arrivage", price: 350000, available: true, badge: null, order: 5 },
+      { cat: 'boissons', name: 'Cocktail du bar', description: "Mojito, Daïquiri, Piña Colada ou Spritz — demandez la carte complète", price: 400000, available: true, badge: 'new', order: 6 },
+    ]
+
+    for (const item of r1Items) {
+      await upsertItem(r1.id, {
+        categoryId: r1Cats[item.cat].id,
+        name: item.name,
+        description: item.description,
+        priceInCents: item.price,
+        isAvailable: item.available,
+        badge: item.badge,
+        sortOrder: item.order,
+      })
+    }
+    console.log(`✅ ${r1Items.length} plats créés pour "${r1.slug}"`)
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 4. RESTAURANT 2 — La Savana (Free plan, trialing)
+    // ══════════════════════════════════════════════════════════════════════════
+    const [r2] = await Restaurant.updateOrCreateMany('slug', [
       {
         slug: 'savana',
         name: 'Restaurant La Savana',
-        slogan: 'Les saveurs de l\'Afrique',
+        slogan: "Les saveurs authentiques de l'Afrique",
         brandColor: '#27AE60',
-        address: 'Plateau, Abidjan',
-        phone: '+225 05 00 00 00 00',
+        address: 'Boulevard Latrille, Cocody, Abidjan',
+        phone: '+225 05 00 00 02 02',
         email: 'info@savana.ci',
         country: 'CI',
         currency: 'XOF',
         planId: freePlan.id,
         subscriptionStatus: 'trialing',
-        trialEndsAt: DateTime.now().plus({ days: 7 }),
+        trialEndsAt: DateTime.now().plus({ days: 11 }),
         isActive: true,
+        openingHours: {
+          monday:    { open: '11:00', close: '22:00', closed: false },
+          tuesday:   { open: '11:00', close: '22:00', closed: false },
+          wednesday: { open: '11:00', close: '22:00', closed: false },
+          thursday:  { open: '11:00', close: '22:00', closed: false },
+          friday:    { open: '11:00', close: '23:00', closed: false },
+          saturday:  { open: '10:00', close: '23:00', closed: false },
+          sunday:    { open: '12:00', close: '20:00', closed: false },
+        },
       },
     ])
+    console.log(`✅ Restaurant 2 : ${r2.name} (slug: ${r2.slug})`)
 
-    await User.updateOrCreateMany('email', [
+    // Users for r2
+    const [admin2] = await User.updateOrCreateMany('email', [
       {
         email: 'admin@savana.ci',
         password: 'Admin1234!',
         fullName: 'Ibrahim Coulibaly',
         role: 'admin',
-        restaurantId: restaurant2.id,
+        restaurantId: r2.id,
         isActive: true,
       },
     ])
-    console.log(`✅ Restaurant demo 2 : ${restaurant2.slug} (${restaurant2.name})`)
+    const [cashier2] = await User.updateOrCreateMany('email', [
+      {
+        email: 'caissier@savana.ci',
+        password: 'Caissier1234!',
+        fullName: 'Mariam Traoré',
+        role: 'cashier',
+        restaurantId: r2.id,
+        isActive: true,
+      },
+    ])
+    console.log(`   👤 ${admin2.email} / Admin1234! (admin)`)
+    console.log(`   👤 ${cashier2.email} / Caissier1234! (caissier)`)
 
-    // ── Categories & menu items for demo restaurant ───────────────────────────
-    const categoriesData = [
-      { name: 'Entrées', description: 'Pour bien commencer', sortOrder: 1, isVisible: true },
-      { name: 'Plats', description: 'Nos créations du chef', sortOrder: 2, isVisible: true },
-      { name: 'Poissons', description: 'Arrivage quotidien', sortOrder: 3, isVisible: true },
-      { name: 'Viandes', description: 'Sélection de bouchers partenaires', sortOrder: 4, isVisible: true },
-      { name: 'Desserts', description: 'Douceurs maison', sortOrder: 5, isVisible: true },
-      { name: 'Boissons', description: 'Carte des vins & softs', sortOrder: 6, isVisible: true },
+    // ── Categories & items for r2 (free plan: max 3 cats, 15 items) ───────────
+    const r2Cats = {
+      entrees: await upsertCategory(r2.id, { name: 'Entrées', description: 'Mise en bouche africaine', sortOrder: 1, isVisible: true }),
+      plats:   await upsertCategory(r2.id, { name: 'Plats africains', description: 'Recettes authentiques du continent', sortOrder: 2, isVisible: true }),
+      boissons: await upsertCategory(r2.id, { name: 'Boissons', description: 'Jus naturels & softs', sortOrder: 3, isVisible: true }),
+    }
+
+    // Exactly 15 items to respect the free plan limit
+    const r2Items: Array<{ cat: keyof typeof r2Cats; name: string; description: string; price: number; available: boolean; badge: MenuItemBadge; order: number }> = [
+      // Entrées (4)
+      { cat: 'entrees', name: 'Salade de papaye verte', description: "Papaye verte râpée, tomates cerises, arachides grillées, vinaigrette citronnée", price: 180000, available: true, badge: 'vegetarian', order: 1 },
+      { cat: 'entrees', name: 'Accras de morue maison', description: "Beignets croustillants à la morue, sauce piquante maison, citron vert", price: 220000, available: true, badge: 'popular', order: 2 },
+      { cat: 'entrees', name: 'Brochettes de bœuf yassa', description: "Bœuf mariné à l'oseille, oignons confits, moutarde douce — 4 pièces", price: 250000, available: true, badge: 'spicy', order: 3 },
+      { cat: 'entrees', name: "Soupe légère de poisson", description: "Bouillon de poisson fumé, tomates, oignons, herbes fraîches, chili doux", price: 200000, available: true, badge: null, order: 4 },
+
+      // Plats africains (8)
+      { cat: 'plats', name: 'Poulet braisé DG', description: "Poulet fermier braisé, sauce tomate-banane, légumes sautés — la spécialité de la maison", price: 380000, available: true, badge: 'popular', order: 1 },
+      { cat: 'plats', name: 'Kedjenou de poulet', description: "Poulet mijoté à l'étouffée, légumes du jardin, épices douces — servi avec du riz gluant", price: 350000, available: true, badge: 'popular', order: 2 },
+      { cat: 'plats', name: 'Riz gras au mouton', description: "Riz parfumé cuit dans le bouillon de mouton, légumes, tomates, épices de Côte d'Ivoire", price: 320000, available: true, badge: null, order: 3 },
+      { cat: 'plats', name: "Alloco poisson frit", description: "Banane plantain mûre frite, poisson tilapia entier, oignons caramélisés, piment vert", price: 280000, available: true, badge: 'spicy', order: 4 },
+      { cat: 'plats', name: 'Foutou banane & sauce graine', description: "Foutou de banane pilé, sauce graine de palme au crabe, crevettes séchées", price: 300000, available: true, badge: 'vegetarian', order: 5 },
+      { cat: 'plats', name: 'Thiéboudienne sénégalais', description: "Riz au poisson à la sénégalaise, légumes, sauce tomate, poisson entier grillé", price: 420000, available: true, badge: 'new', order: 6 },
+      { cat: 'plats', name: 'Brochettes de poulet grillé', description: "Poulet mariné herbes et citron, grillé au charbon, servi avec attiéké et salade", price: 290000, available: false, badge: null, order: 7 },
+      { cat: 'plats', name: "Mafé d'agneau", description: "Épaule d'agneau fondante, sauce cacahuète crémeuse, riz blanc, légumes sautés", price: 450000, available: true, badge: 'new', order: 8 },
+
+      // Boissons (3)
+      { cat: 'boissons', name: 'Jus de gingembre frais', description: "Gingembre pressé, citron, sucre de canne, glaçons — fortifiant et rafraîchissant", price: 120000, available: true, badge: 'popular', order: 1 },
+      { cat: 'boissons', name: 'Bissap hibiscus', description: "Fleurs d'hibiscus séchées infusées, menthe fraîche, eau de fleur d'oranger", price: 100000, available: true, badge: null, order: 2 },
+      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Eau plate ou gazeuse fraîche", price: 75000, available: true, badge: null, order: 3 },
     ]
 
-    const categories: Record<string, Category> = {}
-    for (const data of categoriesData) {
-      const existing = await Category.query()
-        .where('restaurant_id', restaurant.id)
-        .where('name', data.name)
-        .first()
-
-      if (existing) {
-        categories[data.name] = existing
-      } else {
-        categories[data.name] = await Category.create({ ...data, restaurantId: restaurant.id })
-      }
+    for (const item of r2Items) {
+      await upsertItem(r2.id, {
+        categoryId: r2Cats[item.cat].id,
+        name: item.name,
+        description: item.description,
+        priceInCents: item.price,
+        isAvailable: item.available,
+        badge: item.badge,
+        sortOrder: item.order,
+      })
     }
-    console.log(`✅ ${Object.keys(categories).length} catégories créées pour "demo"`)
+    console.log(`✅ ${r2Items.length} plats créés pour "${r2.slug}"`)
 
-    // Menu items
-    const menuItemsData = [
-      { categoryId: categories['Entrées'].id, name: 'Soupe de tomate confite', description: 'Tomates rôties, huile d\'olive, basilic frais', priceInCents: 250000, isAvailable: true, badge: 'popular', sortOrder: 1 },
-      { categoryId: categories['Entrées'].id, name: 'Tartare de thon', description: 'Thon frais, avocat, mangue, vinaigrette citron', priceInCents: 350000, isAvailable: true, badge: 'new', sortOrder: 2 },
-      { categoryId: categories['Entrées'].id, name: 'Salade César', description: 'Laitue romaine, poulet grillé, parmesan, croûtons', priceInCents: 300000, isAvailable: true, badge: 'vegetarian', sortOrder: 3 },
-      { categoryId: categories['Poissons'].id, name: 'Bar en croûte d\'herbes', description: 'Bar de ligne, beurre blanc, légumes de saison', priceInCents: 600000, isAvailable: true, badge: 'popular', sortOrder: 1 },
-      { categoryId: categories['Poissons'].id, name: 'Crevettes sautées', description: 'Crevettes royales, ail, persil, riz basmati', priceInCents: 450000, isAvailable: true, badge: null, sortOrder: 2 },
-      { categoryId: categories['Viandes'].id, name: 'Côte de bœuf (400g)', description: 'Bœuf local, sauce chimichurri, frites maison', priceInCents: 900000, isAvailable: true, badge: 'popular', sortOrder: 1 },
-      { categoryId: categories['Viandes'].id, name: 'Poulet braisé', description: 'Poulet fermier, sauce arachide, attiéké', priceInCents: 350000, isAvailable: true, badge: null, sortOrder: 2 },
-      { categoryId: categories['Viandes'].id, name: 'Agneau en tajine', description: 'Épaule d\'agneau, légumes confits, couscous', priceInCents: 700000, isAvailable: false, badge: 'new', sortOrder: 3 },
-      { categoryId: categories['Desserts'].id, name: 'Fondant au chocolat', description: 'Cœur coulant, glace vanille, caramel beurre salé', priceInCents: 200000, isAvailable: true, badge: 'popular', sortOrder: 1 },
-      { categoryId: categories['Desserts'].id, name: 'Tarte aux mangues', description: 'Mangues fraîches, crème pâtissière, pâte sablée', priceInCents: 180000, isAvailable: true, badge: null, sortOrder: 2 },
-      { categoryId: categories['Boissons'].id, name: 'Eau minérale (50cl)', description: 'Évian ou Perrier', priceInCents: 75000, isAvailable: true, badge: null, sortOrder: 1 },
-      { categoryId: categories['Boissons'].id, name: 'Jus de bissap', description: 'Hibiscus frais, gingembre, menthe', priceInCents: 120000, isAvailable: true, badge: 'popular', sortOrder: 2 },
-      { categoryId: categories['Boissons'].id, name: 'Bière locale (33cl)', description: 'Flag ou Castel fraîche', priceInCents: 150000, isAvailable: true, badge: null, sortOrder: 3 },
-    ]
+    // ══════════════════════════════════════════════════════════════════════════
+    // 5. RECAP
+    // ══════════════════════════════════════════════════════════════════════════
+    await db.from('restaurants').update({ plan_id: proPlan.id, subscription_status: 'active' }).where('slug', 'demo')
 
-    for (const item of menuItemsData) {
-      const existing = await MenuItem.query()
-        .where('restaurant_id', restaurant.id)
-        .where('category_id', item.categoryId)
-        .where('name', item.name)
-        .first()
-
-      if (!existing) {
-        await MenuItem.create({ ...item, restaurantId: restaurant.id })
-      }
-    }
-    console.log(`✅ ${menuItemsData.length} plats créés pour "demo"`)
-
-    await db.from('restaurants').update({ plan_id: proPlan.id }).where('slug', 'demo')
-
-    console.log('\n📋 Récapitulatif des accès :')
-    console.log('  Super Admin  : superadmin@menuapp.com / SuperAdmin1234!')
-    console.log('  Admin demo   : admin@demo.ci         / Admin1234!   (X-Tenant-Slug: demo)')
-    console.log('  Caissier demo: caissier@demo.ci      / Caissier1234! (X-Tenant-Slug: demo)')
-    console.log('  Admin savana : admin@savana.ci        / Admin1234!   (X-Tenant-Slug: savana)')
+    console.log('\n' + '═'.repeat(60))
+    console.log('📋  ACCÈS DE DÉMONSTRATION')
+    console.log('═'.repeat(60))
+    console.log('  🔑 Super Admin')
+    console.log(`     Email    : superadmin@menuapp.com`)
+    console.log(`     Mot passe: SuperAdmin1234!\n`)
+    console.log('  🍽️  Le Comptoir des Saveurs  (Plan Pro — Actif)')
+    console.log(`     Admin    : admin@demo.ci        / Admin1234!`)
+    console.log(`     Caissier : caissier@demo.ci     / Caissier1234!`)
+    console.log(`     Caissier2: caissier2@demo.ci    / Caissier1234!`)
+    console.log(`     Tenant   : X-Tenant-Slug: demo`)
+    console.log(`     Menu URL : http://demo.localhost:4200/menu\n`)
+    console.log('  🌿  Restaurant La Savana  (Plan Gratuit — Essai 11j)')
+    console.log(`     Admin    : admin@savana.ci      / Admin1234!`)
+    console.log(`     Caissier : caissier@savana.ci   / Caissier1234!`)
+    console.log(`     Tenant   : X-Tenant-Slug: savana`)
+    console.log(`     Menu URL : http://savana.localhost:4200/menu`)
+    console.log('═'.repeat(60) + '\n')
   }
 }

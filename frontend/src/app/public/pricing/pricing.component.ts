@@ -1,5 +1,5 @@
-import { Component, signal, inject, OnInit } from '@angular/core'
-import { CommonModule } from '@angular/common'
+import { Component, signal, computed, inject, OnInit } from '@angular/core'
+import { CommonModule, NgTemplateOutlet } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { SubscriptionService } from '../../shared/services/subscription.service'
 import type { Plan, BillingCycle } from '../../shared/models'
@@ -7,7 +7,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, NgTemplateOutlet, RouterLink],
   template: `
     <div class="pricing-page">
 
@@ -47,7 +47,10 @@ import type { Plan, BillingCycle } from '../../shared/models'
         <div class="cycle-toggle animate-up delay-2">
           <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">Mensuel</button>
           <button [class.active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
-            Annuel <span class="saving-pill">−17%</span>
+            Annuel
+            @if (bestSavingPct() > 0) {
+              <span class="saving-pill">−{{ bestSavingPct() }}%</span>
+            }
           </button>
         </div>
       </section>
@@ -55,7 +58,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
       <!-- Plans -->
       @if (loading()) {
         <section class="plans-section">
-          <div class="plans-grid">
+          <div class="plans-grid" [style.--plan-cols]="3">
             @for (_ of [1,2,3]; track $index) {
               <div class="plan-card-skeleton">
                 <div class="skeleton" style="height:24px;width:60%;margin-bottom:12px"></div>
@@ -72,30 +75,19 @@ import type { Plan, BillingCycle } from '../../shared/models'
         </section>
       } @else {
         <section class="plans-section">
-          <div class="plans-grid">
+          <div class="plans-grid" [style.--plan-cols]="plans().length">
             @for (plan of plans(); track plan.id; let i = $index) {
-              <div class="plan-card animate-up" [class.plan-featured]="plan.slug === 'pro'" [style.animation-delay]="(i * 80) + 'ms'">
-                @if (plan.slug === 'pro') {
+              <div class="plan-card animate-up"
+                   [class.plan-featured]="isFeatured(i)"
+                   [style.animation-delay]="(i * 80) + 'ms'">
+
+                @if (isFeatured(i)) {
                   <div class="plan-popular">Le plus populaire</div>
                 }
 
                 <div class="plan-top">
-                  <div class="plan-icon" [class.plan-icon-featured]="plan.slug === 'pro'">
-                    @if (plan.slug === 'free') {
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-                        <circle cx="10" cy="10" r="8"/>
-                        <path d="M10 6v4l2.5 2.5"/>
-                      </svg>
-                    } @else if (plan.slug === 'pro') {
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-                        <path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5l-4.9 2.5.9-5.3L2 7.8l5.5-.8z" stroke-linejoin="round"/>
-                      </svg>
-                    } @else {
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-                        <path d="M17 12l-5 5-4-4-5 3"/>
-                        <path d="M14 12h3v3"/>
-                      </svg>
-                    }
+                  <div class="plan-icon" [class.plan-icon-featured]="isFeatured(i)">
+                    <ng-container [ngTemplateOutlet]="planIcon" [ngTemplateOutletContext]="{ i: i, total: plans().length }"/>
                   </div>
                   <div>
                     <h3 class="plan-name">{{ plan.name }}</h3>
@@ -110,10 +102,29 @@ import type { Plan, BillingCycle } from '../../shared/models'
                   } @else {
                     <span class="price-main">{{ formatPrice(plan, cycle()) }}</span>
                     <span class="price-period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+                    @if (cycle() === 'yearly' && savingPct(plan) > 0) {
+                      <span class="price-saving">Économisez {{ savingPct(plan) }}%</span>
+                    }
                   }
                 </div>
 
-                <a routerLink="/register" class="plan-cta" [class.plan-cta-featured]="plan.slug === 'pro'">
+                <!-- Limits summary -->
+                <div class="plan-limits">
+                  <span class="plan-limit-chip">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2"/></svg>
+                    {{ plan.maxCategories === -1 ? '∞' : plan.maxCategories }} catégories
+                  </span>
+                  <span class="plan-limit-chip">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+                    {{ plan.maxMenuItems === -1 ? '∞' : plan.maxMenuItems }} plats
+                  </span>
+                  <span class="plan-limit-chip">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2.5"/><path d="M2 14c0-3 2-4 4-4s4 1 4 4"/><circle cx="12" cy="5" r="2" /><path d="M14 14c0-2-1-3-2-3"/></svg>
+                    {{ plan.maxUsers === -1 ? '∞' : plan.maxUsers }} utilisateurs
+                  </span>
+                </div>
+
+                <a routerLink="/register" class="plan-cta" [class.plan-cta-featured]="isFeatured(i)">
                   {{ plan.priceMonthlyCents === 0 ? 'Commencer gratuitement' : 'Essai 14 jours gratuit' }}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                     <path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/>
@@ -121,12 +132,18 @@ import type { Plan, BillingCycle } from '../../shared/models'
                 </a>
 
                 <ul class="plan-features">
-                  @for (feature of plan.features; track feature) {
-                    <li>
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M3 8l3.5 3.5 7-7" stroke-linejoin="round"/>
-                      </svg>
-                      {{ feature }}
+                  @for (entry of featureEntries(plan); track entry.key) {
+                    <li [class.feature-disabled]="!entry.value">
+                      @if (entry.value) {
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <path d="M3 8l3.5 3.5 7-7" stroke-linejoin="round"/>
+                        </svg>
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <path d="M4 4l8 8M12 4l-8 8"/>
+                        </svg>
+                      }
+                      {{ entry.key }}
                     </li>
                   }
                 </ul>
@@ -146,7 +163,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
           <div class="proof-divider"></div>
           <div class="proof-stat">
             <span class="proof-num">14 pays</span>
-            <span class="proof-label">Afrique de l'Ouest & Centrale</span>
+            <span class="proof-label">Afrique de l'Ouest &amp; Centrale</span>
           </div>
           <div class="proof-divider"></div>
           <div class="proof-stat">
@@ -184,6 +201,28 @@ import type { Plan, BillingCycle } from '../../shared/models'
       </section>
 
     </div>
+
+    <!-- Icon templates by position -->
+    <ng-template #planIcon let-i="i" let-total="total">
+      @if (i === 0) {
+        <!-- First plan: starter / clock -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="10" cy="10" r="8"/>
+          <path d="M10 6v4l2.5 2.5"/>
+        </svg>
+      } @else if (i === total - 1 && total > 2) {
+        <!-- Last plan (3+): enterprise / chart -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M17 12l-5 5-4-4-5 3"/>
+          <path d="M14 12h3v3"/>
+        </svg>
+      } @else {
+        <!-- Middle / featured plan: star -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5l-4.9 2.5.9-5.3L2 7.8l5.5-.8z" stroke-linejoin="round"/>
+        </svg>
+      }
+    </ng-template>
   `,
   styles: [`
     .pricing-page {
@@ -259,8 +298,9 @@ import type { Plan, BillingCycle } from '../../shared/models'
     /* ── Plans ─────────────────────────────────────── */
     .plans-section { padding: 0 var(--space-6) var(--space-12); }
     .plans-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-5); max-width: 1020px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(min(var(--plan-cols, 3), 3), 1fr);
+      gap: var(--space-5); max-width: 1080px; margin: 0 auto;
     }
     @media (max-width: 860px) { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }
 
@@ -268,13 +308,14 @@ import type { Plan, BillingCycle } from '../../shared/models'
       background: white; border: 1.5px solid var(--border);
       border-radius: var(--radius-2xl); padding: var(--space-6);
       position: relative; transition: box-shadow var(--t-normal), transform var(--t-normal);
-      &:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
     }
+    .plan-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+
     .plan-featured {
       border-color: var(--brand);
       box-shadow: 0 0 0 4px var(--brand-light), var(--shadow-md);
-      &:hover { box-shadow: 0 0 0 4px var(--brand-light), var(--shadow-xl); }
     }
+    .plan-featured:hover { box-shadow: 0 0 0 4px var(--brand-light), var(--shadow-xl); }
 
     .plan-popular {
       position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
@@ -294,10 +335,27 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .plan-name { font-size: 1.0625rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
     .plan-desc { font-size: .8125rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
 
-    .plan-price { margin-bottom: var(--space-5); }
+    .plan-price { margin-bottom: var(--space-4); }
     .price-main { font-size: 2.25rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
     .price-period { font-size: .875rem; color: var(--text-muted); margin-left: 4px; }
     .price-forever { display: block; font-size: .8125rem; color: var(--text-muted); margin-top: 4px; }
+    .price-saving {
+      display: inline-block; margin-left: 8px;
+      font-size: .75rem; font-weight: 700; color: var(--success);
+      background: var(--success-bg); padding: .15rem .5rem; border-radius: var(--radius-full);
+    }
+
+    /* Limits chips */
+    .plan-limits {
+      display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4);
+    }
+    .plan-limit-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--gray-50); border: 1px solid var(--border);
+      border-radius: var(--radius-full); padding: .2rem .6rem;
+      font-size: .75rem; color: var(--text-muted); font-weight: 500;
+      svg { color: var(--text-muted); flex-shrink: 0; }
+    }
 
     .plan-cta {
       display: flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -305,20 +363,22 @@ import type { Plan, BillingCycle } from '../../shared/models'
       font-size: .9375rem; text-decoration: none; margin-bottom: var(--space-5);
       border: 1.5px solid var(--border); color: var(--text-secondary); background: white;
       transition: all var(--t-fast);
-      &:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-subtle); }
     }
+    .plan-cta:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-subtle); }
     .plan-cta-featured {
       background: var(--brand); color: white; border-color: var(--brand);
       box-shadow: var(--shadow-brand);
-      &:hover { background: var(--brand-dark); border-color: var(--brand-dark); color: white; }
     }
+    .plan-cta-featured:hover { background: var(--brand-dark); border-color: var(--brand-dark); color: white; }
 
     .plan-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
     .plan-features li {
       display: flex; align-items: flex-start; gap: var(--space-2);
       font-size: .875rem; color: var(--text-secondary); line-height: 1.4;
-      svg { flex-shrink: 0; color: var(--success); margin-top: 1px; }
     }
+    .plan-features li svg { flex-shrink: 0; color: var(--success); margin-top: 1px; }
+    .plan-features li.feature-disabled { opacity: .45; }
+    .plan-features li.feature-disabled svg { color: var(--text-muted); }
 
     .plan-card-skeleton {
       background: white; border: 1px solid var(--border);
@@ -329,8 +389,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .proof-section { padding: var(--space-10) var(--space-6) var(--space-12); }
     .proof-inner {
       display: flex; align-items: center; justify-content: center;
-      gap: var(--space-10); max-width: 860px; margin: 0 auto;
-      flex-wrap: wrap; gap: var(--space-8);
+      flex-wrap: wrap; gap: var(--space-8); max-width: 860px; margin: 0 auto;
     }
     .proof-stat { text-align: center; }
     .proof-num   { display: block; font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1.2; }
@@ -365,8 +424,8 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .cta-inner .btn-primary {
       background: white; color: var(--brand);
       box-shadow: 0 4px 20px rgba(0,0,0,.2);
-      &:hover { background: var(--gray-50); transform: translateY(-2px); }
     }
+    .cta-inner .btn-primary:hover { background: var(--gray-50); transform: translateY(-2px); }
   `],
 })
 export class PricingComponent implements OnInit {
@@ -375,6 +434,17 @@ export class PricingComponent implements OnInit {
   readonly plans   = signal<Plan[]>([])
   readonly loading = signal(true)
   readonly cycle   = signal<BillingCycle>('monthly')
+
+  /** Index of the featured plan: middle plan by position */
+  readonly featuredIndex = computed(() => Math.floor(this.plans().length / 2))
+
+  /** Best saving % across all paid plans (for the toggle pill) */
+  readonly bestSavingPct = computed(() => {
+    const paidPlans = this.plans().filter(p => p.priceMonthlyCents > 0)
+    if (!paidPlans.length) return 0
+    const savings = paidPlans.map(p => this.savingPct(p))
+    return Math.max(...savings)
+  })
 
   readonly faq = [
     { q: 'Puis-je changer de plan à tout moment ?', a: 'Oui. Montée ou descente de plan immédiate, sans frais.' },
@@ -388,6 +458,26 @@ export class PricingComponent implements OnInit {
       next: (plans) => { this.plans.set(plans); this.loading.set(false) },
       error: () => this.loading.set(false),
     })
+  }
+
+  isFeatured(index: number): boolean {
+    return index === this.featuredIndex()
+  }
+
+  /** Convert Record<string, boolean> features to sorted key/value entries */
+  featureEntries(plan: Plan): { key: string; value: boolean }[] {
+    if (!plan.features) return []
+    return Object.entries(plan.features)
+      .sort(([, a], [, b]) => (b ? 1 : 0) - (a ? 1 : 0)) // true features first
+      .map(([key, value]) => ({ key, value }))
+  }
+
+  /** Yearly saving % compared to paying monthly × 12 */
+  savingPct(plan: Plan): number {
+    if (!plan.priceMonthlyCents || !plan.priceYearlyCents) return 0
+    const monthly12 = plan.priceMonthlyCents * 12
+    const pct = Math.round((1 - plan.priceYearlyCents / monthly12) * 100)
+    return Math.max(0, pct)
   }
 
   formatPrice(plan: Plan, cycle: BillingCycle): string {

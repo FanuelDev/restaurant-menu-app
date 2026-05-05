@@ -24,6 +24,7 @@
       "@shared/*": ["app/shared/*"]
     }
   },
+  "exclude": ["cypress/**/*"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
