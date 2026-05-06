@@ -2,6 +2,7 @@ import { Component, signal, inject, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs'
 import { RegisterService } from '../../shared/services/register.service'
 import { AuthService } from '../../shared/services/auth.service'
@@ -30,8 +31,9 @@ const COUNTRIES = [
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="reg-page">
 
       <!-- Left visual -->
@@ -45,30 +47,30 @@ const COUNTRIES = [
             </svg>
           </div>
           <h2 class="rv-title">MenuApp</h2>
-          <p class="rv-sub">Créez votre menu digital en quelques minutes</p>
+          <p class="rv-sub">{{ t('public.register.rvSub') }}</p>
 
           <div class="rv-steps">
             <div class="rv-step" [class.rv-step-done]="step() > 1" [class.rv-step-active]="step() === 1">
               <div class="rv-step-num">{{ step() > 1 ? '✓' : '1' }}</div>
               <div>
-                <div class="rv-step-name">Restaurant</div>
-                <div class="rv-step-desc">Nom, sous-domaine, pays</div>
+                <div class="rv-step-name">{{ t('public.register.rvStep1Name') }}</div>
+                <div class="rv-step-desc">{{ t('public.register.rvStep1Desc') }}</div>
               </div>
             </div>
             <div class="rv-step-connector" [class.done]="step() > 1"></div>
             <div class="rv-step" [class.rv-step-done]="step() > 2" [class.rv-step-active]="step() === 2">
               <div class="rv-step-num">{{ step() > 2 ? '✓' : '2' }}</div>
               <div>
-                <div class="rv-step-name">Propriétaire</div>
-                <div class="rv-step-desc">Compte administrateur</div>
+                <div class="rv-step-name">{{ t('public.register.rvStep2Name') }}</div>
+                <div class="rv-step-desc">{{ t('public.register.rvStep2Desc') }}</div>
               </div>
             </div>
             <div class="rv-step-connector" [class.done]="step() > 2"></div>
             <div class="rv-step" [class.rv-step-active]="step() === 3">
               <div class="rv-step-num">3</div>
               <div>
-                <div class="rv-step-name">Confirmation</div>
-                <div class="rv-step-desc">Validation & création</div>
+                <div class="rv-step-name">{{ t('public.register.rvStep3Name') }}</div>
+                <div class="rv-step-desc">{{ t('public.register.rvStep3Desc') }}</div>
               </div>
             </div>
           </div>
@@ -77,7 +79,7 @@ const COUNTRIES = [
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round">
               <path d="M9 2l2 5.5 5.5.8-4 3.9.9 5.3L9 14.5 4.1 17l.9-5.3L1 7.8l5.5-.8z" stroke-linejoin="round"/>
             </svg>
-            14 jours d'essai gratuit · Aucune carte requise
+            {{ t('public.register.trialBadge') }}
           </div>
         </div>
         <div class="rv-blob rv-blob-1"></div>
@@ -94,10 +96,10 @@ const COUNTRIES = [
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <path d="M13 8H3M7 4L3 8l4 4" stroke-linejoin="round"/>
               </svg>
-              Tarifs
+              {{ t('public.register.backToPricing') }}
             </a>
             <span class="rf-login">
-              Déjà inscrit ? <a routerLink="/login">Connexion</a>
+              {{ t('public.register.alreadyRegistered') }} <a routerLink="/login">{{ t('public.register.login') }}</a>
             </span>
           </div>
 
@@ -110,20 +112,20 @@ const COUNTRIES = [
           @if (step() === 1) {
             <div class="form-step animate-right">
               <div class="step-heading">
-                <h1 class="step-title">Votre restaurant</h1>
-                <p class="step-desc">Commençons par les informations de base.</p>
+                <h1 class="step-title">{{ t('public.register.step1Title') }}</h1>
+                <p class="step-desc">{{ t('public.register.step1Desc') }}</p>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Nom du restaurant <span class="req">*</span></label>
+                <label class="form-label">{{ t('public.register.fieldRestaurantName') }}</label>
                 <input class="form-control" [(ngModel)]="s1.restaurantName" type="text"
                        placeholder="Ex : Chez Maman Adjoua" (ngModelChange)="onNameChange($event)" />
               </div>
 
               <div class="form-group">
                 <label class="form-label">
-                  Sous-domaine <span class="req">*</span>
-                  <span class="slug-suffix">.menuapp.com</span>
+                  {{ t('public.register.fieldSubdomainLabel') }} <span class="req">*</span>
+                  <span class="slug-suffix">{{ t('public.register.fieldSubdomainSuffix') }}</span>
                 </label>
                 <div class="slug-wrap">
                   <input class="form-control" [(ngModel)]="s1.restaurantSlug" type="text"
@@ -140,13 +142,13 @@ const COUNTRIES = [
                   </div>
                 </div>
                 @if (slugStatus() === 'taken') {
-                  <span class="form-error">Ce sous-domaine est déjà utilisé.</span>
+                  <span class="form-error">{{ t('public.register.fieldSubdomainTakenError') }}</span>
                 }
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label">Pays <span class="req">*</span></label>
+                  <label class="form-label">{{ t('public.register.fieldCountry') }}</label>
                   <select class="form-control" [(ngModel)]="s1.country" (ngModelChange)="onCountryChange($event)">
                     @for (c of countries; track c.code) {
                       <option [value]="c.code">{{ c.name }}</option>
@@ -154,23 +156,23 @@ const COUNTRIES = [
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Devise</label>
+                  <label class="form-label">{{ t('public.register.fieldCurrency') }}</label>
                   <input class="form-control" [value]="s1.currency" readonly />
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Adresse</label>
+                <label class="form-label">{{ t('public.register.fieldAddress') }}</label>
                 <input class="form-control" [(ngModel)]="s1.address" type="text" placeholder="Ex : Plateau, Abidjan" />
               </div>
 
               <div class="form-group">
-                <label class="form-label">Téléphone</label>
+                <label class="form-label">{{ t('public.register.fieldPhone') }}</label>
                 <input class="form-control" [(ngModel)]="s1.phone" type="tel" placeholder="+225 07 00 00 00 00" />
               </div>
 
               <button class="btn btn-primary btn-full btn-lg" (click)="nextStep()" [disabled]="!canGoStep2()">
-                Continuer
+                {{ t('public.register.continueBtn') }}
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/></svg>
               </button>
             </div>
@@ -180,33 +182,33 @@ const COUNTRIES = [
           @if (step() === 2) {
             <div class="form-step animate-right">
               <div class="step-heading">
-                <h1 class="step-title">Le propriétaire</h1>
-                <p class="step-desc">Ces informations créent votre compte admin.</p>
+                <h1 class="step-title">{{ t('public.register.step2Title') }}</h1>
+                <p class="step-desc">{{ t('public.register.step2Desc') }}</p>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Nom complet <span class="req">*</span></label>
+                <label class="form-label">{{ t('public.register.fieldFullName') }}</label>
                 <input class="form-control" [(ngModel)]="s2.fullName" type="text" placeholder="Ex : Kouamé Jean-Pierre" />
               </div>
 
               <div class="form-group">
-                <label class="form-label">Adresse e-mail <span class="req">*</span></label>
+                <label class="form-label">{{ t('public.register.fieldEmail') }}</label>
                 <input class="form-control" [(ngModel)]="s2.email" type="email" placeholder="vous@restaurant.com" />
               </div>
 
               <div class="form-group">
-                <label class="form-label">Téléphone</label>
+                <label class="form-label">{{ t('public.register.fieldPhone') }}</label>
                 <input class="form-control" [(ngModel)]="s2.ownerPhone" type="tel" placeholder="+225 07 00 00 00 00" />
               </div>
 
               <div class="form-group">
                 <label class="form-label">
-                  Mot de passe <span class="req">*</span>
-                  <span class="hint-inline">8 caractères min.</span>
+                  {{ t('public.register.fieldPassword') }}
+                  <span class="hint-inline">{{ t('public.register.fieldPasswordHint') }}</span>
                 </label>
                 <div class="pw-wrap">
                   <input class="form-control" [(ngModel)]="s2.password" [type]="showPw() ? 'text' : 'password'" placeholder="••••••••" />
-                  <button type="button" class="pw-toggle" (click)="showPw.set(!showPw())" [attr.aria-label]="showPw() ? 'Masquer' : 'Afficher'">
+                  <button type="button" class="pw-toggle" (click)="showPw.set(!showPw())" [attr.aria-label]="showPw() ? t('public.register.hidePassword') : t('public.register.showPassword')">
                     @if (showPw()) {
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -224,11 +226,11 @@ const COUNTRIES = [
               </div>
 
               <div class="form-group">
-                <label class="form-label">Confirmer le mot de passe <span class="req">*</span></label>
+                <label class="form-label">{{ t('public.register.fieldPasswordConfirm') }}</label>
                 <div class="pw-wrap">
                   <input class="form-control" [(ngModel)]="s2.passwordConfirmation" [type]="showPwConfirm() ? 'text' : 'password'" placeholder="••••••••"
                          [class.is-invalid]="s2.password && s2.passwordConfirmation && s2.password !== s2.passwordConfirmation" />
-                  <button type="button" class="pw-toggle" (click)="showPwConfirm.set(!showPwConfirm())" [attr.aria-label]="showPwConfirm() ? 'Masquer' : 'Afficher'">
+                  <button type="button" class="pw-toggle" (click)="showPwConfirm.set(!showPwConfirm())" [attr.aria-label]="showPwConfirm() ? t('public.register.hidePassword') : t('public.register.showPassword')">
                     @if (showPwConfirm()) {
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -244,17 +246,17 @@ const COUNTRIES = [
                   </button>
                 </div>
                 @if (s2.password && s2.passwordConfirmation && s2.password !== s2.passwordConfirmation) {
-                  <span class="form-error">Les mots de passe ne correspondent pas.</span>
+                  <span class="form-error">{{ t('public.register.passwordMismatch') }}</span>
                 }
               </div>
 
               <div class="step-actions">
                 <button class="btn btn-ghost" (click)="step.set(1)">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4" stroke-linejoin="round"/></svg>
-                  Retour
+                  {{ t('common.back') }}
                 </button>
                 <button class="btn btn-primary btn-lg" (click)="nextStep()" [disabled]="!canGoStep3()" style="flex:1">
-                  Continuer
+                  {{ t('public.register.continueBtn') }}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/></svg>
                 </button>
               </div>
@@ -265,29 +267,29 @@ const COUNTRIES = [
           @if (step() === 3) {
             <div class="form-step animate-right">
               <div class="step-heading">
-                <h1 class="step-title">Récapitulatif</h1>
-                <p class="step-desc">Vérifiez avant de créer votre compte.</p>
+                <h1 class="step-title">{{ t('public.register.step3Title') }}</h1>
+                <p class="step-desc">{{ t('public.register.step3Desc') }}</p>
               </div>
 
               <div class="summary-card">
                 <div class="summary-row">
-                  <span class="sr-label">Restaurant</span>
+                  <span class="sr-label">{{ t('public.register.summaryRestaurant') }}</span>
                   <span class="sr-value">{{ s1.restaurantName }}</span>
                 </div>
                 <div class="summary-row">
-                  <span class="sr-label">Sous-domaine</span>
+                  <span class="sr-label">{{ t('public.register.summarySubdomain') }}</span>
                   <span class="sr-value">{{ s1.restaurantSlug }}.menuapp.com</span>
                 </div>
                 <div class="summary-row">
-                  <span class="sr-label">Pays / Devise</span>
+                  <span class="sr-label">{{ t('public.register.summaryCountryCurrency') }}</span>
                   <span class="sr-value">{{ countryName() }} · {{ s1.currency }}</span>
                 </div>
                 <div class="summary-row">
-                  <span class="sr-label">Propriétaire</span>
+                  <span class="sr-label">{{ t('public.register.summaryOwner') }}</span>
                   <span class="sr-value">{{ s2.fullName }}</span>
                 </div>
                 <div class="summary-row">
-                  <span class="sr-label">Email</span>
+                  <span class="sr-label">{{ t('public.register.summaryEmail') }}</span>
                   <span class="sr-value">{{ s2.email }}</span>
                 </div>
               </div>
@@ -295,8 +297,8 @@ const COUNTRIES = [
               <div class="trial-banner">
                 <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l4 4 8-8" stroke-linejoin="round"/></svg>
                 <div>
-                  <strong>14 jours d'essai gratuit</strong><br/>
-                  <span>Aucune carte de crédit requise. Annulez à tout moment.</span>
+                  <strong>{{ t('public.register.trialTitle') }}</strong><br/>
+                  <span>{{ t('public.register.trialDesc') }}</span>
                 </div>
               </div>
 
@@ -307,11 +309,11 @@ const COUNTRIES = [
               <div class="step-actions">
                 <button class="btn btn-ghost" (click)="step.set(2)">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M13 8H3M7 4L3 8l4 4" stroke-linejoin="round"/></svg>
-                  Retour
+                  {{ t('common.back') }}
                 </button>
                 <button class="btn btn-primary btn-lg" (click)="submit()" [disabled]="loading()" style="flex:1">
-                  @if (loading()) { <span class="spinner"></span> Création&nbsp;… }
-                  @else { Créer mon compte }
+                  @if (loading()) { <span class="spinner"></span> {{ t('public.register.submittingFinal') }} }
+                  @else { {{ t('public.register.submitFinal') }} }
                 </button>
               </div>
             </div>
@@ -320,6 +322,7 @@ const COUNTRIES = [
         </div>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .reg-page { display: flex; min-height: 100vh; }

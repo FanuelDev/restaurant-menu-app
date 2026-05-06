@@ -3,12 +3,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { AuthService } from '../../shared/services/auth.service'
+import { TranslocoModule } from '@jsverse/transloco'
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="auth-page">
 
       <div class="auth-visual" aria-hidden="true">
@@ -19,8 +21,8 @@ import { AuthService } from '../../shared/services/auth.service'
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>
-          <h2 class="av-title">Réinitialisation</h2>
-          <p class="av-subtitle">Sécurisez votre compte en quelques secondes</p>
+          <h2 class="av-title">{{ t('auth.forgotPassword.title') }}</h2>
+          <p class="av-subtitle">{{ t('auth.forgotPassword.subtitle') }}</p>
 
           <div class="av-steps">
             <div class="av-step" [class.av-step-done]="sent()">
@@ -29,17 +31,17 @@ import { AuthService } from '../../shared/services/auth.service'
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 } @else { 1 }
               </div>
-              <span>Saisissez votre e-mail</span>
+              <span>{{ t('auth.forgotPassword.step1') }}</span>
             </div>
             <div class="av-step-line" [class.done]="sent()"></div>
             <div class="av-step" [class.av-step-done]="false">
               <div class="av-step-icon">2</div>
-              <span>Vérifiez votre boîte mail</span>
+              <span>{{ t('auth.forgotPassword.step2') }}</span>
             </div>
             <div class="av-step-line"></div>
             <div class="av-step">
               <div class="av-step-icon">3</div>
-              <span>Créez un nouveau mot de passe</span>
+              <span>{{ t('auth.forgotPassword.step3') }}</span>
             </div>
           </div>
         </div>
@@ -53,24 +55,24 @@ import { AuthService } from '../../shared/services/auth.service'
 
           <a routerLink="/login" class="back-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Retour à la connexion
+            {{ t('auth.forgotPassword.backToLogin') }}
           </a>
 
           @if (!sent()) {
-            <h1 class="af-title">Mot de passe oublié ?</h1>
-            <p class="af-sub">Saisissez votre adresse e-mail et nous vous enverrons un lien de réinitialisation.</p>
+            <h1 class="af-title">{{ t('auth.forgotPassword.title') }}</h1>
+            <p class="af-sub">{{ t('auth.forgotPassword.subtitle') }}</p>
 
             <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
               <div class="form-group">
-                <label class="form-label" for="email">Adresse e-mail</label>
+                <label class="form-label" for="email">{{ t('auth.forgotPassword.email') }}</label>
                 <input
                   id="email" type="email" class="form-control"
                   formControlName="email" autocomplete="email"
-                  placeholder="admin@restaurant.fr"
+                  [placeholder]="t('auth.forgotPassword.emailPlaceholder')"
                   [class.is-invalid]="isInvalid('email')"
                 />
                 @if (isInvalid('email')) {
-                  <span class="form-error" role="alert">Adresse e-mail invalide.</span>
+                  <span class="form-error" role="alert">{{ t('auth.forgotPassword.emailInvalid') }}</span>
                 }
               </div>
 
@@ -79,8 +81,8 @@ import { AuthService } from '../../shared/services/auth.service'
               }
 
               <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()">
-                @if (loading()) { <span class="spinner"></span> Envoi en cours… }
-                @else { Envoyer le lien }
+                @if (loading()) { <span class="spinner"></span> {{ t('auth.forgotPassword.submitting') }} }
+                @else { {{ t('auth.forgotPassword.submit') }} }
               </button>
             </form>
           } @else {
@@ -91,18 +93,19 @@ import { AuthService } from '../../shared/services/auth.service'
                   <polyline points="22,6 12,13 2,6"/>
                 </svg>
               </div>
-              <h2 class="success-title">Vérifiez votre boîte mail</h2>
+              <h2 class="success-title">{{ t('auth.forgotPassword.successTitle') }}</h2>
               <p class="success-msg">
-                Si un compte existe pour <strong>{{ form.value.email }}</strong>, vous recevrez un e-mail avec les instructions de réinitialisation.
+                {{ t('auth.forgotPassword.successMessage', { email: form.value.email }) }}
               </p>
-              <p class="success-hint">Vous ne voyez rien ? Vérifiez vos spams.</p>
-              <button class="btn btn-outline btn-full" (click)="reset()">Réessayer avec un autre e-mail</button>
+              <p class="success-hint">{{ t('auth.forgotPassword.checkSpam') }}</p>
+              <button class="btn btn-outline btn-full" (click)="reset()">{{ t('auth.forgotPassword.tryAgain') }}</button>
             </div>
           }
 
         </div>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .auth-page { display: flex; min-height: 100vh; }

@@ -16,6 +16,7 @@ const MenuItemsController = () => import('#controllers/menu_items_controller')
 const SubscriptionsController = () => import('#controllers/subscriptions_controller')
 const TeamController = () => import('#controllers/team_controller')
 const AuditLogsController = () => import('#controllers/audit_logs_controller')
+const StatsController = () => import('#controllers/stats_controller')
 const WebhooksController = () => import('#controllers/webhooks_controller')
 
 // Super admin
@@ -96,6 +97,7 @@ router
 
     // Subscription
     router.get('/subscription', [SubscriptionsController, 'show'])
+    router.get('/usage', [SubscriptionsController, 'usage'])
     router.post('/subscription', [SubscriptionsController, 'subscribe'])
       .use(middleware.role(['admin']))
     router.delete('/subscription', [SubscriptionsController, 'cancel'])
@@ -105,10 +107,14 @@ router
     router.get('/team', [TeamController, 'index'])
       .use(middleware.role(['admin']))
     router.post('/team', [TeamController, 'store'])
-      .use(middleware.role(['admin']))
+      .use([middleware.role(['admin']), middleware.subscriptionGuard()])
     router.put('/team/:id', [TeamController, 'update'])
       .use(middleware.role(['admin']))
     router.delete('/team/:id', [TeamController, 'destroy'])
+      .use(middleware.role(['admin']))
+
+    // Stats — admin only (plan Pro+)
+    router.get('/stats', [StatsController, 'index'])
       .use(middleware.role(['admin']))
 
     // Audit logs — admin only
@@ -147,6 +153,7 @@ router
     router.get('/restaurants/:id', [SARestaurantsController, 'show'])
     router.post('/restaurants/:id/block', [SARestaurantsController, 'block'])
     router.post('/restaurants/:id/unblock', [SARestaurantsController, 'unblock'])
+    router.post('/restaurants/:id/assign-plan', [SARestaurantsController, 'assignPlan'])
     router.get('/plans', [SAPlansController, 'index'])
     router.post('/plans', [SAPlansController, 'store'])
     router.put('/plans/:id', [SAPlansController, 'update'])

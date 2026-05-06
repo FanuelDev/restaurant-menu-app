@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import User from '#models/user'
 import AuditService from '#services/audit_service'
+import SubscriptionService from '#services/subscription_service'
 
 const createMemberValidator = vine.compile(
   vine.object({
@@ -22,6 +23,7 @@ const updateMemberValidator = vine.compile(
 
 export default class TeamController {
   readonly #auditService = new AuditService()
+  readonly #subscriptionService = new SubscriptionService()
 
   /** GET /api/admin/team */
   async index({ restaurant, response }: HttpContext) {
@@ -35,6 +37,14 @@ export default class TeamController {
 
   /** POST /api/admin/team */
   async store({ request, response, auth, restaurant }: HttpContext) {
+    const limit = await this.#subscriptionService.checkLimit(restaurant, 'users')
+    if (!limit.allowed) {
+      return response.paymentRequired({
+        message: `Limite atteinte (${limit.current}/${limit.max} caissier${limit.max > 1 ? 's' : ''}). Passez à un plan supérieur.`,
+        limit,
+      })
+    }
+
     const data = await request.validateUsing(createMemberValidator)
 
     const emailExists = await User.findBy('email', data.email)

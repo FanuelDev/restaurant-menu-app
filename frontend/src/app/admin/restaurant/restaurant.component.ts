@@ -3,27 +3,29 @@ import { Component, inject, OnInit, signal } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RestaurantService } from '../../shared/services/restaurant.service'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 
-const DAYS: { key: string; label: string }[] = [
-  { key: 'monday', label: 'Lundi' },
-  { key: 'tuesday', label: 'Mardi' },
-  { key: 'wednesday', label: 'Mercredi' },
-  { key: 'thursday', label: 'Jeudi' },
-  { key: 'friday', label: 'Vendredi' },
-  { key: 'saturday', label: 'Samedi' },
-  { key: 'sunday', label: 'Dimanche' },
+const DAYS: { key: string }[] = [
+  { key: 'monday' },
+  { key: 'tuesday' },
+  { key: 'wednesday' },
+  { key: 'thursday' },
+  { key: 'friday' },
+  { key: 'saturday' },
+  { key: 'sunday' },
 ]
 
 @Component({
   selector: 'app-restaurant',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="page-container">
       <header class="page-header">
         <div>
-          <h1 class="page-title">Informations restaurant</h1>
-          <p class="page-subtitle">Identité visuelle et horaires</p>
+          <h1 class="page-title">{{ t('restaurant.title') }}</h1>
+          <p class="page-subtitle">{{ t('restaurant.subtitle') }}</p>
         </div>
       </header>
 
@@ -31,69 +33,69 @@ const DAYS: { key: string; label: string }[] = [
         <div class="main-col">
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="card">
-              <h2 class="card-title">Identité</h2>
+              <h2 class="card-title">{{ t('restaurant.sectionIdentity') }}</h2>
 
               <div class="form-group">
-                <label class="form-label">Logo du restaurant</label>
+                <label class="form-label">{{ t('restaurant.logoLabel') }}</label>
                 <div class="logo-zone" (click)="logoInput.click()" role="button" tabindex="0" (keydown.enter)="logoInput.click()">
                   @if (logoPreview() || restaurant()?.logoUrl) {
                     <img [src]="logoPreview() || restaurant()!.logoUrl" alt="Logo" class="logo-preview" />
-                    <div class="logo-overlay">Changer le logo</div>
+                    <div class="logo-overlay">{{ t('restaurant.logoChange') }}</div>
                   } @else {
                     <div class="logo-placeholder">
                       <span aria-hidden="true">🏪</span>
-                      <span>Uploader un logo</span>
+                      <span>{{ t('restaurant.logoUpload') }}</span>
                     </div>
                   }
                 </div>
                 <input #logoInput type="file" accept="image/*" class="file-input-hidden" (change)="onLogoChange($event)" />
                 @if (logoSaving()) {
-                  <p class="uploading-hint">Upload en cours…</p>
+                  <p class="uploading-hint">{{ t('common.uploadInProgress') }}</p>
                 }
               </div>
 
               <div class="form-group">
-                <label class="form-label">Image de fond du menu (hero)</label>
+                <label class="form-label">{{ t('restaurant.coverLabel') }}</label>
                 <div class="cover-zone" (click)="coverInput.click()" role="button" tabindex="0" (keydown.enter)="coverInput.click()">
                   @if (coverPreview() || restaurant()?.coverImageUrl) {
                     <img [src]="coverPreview() || restaurant()!.coverImageUrl!" alt="Cover" class="cover-preview" />
                     <div class="cover-overlay">
-                      <span>Changer l'image</span>
+                      <span>{{ t('restaurant.coverChange') }}</span>
                     </div>
                   } @else {
                     <div class="cover-placeholder">
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      <span>Ajouter une photo de couverture</span>
-                      <small>Image d'ambiance affichée en fond du menu</small>
+                      <span>{{ t('restaurant.coverAdd') }}</span>
+                      <small>{{ t('restaurant.coverHint') }}</small>
                     </div>
                   }
                 </div>
                 <input #coverInput type="file" accept="image/*" class="file-input-hidden" (change)="onCoverChange($event)" />
                 <div class="cover-actions">
                   @if (coverSaving()) {
-                    <span class="uploading-hint">Upload en cours…</span>
+                    <span class="uploading-hint">{{ t('common.uploadInProgress') }}</span>
                   }
                   @if (restaurant()?.coverImageUrl && !coverSaving()) {
                     <button type="button" class="btn btn-ghost btn-sm cover-delete-btn" (click)="deleteCover($event)">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>
-                      Supprimer (revenir au défaut)
+                      {{ t('restaurant.coverDelete') }}
                     </button>
                   }
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="r-name">Nom du restaurant *</label>
+                <label class="form-label" for="r-name">{{ t('restaurant.fieldName') }} *</label>
                 <input id="r-name" type="text" class="form-control" formControlName="name" />
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="r-slogan">Slogan</label>
-                <input id="r-slogan" type="text" class="form-control" formControlName="slogan" placeholder="Ex : Une cuisine sincère…" />
+                <label class="form-label" for="r-slogan">{{ t('restaurant.fieldSlogan') }}</label>
+                <input id="r-slogan" type="text" class="form-control" formControlName="slogan" [placeholder]="t('restaurant.fieldSloganPlaceholder')" />
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="r-color">Couleur principale</label>
+                <label class="form-label" for="r-color">{{ t('restaurant.fieldColor') }}</label>
                 <div class="color-input-row">
                   <input id="r-color" type="color" class="color-picker" formControlName="brandColor" />
                   <input type="text" class="form-control" formControlName="brandColor" placeholder="#C0392B" />
@@ -102,20 +104,20 @@ const DAYS: { key: string; label: string }[] = [
             </div>
 
             <div class="card">
-              <h2 class="card-title">Contact</h2>
+              <h2 class="card-title">{{ t('restaurant.sectionContact') }}</h2>
 
               <div class="form-group">
-                <label class="form-label" for="r-addr">Adresse</label>
+                <label class="form-label" for="r-addr">{{ t('restaurant.fieldAddress') }}</label>
                 <input id="r-addr" type="text" class="form-control" formControlName="address" />
               </div>
 
               <div class="form-row">
                 <div class="form-group flex-1">
-                  <label class="form-label" for="r-phone">Téléphone</label>
+                  <label class="form-label" for="r-phone">{{ t('restaurant.fieldPhone') }}</label>
                   <input id="r-phone" type="tel" class="form-control" formControlName="phone" />
                 </div>
                 <div class="form-group flex-1">
-                  <label class="form-label" for="r-email">E-mail</label>
+                  <label class="form-label" for="r-email">{{ t('restaurant.fieldEmail') }}</label>
                   <input id="r-email" type="email" class="form-control" formControlName="email" />
                 </div>
               </div>
@@ -125,28 +127,30 @@ const DAYS: { key: string; label: string }[] = [
               <div class="alert-error" role="alert">{{ saveError() }}</div>
             }
             @if (saveSuccess()) {
-              <div class="alert-success" role="status">✅ Modifications enregistrées.</div>
+              <div class="alert-success" role="status">✅ {{ t('restaurant.saveSuccess') }}</div>
             }
 
             <button type="submit" class="btn btn-primary btn-large" [disabled]="saving()">
-              {{ saving() ? 'Enregistrement…' : 'Enregistrer les modifications' }}
+              {{ saving() ? t('common.saving') : t('restaurant.submitSave') }}
             </button>
           </form>
         </div>
 
         <div class="side-col">
           <div class="card">
-            <h2 class="card-title">Horaires d'ouverture</h2>
+            <h2 class="card-title">{{ t('restaurant.hoursTitle') }}</h2>
             <div class="hours-list">
               @for (day of days; track day.key) {
                 <div class="hours-row">
-                  <span class="hours-day">{{ day.label }}</span>
+                  <span class="hours-day">{{ t('restaurant.days.' + day.key) }}</span>
                   @if (getHours(day.key)?.closed) {
-                    <span class="hours-closed">Fermé</span>
+                    <span class="hours-closed">{{ t('restaurant.hoursClosed') }}</span>
                   } @else {
                     <span class="hours-time">{{ getHours(day.key)?.open }} – {{ getHours(day.key)?.close }}</span>
                   }
-                  <button class="btn-icon" (click)="editHours(day.key)" [attr.aria-label]="'Modifier horaires ' + day.label">✏️</button>
+                  <button class="btn-icon" (click)="editHours(day.key)" [attr.aria-label]="t('restaurant.hoursEditAria', { day: t('restaurant.days.' + day.key) })">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
                 </div>
               }
             </div>
@@ -154,12 +158,13 @@ const DAYS: { key: string; label: string }[] = [
         </div>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .page-container { max-width: 960px; }
-    .page-header { margin-bottom: var(--space-6); }
-    .page-title { font-family: var(--font-display); font-size: 2rem; margin: 0 0 var(--space-1); }
-    .page-subtitle { color: var(--text-muted); margin: 0; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-8); }
+    .page-title { font-family: var(--font-display); font-size: 1.875rem; margin: 0 0 var(--space-1); color: var(--text-primary); line-height: 1.15; }
+    .page-subtitle { color: var(--text-muted); margin: 0; font-size: .9375rem; }
 
     .two-col { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: start; }
     @media (max-width: 768px) {
@@ -264,8 +269,12 @@ const DAYS: { key: string; label: string }[] = [
     .btn-primary:hover:not(:disabled) { background: var(--color-brand-dark); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-large { padding: 0.875rem 2rem; font-size: 1rem; }
-    .btn-icon { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); cursor: pointer; }
-    .btn-icon:hover { background: var(--surface-2); }
+    .btn-icon {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-muted); cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
+    }
 
     .hours-list { display: flex; flex-direction: column; gap: var(--space-3); }
     .hours-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
@@ -278,6 +287,7 @@ const DAYS: { key: string; label: string }[] = [
 export class RestaurantComponent implements OnInit {
   private readonly restaurantService = inject(RestaurantService)
   private readonly fb = inject(FormBuilder)
+  private readonly transloco = inject(TranslocoService)
 
   readonly restaurant = this.restaurantService.restaurant
   readonly saving      = signal(false)
@@ -318,9 +328,9 @@ export class RestaurantComponent implements OnInit {
 
   editHours(day: string): void {
     const hours = this.getHours(day)
-    const open = prompt(`Ouverture (${day}) — format HH:MM :`, hours?.open ?? '12:00')
+    const open = prompt(this.transloco.translate('restaurant.hoursPromptOpen', { day }), hours?.open ?? '12:00')
     if (open === null) return
-    const close = prompt(`Fermeture (${day}) — format HH:MM :`, hours?.close ?? '22:00')
+    const close = prompt(this.transloco.translate('restaurant.hoursPromptClose', { day }), hours?.close ?? '22:00')
     if (close === null) return
 
     const updated = {
@@ -343,7 +353,7 @@ export class RestaurantComponent implements OnInit {
       next: () => this.logoSaving.set(false),
       error: () => {
         this.logoSaving.set(false)
-        alert('Erreur lors de l\'upload du logo.')
+        alert(this.transloco.translate('restaurant.logoError'))
       },
     })
   }
@@ -359,13 +369,13 @@ export class RestaurantComponent implements OnInit {
     this.coverSaving.set(true)
     this.restaurantService.uploadCover(file).subscribe({
       next: () => { this.coverSaving.set(false) },
-      error: () => { this.coverSaving.set(false); alert('Erreur lors de l\'upload de l\'image.') },
+      error: () => { this.coverSaving.set(false); alert(this.transloco.translate('restaurant.coverError')) },
     })
   }
 
   deleteCover(event: Event): void {
     event.stopPropagation()
-    if (!confirm('Supprimer l\'image de fond ? L\'image par défaut sera utilisée.')) return
+    if (!confirm(this.transloco.translate('restaurant.coverDeleteConfirm'))) return
     this.coverPreview.set(null)
     this.restaurantService.deleteCover().subscribe()
   }
@@ -385,7 +395,7 @@ export class RestaurantComponent implements OnInit {
       },
       error: (err) => {
         this.saving.set(false)
-        this.saveError.set(err?.error?.message ?? 'Erreur lors de l\'enregistrement.')
+        this.saveError.set(err?.error?.message ?? this.transloco.translate('restaurant.saveError'))
       },
     })
   }

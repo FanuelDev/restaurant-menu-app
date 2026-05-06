@@ -2,6 +2,7 @@
 import { Component, inject, OnInit, signal, AfterViewInit, PLATFORM_ID } from '@angular/core'
 import { isPlatformBrowser } from '@angular/common'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { HeroComponent } from '../hero/hero.component'
@@ -12,8 +13,9 @@ import type { MenuItemBadge } from '../../shared/models'
 @Component({
   selector: 'app-menu-page',
   standalone: true,
-  imports: [CommonModule, HeroComponent, CategoryTabsComponent, DishCardComponent],
+  imports: [CommonModule, TranslocoModule, HeroComponent, CategoryTabsComponent, DishCardComponent],
   template: `
+    <ng-container *transloco="let t">
     <div class="menu-page">
       <app-hero [restaurant]="restaurant()" />
 
@@ -25,13 +27,13 @@ import type { MenuItemBadge } from '../../shared/models'
               <input
                 type="search"
                 class="search-input"
-                placeholder="Rechercher un plat…"
+                [placeholder]="t('public.menu.searchPlaceholder')"
                 [value]="filters().search"
                 (input)="onSearch($event)"
-                aria-label="Rechercher un plat"
+                [attr.aria-label]="t('public.menu.searchAriaLabel')"
               />
             </div>
-            <div class="filter-chips" role="group" aria-label="Filtrer par type">
+            <div class="filter-chips" role="group" [attr.aria-label]="t('public.menu.filterAriaLabel')">
               @for (chip of filterChips; track chip.value) {
                 <button
                   class="chip"
@@ -39,7 +41,7 @@ import type { MenuItemBadge } from '../../shared/models'
                   (click)="setFilter(chip.value)"
                   [attr.aria-pressed]="filters().badge === chip.value"
                 >
-                  {{ chip.icon }} {{ chip.label }}
+                  {{ chip.icon }} {{ t('public.menu.' + chip.key) }}
                 </button>
               }
             </div>
@@ -62,7 +64,7 @@ import type { MenuItemBadge } from '../../shared/models'
           </div>
         } @else if (categoriesWithItems().length === 0) {
           <div class="empty-menu">
-            <p>Aucun plat ne correspond à votre recherche.</p>
+            <p>{{ t('public.menu.noResults') }}</p>
           </div>
         } @else {
           @for (cat of categoriesWithItems(); track cat.id) {
@@ -97,10 +99,11 @@ import type { MenuItemBadge } from '../../shared/models'
               </div>
             </div>
           }
-          <p class="footer-copy">Menu mis à jour en temps réel</p>
+          <p class="footer-copy">{{ t('public.menu.footerUpdated') }}</p>
         </div>
       </footer>
     </div>
+    </ng-container>
   `,
   styles: [`
     .menu-page { min-height: 100vh; background: var(--bg); }
@@ -203,12 +206,12 @@ export class MenuPageComponent implements OnInit, AfterViewInit {
   readonly categoriesWithItems = this.menuService.categoriesWithItems
   readonly activeCategoryId = signal<number | null>(null)
 
-  readonly filterChips: { value: MenuItemBadge | 'all'; icon: string; label: string }[] = [
-    { value: 'all', icon: '🍽️', label: 'Tout' },
-    { value: 'popular', icon: '⭐', label: 'Populaires' },
-    { value: 'new', icon: '✨', label: 'Nouveautés' },
-    { value: 'vegetarian', icon: '🌿', label: 'Végétarien' },
-    { value: 'spicy', icon: '🌶️', label: 'Épicé' },
+  readonly filterChips: { value: MenuItemBadge | 'all'; icon: string; key: string }[] = [
+    { value: 'all', icon: '🍽️', key: 'filterAll' },
+    { value: 'popular', icon: '⭐', key: 'filterPopular' },
+    { value: 'new', icon: '✨', key: 'filterNew' },
+    { value: 'vegetarian', icon: '🌿', key: 'filterVegetarian' },
+    { value: 'spicy', icon: '🌶️', key: 'filterSpicy' },
   ]
 
   private observer?: IntersectionObserver

@@ -1,31 +1,34 @@
 import { Component, inject, signal, computed } from '@angular/core'
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule, LangSwitcherComponent],
   template: `
+    <ng-container *transloco="let t">
     <div class="shell">
 
       <!-- Sidebar -->
       <aside class="sidebar" [class.sidebar-mini]="collapsed()">
 
         <!-- Brand -->
-        <div class="sb-brand">
-          <div class="sb-logo">
-            <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
-              <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-          </div>
+        <div class="sb-brand" [class.sb-brand-mini]="collapsed()">
           @if (!collapsed()) {
+            <div class="sb-logo">
+              <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
+                <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
             <span class="sb-brand-name">MenuApp</span>
           }
-          <button class="sb-toggle" (click)="toggleCollapsed()" [attr.aria-label]="collapsed() ? 'Ouvrir' : 'Réduire'">
+          <button class="sb-toggle" [class.sb-toggle-center]="collapsed()" (click)="toggleCollapsed()" [attr.aria-label]="collapsed() ? t('nav.openMenu') : t('nav.collapseMenu')">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
               @if (collapsed()) {
                 <path d="M6 2l6 6-6 6"/>
@@ -38,104 +41,143 @@ import { AuthService } from '../../shared/services/auth.service'
 
         <!-- Nav -->
         <nav class="sb-nav" aria-label="Navigation principale">
-          <a routerLink="/admin/dashboard" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Tableau de bord' : ''">
+          <a routerLink="/admin/dashboard" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.dashboard') : ''">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
               <rect x="1.5" y="1.5" width="6" height="6" rx="1.2"/>
               <rect x="10.5" y="1.5" width="6" height="6" rx="1.2"/>
               <rect x="1.5" y="10.5" width="6" height="6" rx="1.2"/>
               <rect x="10.5" y="10.5" width="6" height="6" rx="1.2"/>
             </svg>
-            @if (!collapsed()) { <span>Tableau de bord</span> }
+            @if (!collapsed()) { <span>{{ t('nav.dashboard') }}</span> }
           </a>
 
-          <a routerLink="/admin/categories" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Catégories' : ''">
+          <a routerLink="/admin/categories" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.categories') : ''">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M2 2.5h5.5l8 8-5.5 5.5-8-8V2.5z" stroke-linejoin="round"/>
               <circle cx="5.5" cy="5.5" r="1.2" fill="currentColor" stroke="none"/>
             </svg>
-            @if (!collapsed()) { <span>Catégories</span> }
+            @if (!collapsed()) { <span>{{ t('nav.categories') }}</span> }
           </a>
 
-          <a routerLink="/admin/menu-items" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Plats' : ''">
+          <a routerLink="/admin/menu-items" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.menuItems') : ''">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M4 1v4a2 2 0 002 2v9"/>
               <path d="M6 1v4M8 1v4"/>
               <path d="M13 1c0 0 2 1.2 2 5.5h-4C11 2.2 13 1 13 1z"/>
               <path d="M13 6.5V17"/>
             </svg>
-            @if (!collapsed()) { <span>Plats</span> }
+            @if (!collapsed()) { <span>{{ t('nav.menuItems') }}</span> }
           </a>
 
           @if (isAdmin()) {
             <div class="sb-divider" [class.sr-only]="collapsed()"></div>
 
-            <a routerLink="/admin/restaurant" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Restaurant' : ''">
+            <a routerLink="/admin/restaurant" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.restaurant') : ''">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
                 <path d="M2 16V8l7-5 7 5v8H2z" stroke-linejoin="round"/>
                 <rect x="6.5" y="11" width="5" height="5"/>
               </svg>
-              @if (!collapsed()) { <span>Restaurant</span> }
+              @if (!collapsed()) { <span>{{ t('nav.restaurant') }}</span> }
             </a>
 
-            <a routerLink="/admin/team" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Équipe' : ''">
+            <a routerLink="/admin/team" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.team') : ''">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
                 <circle cx="7" cy="5.5" r="2.8"/>
                 <path d="M1.5 16c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" stroke-linecap="round"/>
                 <circle cx="13.5" cy="5.5" r="2.2" opacity=".65"/>
                 <path d="M17 16c0-2.4-1.8-4.3-4-4.3" stroke-linecap="round" opacity=".65"/>
               </svg>
-              @if (!collapsed()) { <span>Équipe</span> }
+              @if (!collapsed()) { <span>{{ t('nav.team') }}</span> }
             </a>
 
-            <a routerLink="/admin/subscription" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Abonnement' : ''">
+            <a routerLink="/admin/subscription" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.subscription') : ''">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
                 <rect x="1.5" y="4.5" width="15" height="10" rx="1.5"/>
                 <path d="M1.5 8h15" stroke-linecap="round"/>
                 <path d="M4.5 12h2.5" stroke-linecap="round"/>
               </svg>
-              @if (!collapsed()) { <span>Abonnement</span> }
+              @if (!collapsed()) { <span>{{ t('nav.subscription') }}</span> }
             </a>
 
-            <a routerLink="/admin/audit-logs" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Journal' : ''">
+            <a routerLink="/admin/audit-logs" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.auditLogs') : ''">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
                 <path d="M11.5 2.5H14a1.5 1.5 0 011.5 1.5v12A1.5 1.5 0 0114 17.5H4A1.5 1.5 0 012.5 16V4A1.5 1.5 0 014 2.5h2.5" stroke-linejoin="round"/>
                 <rect x="6.5" y="1.5" width="5" height="3" rx=".8"/>
                 <path d="M6 9h6M6 12.5h4" stroke-linecap="round"/>
               </svg>
-              @if (!collapsed()) { <span>Journal d'audit</span> }
+              @if (!collapsed()) { <span>{{ t('nav.auditLogs') }}</span> }
+            </a>
+
+            <a
+              routerLink="/admin/stats"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasStats()"
+              [title]="collapsed() ? t('nav.stats') : (!hasStats() ? t('nav.statsLocked') : '')"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1.5 13.5 6.5 8.5 10 12 16.5 4.5"/>
+              </svg>
+              @if (!collapsed()) {
+                <span>{{ t('nav.stats') }}</span>
+                @if (!hasStats()) { <span class="sb-lock">Pro</span> }
+              }
+            </a>
+
+            <a
+              routerLink="/admin/api"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasApi()"
+              [title]="collapsed() ? t('nav.api') : (!hasApi() ? t('nav.apiLocked') : '')"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="5 6 1.5 9 5 12"/>
+                <polyline points="13 6 16.5 9 13 12"/>
+                <line x1="10" y1="4" x2="8" y2="14"/>
+              </svg>
+              @if (!collapsed()) {
+                <span>{{ t('nav.api') }}</span>
+                @if (!hasApi()) { <span class="sb-lock">Enterprise</span> }
+              }
             </a>
           }
         </nav>
 
         <!-- Lien vitrine -->
         <div class="sb-vitrine">
-          <a routerLink="/menu" target="_blank" class="sb-link sb-link-ghost" [title]="collapsed() ? 'Voir la vitrine' : ''">
+          <a routerLink="/menu" target="_blank" class="sb-link sb-link-ghost" [title]="collapsed() ? t('nav.viewStorefront') : ''">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/>
               <circle cx="9" cy="9" r="2.5"/>
             </svg>
-            @if (!collapsed()) { <span>Voir la vitrine</span> }
+            @if (!collapsed()) { <span>{{ t('nav.viewStorefront') }}</span> }
           </a>
         </div>
 
         <!-- Footer utilisateur -->
         <div class="sb-footer">
+          <app-lang-switcher />
           <div class="sb-user" [class.sb-user-mini]="collapsed()">
             <div class="sb-avatar">{{ userInitials() }}</div>
             @if (!collapsed()) {
               <div class="sb-user-info">
                 <div class="sb-user-name">{{ user()?.fullName || user()?.email }}</div>
-                <div class="sb-user-role">{{ roleLabel() }}</div>
+                <div class="sb-user-role">
+                  @if (user()?.role === 'admin') { {{ t('nav.owner') }} }
+                  @else if (user()?.role === 'cashier') { {{ t('nav.cashier') }} }
+                  @else { {{ user()?.role ?? '' }} }
+                </div>
               </div>
             }
           </div>
-          <button class="sb-logout" (click)="logout()" [title]="collapsed() ? 'Déconnexion' : ''" aria-label="Se déconnecter">
+          <button class="sb-logout" (click)="logout()" [title]="collapsed() ? t('nav.logout') : ''" [attr.aria-label]="t('nav.logout')">
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>
               <path d="M12 13l4-4-4-4" stroke-linejoin="round"/>
               <path d="M16 9H7"/>
             </svg>
-            @if (!collapsed()) { <span>Déconnexion</span> }
+            @if (!collapsed()) { <span>{{ t('nav.logout') }}</span> }
           </button>
         </div>
 
@@ -147,6 +189,7 @@ import { AuthService } from '../../shared/services/auth.service'
       </main>
 
     </div>
+    </ng-container>
   `,
   styles: [`
     /* ── Shell ──────────────────────────────────── */
@@ -175,8 +218,12 @@ import { AuthService } from '../../shared/services/auth.service'
     /* Brand */
     .sb-brand {
       display: flex; align-items: center; gap: var(--space-3);
-      padding: var(--space-4) var(--space-4) var(--space-4) var(--space-4);
+      padding: var(--space-4);
       min-height: 64px; border-bottom: 1px solid var(--border);
+    }
+    .sb-brand-mini {
+      justify-content: center;
+      padding: var(--space-3);
     }
     .sb-logo {
       width: 36px; height: 36px; flex-shrink: 0;
@@ -193,9 +240,10 @@ import { AuthService } from '../../shared/services/auth.service'
       background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
       padding: 5px; color: var(--gray-400); cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      transition: all var(--t-fast);
+      transition: all var(--t-fast); margin-left: auto;
       &:hover { background: var(--gray-50); color: var(--text-secondary); }
     }
+    .sb-toggle-center { margin-left: 0; width: 38px; height: 38px; border-radius: var(--radius-md); }
 
     /* Nav links */
     .sb-nav {
@@ -217,9 +265,20 @@ import { AuthService } from '../../shared/services/auth.service'
         svg { color: var(--brand); }
       }
     }
+    .sidebar-mini .sb-link { justify-content: center; padding: 9px; }
     .sb-link-ghost {
       color: var(--text-muted);
       font-size: .85rem;
+    }
+    .sb-link-locked {
+      opacity: .55;
+    }
+    .sb-lock {
+      margin-left: auto;
+      font-size: .65rem; font-weight: 700; letter-spacing: .03em;
+      padding: 1px 5px; border-radius: var(--radius-full);
+      background: var(--gray-100); color: var(--text-muted);
+      line-height: 1.6;
     }
 
     .sb-divider {
@@ -266,6 +325,7 @@ import { AuthService } from '../../shared/services/auth.service'
       font-size: .8125rem; white-space: nowrap; transition: all var(--t-fast);
       &:hover { background: var(--error-bg); border-color: var(--error-border); color: var(--error); }
     }
+    .sidebar-mini .sb-logout { justify-content: center; padding: 7px; }
 
     /* ── Main content ───────────────────────────── */
     .main-content {
@@ -280,9 +340,12 @@ import { AuthService } from '../../shared/services/auth.service'
 export class AdminLayoutComponent {
   private readonly authService = inject(AuthService)
 
-  readonly user      = this.authService.user
-  readonly collapsed = signal(false)
-  readonly isAdmin   = computed(() => this.authService.user()?.role === 'admin')
+  readonly user       = this.authService.user
+  readonly collapsed  = signal(false)
+  readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
+  readonly planSlug   = computed(() => this.authService.restaurant()?.plan?.slug ?? null)
+  readonly hasStats   = computed(() => this.planSlug() === 'pro' || this.planSlug() === 'enterprise')
+  readonly hasApi     = computed(() => this.planSlug() === 'enterprise')
 
   readonly userInitials = computed(() => {
     const name = this.user()?.fullName || this.user()?.email || '?'

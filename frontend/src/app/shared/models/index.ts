@@ -54,6 +54,18 @@ export interface Plan {
   sortOrder: number
 }
 
+export interface ResourceUsage {
+  current: number
+  max: number
+  allowed: boolean
+}
+
+export interface PlanUsage {
+  categories: ResourceUsage
+  menuItems: ResourceUsage
+  users: ResourceUsage
+}
+
 export interface Restaurant {
   id: number
   slug: string
@@ -181,6 +193,43 @@ export interface PaginatedResponse<T> {
     lastPage: number
     firstPage: number
   }
+}
+
+// ─── Stats ───────────────────────────────────────────────────────────────────
+export interface StatsOverview {
+  viewsToday: number
+  viewsThisWeek: number
+  viewsThisMonth: number
+  growthPct: number | null
+  totalCategories: number
+  totalItems: number
+}
+
+export interface DailyView {
+  date: string
+  count: number
+}
+
+export interface StatsTopCategory {
+  id: number
+  name: string
+  itemCount: number
+}
+
+export interface StatsTopItem {
+  id: number
+  name: string
+  priceInCents: number
+  badge: MenuItemBadge
+  imageUrl: string | null
+  categoryName: string
+}
+
+export interface StatsData {
+  overview: StatsOverview
+  dailyViews: DailyView[]
+  topCategories: StatsTopCategory[]
+  topItems: StatsTopItem[]
 }
 
 // ─── Misc ────────────────────────────────────────────────────────────────────

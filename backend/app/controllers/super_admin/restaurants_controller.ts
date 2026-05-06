@@ -2,12 +2,24 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import Restaurant from '#models/restaurant'
+import Plan from '#models/plan'
+import Subscription from '#models/subscription'
 import AuditLog from '#models/audit_log'
 import AuditService from '#services/audit_service'
 
 const blockValidator = vine.compile(
   vine.object({
     reason: vine.string().trim().minLength(5).maxLength(500),
+  })
+)
+
+const assignPlanValidator = vine.compile(
+  vine.object({
+    planSlug: vine.string().trim(),
+    billingCycle: vine.enum(['monthly', 'yearly']),
+    // Nombre de mois/années offerts (défaut 1)
+    duration: vine.number().min(1).max(24).optional(),
+    note: vine.string().trim().maxLength(500).optional(),
   })
 )
 
@@ -109,5 +121,65 @@ export default class SuperAdminRestaurantsController {
     })
 
     return response.ok({ message: 'Restaurant débloqué.' })
+  }
+
+  /** POST /api/super-admin/restaurants/:id/assign-plan */
+  async assignPlan({ params, request, response, auth }: HttpContext) {
+    const { planSlug, billingCycle, duration = 1, note } = await request.validateUsing(assignPlanValidator)
+
+    const restaurant = await Restaurant.findOrFail(params.id)
+    const plan = await Plan.findByOrFail('slug', planSlug)
+
+    const now = DateTime.now()
+    const periodEnd = billingCycle === 'yearly'
+      ? now.plus({ years: duration })
+      : now.plus({ months: duration })
+
+    // Annule toute subscription active/pending existante
+    await Subscription.query()
+      .where('restaurant_id', restaurant.id)
+      .whereIn('status', ['active', 'pending', 'trialing'])
+      .update({ status: 'canceled', canceled_at: now.toSQL() })
+
+    // Crée la nouvelle subscription offerte (montant 0)
+    await Subscription.create({
+      restaurantId: restaurant.id,
+      planId: plan.id,
+      cinetpayTransactionId: `sa_grant_${Date.now()}`,
+      billingCycle,
+      status: 'active',
+      amountCents: 0,
+      currency: restaurant.currency,
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+    })
+
+    // Met à jour le restaurant
+    restaurant.planId = plan.id
+    restaurant.subscriptionStatus = 'active'
+    restaurant.trialEndsAt = null
+    await restaurant.save()
+
+    await restaurant.load('plan')
+
+    await this.#auditService.log({
+      ctx: { request } as never,
+      user: auth.user!,
+      restaurantId: restaurant.id,
+      action: 'subscription.granted',
+      resourceType: 'restaurant',
+      resourceId: restaurant.id,
+      resourceName: restaurant.name,
+      newValues: {
+        planSlug,
+        billingCycle,
+        duration,
+        periodEnd: periodEnd.toISODate(),
+        grantedBy: auth.user!.email,
+        note: note ?? null,
+      },
+    })
+
+    return response.ok({ message: `Plan ${plan.name} attribué jusqu'au ${periodEnd.toISODate()}.`, restaurant })
   }
 }

@@ -3,12 +3,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Router, RouterLink, ActivatedRoute } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { AuthService } from '../../shared/services/auth.service'
+import { TranslocoModule } from '@jsverse/transloco'
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="auth-page">
 
       <div class="auth-visual" aria-hidden="true">
@@ -18,21 +20,21 @@ import { AuthService } from '../../shared/services/auth.service'
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <h2 class="av-title">Nouveau mot de passe</h2>
-          <p class="av-subtitle">Choisissez un mot de passe fort pour protéger votre compte</p>
+          <h2 class="av-title">{{ t('auth.resetPassword.title') }}</h2>
+          <p class="av-subtitle">{{ t('auth.resetPassword.subtitle') }}</p>
 
           <div class="av-tips">
             <div class="av-tip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Au moins 8 caractères
+              {{ t('auth.resetPassword.hint1') }}
             </div>
             <div class="av-tip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Mélangez lettres, chiffres et symboles
+              {{ t('auth.resetPassword.hint2') }}
             </div>
             <div class="av-tip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Évitez les mots de passe réutilisés
+              {{ t('auth.resetPassword.hint3') }}
             </div>
           </div>
         </div>
@@ -50,9 +52,9 @@ import { AuthService } from '../../shared/services/auth.service'
                   <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
               </div>
-              <h2 class="te-title">Lien invalide ou expiré</h2>
-              <p class="te-msg">Ce lien de réinitialisation est invalide ou a expiré (validité : 1 heure). Veuillez refaire une demande.</p>
-              <a routerLink="/forgot-password" class="btn btn-primary btn-full">Nouvelle demande</a>
+              <h2 class="te-title">{{ t('auth.resetPassword.invalidToken') }}</h2>
+              <p class="te-msg">{{ t('auth.resetPassword.invalidTokenMessage') }}</p>
+              <a routerLink="/forgot-password" class="btn btn-primary btn-full">{{ t('auth.resetPassword.newRequest') }}</a>
             </div>
           } @else if (success()) {
             <div class="success-state animate-up">
@@ -61,30 +63,30 @@ import { AuthService } from '../../shared/services/auth.service'
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 class="success-title">Mot de passe mis à jour !</h2>
-              <p class="success-msg">Votre mot de passe a été changé avec succès. Vous pouvez maintenant vous connecter.</p>
-              <a routerLink="/login" class="btn btn-primary btn-full btn-lg">Se connecter</a>
+              <h2 class="success-title">{{ t('auth.resetPassword.successTitle') }}</h2>
+              <p class="success-msg">{{ t('auth.resetPassword.successMessage') }}</p>
+              <a routerLink="/login" class="btn btn-primary btn-full btn-lg">{{ t('auth.resetPassword.goToLogin') }}</a>
             </div>
           } @else {
             <a routerLink="/login" class="back-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Retour à la connexion
+              {{ t('auth.forgotPassword.backToLogin') }}
             </a>
 
-            <h1 class="af-title">Nouveau mot de passe</h1>
-            <p class="af-sub">Choisissez un mot de passe sécurisé d'au moins 8 caractères.</p>
+            <h1 class="af-title">{{ t('auth.resetPassword.title') }}</h1>
+            <p class="af-sub">{{ t('auth.resetPassword.subtitle') }}</p>
 
             <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
               <div class="form-group">
-                <label class="form-label" for="password">Nouveau mot de passe</label>
+                <label class="form-label" for="password">{{ t('auth.resetPassword.newPassword') }}</label>
                 <div class="pw-wrap">
                   <input
                     id="password" [type]="showPw() ? 'text' : 'password'" class="form-control"
                     formControlName="password" autocomplete="new-password"
-                    placeholder="••••••••"
+                    [placeholder]="t('auth.resetPassword.newPasswordPlaceholder')"
                     [class.is-invalid]="isInvalid('password')"
                   />
-                  <button type="button" class="pw-toggle" (click)="showPw.set(!showPw())" [attr.aria-label]="showPw() ? 'Masquer' : 'Afficher'">
+                  <button type="button" class="pw-toggle" (click)="showPw.set(!showPw())" [attr.aria-label]="showPw() ? t('common.hide') : t('common.show')">
                     @if (showPw()) {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -100,7 +102,7 @@ import { AuthService } from '../../shared/services/auth.service'
                   </button>
                 </div>
                 @if (isInvalid('password')) {
-                  <span class="form-error" role="alert">8 caractères minimum.</span>
+                  <span class="form-error" role="alert">{{ t('auth.resetPassword.newPasswordMin') }}</span>
                 }
                 <div class="pw-strength">
                   <div class="pw-strength-bar" [class]="pwStrengthClass()"></div>
@@ -108,7 +110,7 @@ import { AuthService } from '../../shared/services/auth.service'
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="confirm">Confirmer le mot de passe</label>
+                <label class="form-label" for="confirm">{{ t('auth.resetPassword.confirmPassword') }}</label>
                 <div class="pw-wrap">
                   <input
                     id="confirm" [type]="showPwConfirm() ? 'text' : 'password'" class="form-control"
@@ -116,7 +118,7 @@ import { AuthService } from '../../shared/services/auth.service'
                     placeholder="••••••••"
                     [class.is-invalid]="isInvalid('confirm') || mismatch()"
                   />
-                  <button type="button" class="pw-toggle" (click)="showPwConfirm.set(!showPwConfirm())" [attr.aria-label]="showPwConfirm() ? 'Masquer' : 'Afficher'">
+                  <button type="button" class="pw-toggle" (click)="showPwConfirm.set(!showPwConfirm())" [attr.aria-label]="showPwConfirm() ? t('common.hide') : t('common.show')">
                     @if (showPwConfirm()) {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -132,7 +134,7 @@ import { AuthService } from '../../shared/services/auth.service'
                   </button>
                 </div>
                 @if (mismatch()) {
-                  <span class="form-error" role="alert">Les mots de passe ne correspondent pas.</span>
+                  <span class="form-error" role="alert">{{ t('auth.resetPassword.passwordMismatch') }}</span>
                 }
               </div>
 
@@ -141,8 +143,8 @@ import { AuthService } from '../../shared/services/auth.service'
               }
 
               <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()">
-                @if (loading()) { <span class="spinner"></span> Enregistrement… }
-                @else { Enregistrer le mot de passe }
+                @if (loading()) { <span class="spinner"></span> {{ t('auth.resetPassword.submitting') }} }
+                @else { {{ t('auth.resetPassword.submit') }} }
               </button>
             </form>
           }
@@ -150,6 +152,7 @@ import { AuthService } from '../../shared/services/auth.service'
         </div>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .auth-page { display: flex; min-height: 100vh; }
@@ -290,7 +293,7 @@ export class ResetPasswordComponent implements OnInit {
         if (err.status === 400) {
           this.invalidToken.set(true)
         } else {
-          this.apiError.set(err.error?.message ?? 'Une erreur est survenue.')
+          this.apiError.set(err.error?.message ?? 'common.error')
         }
       },
     })

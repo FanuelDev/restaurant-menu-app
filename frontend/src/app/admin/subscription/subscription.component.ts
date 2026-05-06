@@ -4,17 +4,24 @@ import { FormsModule } from '@angular/forms'
 import { SubscriptionService, SubscriptionShowResponse } from '../../shared/services/subscription.service'
 import { AuthService } from '../../shared/services/auth.service'
 import type { Plan, BillingCycle } from '../../shared/models'
+import { TranslocoModule } from '@jsverse/transloco'
 
 @Component({
   selector: 'app-subscription',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="subscription-page">
-      <h1>Abonnement</h1>
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('subscription.title') }}</h1>
+          <p class="page-subtitle">{{ t('subscription.subtitle') }}</p>
+        </div>
+      </header>
 
       @if (loading()) {
-        <div class="loading">Chargement...</div>
+        <div class="loading">{{ t('common.loading') }}</div>
       } @else if (data()) {
         <!-- Current status -->
         <div class="status-card" [class]="'status-' + (data()!.restaurant.subscriptionStatus)">
@@ -22,23 +29,23 @@ import type { Plan, BillingCycle } from '../../shared/models'
             {{ statusIcon(data()!.restaurant.subscriptionStatus) }}
           </div>
           <div class="status-info">
-            <div class="status-label">{{ statusLabel(data()!.restaurant.subscriptionStatus) }}</div>
+            <div class="status-label">{{ t(statusLabel(data()!.restaurant.subscriptionStatus)) }}</div>
             @if (data()!.restaurant.subscriptionStatus === 'trialing' && data()!.restaurant.trialEndsAt) {
               <div class="status-detail">
-                Période d'essai se termine le {{ data()!.restaurant.trialEndsAt | date:'dd/MM/yyyy' }}
+                {{ t('subscription.trialEnds', { date: data()!.restaurant.trialEndsAt | date:'dd/MM/yyyy' }) }}
               </div>
             }
             @if (data()!.activeSubscription?.currentPeriodEnd) {
               <div class="status-detail">
-                Renouvellement le {{ data()!.activeSubscription!.currentPeriodEnd | date:'dd/MM/yyyy' }}
+                {{ t('subscription.renewsOn', { date: data()!.activeSubscription!.currentPeriodEnd | date:'dd/MM/yyyy' }) }}
               </div>
             }
             @if (data()!.restaurant.plan) {
-              <div class="current-plan">Plan actuel : <strong>{{ data()!.restaurant.plan!.name }}</strong></div>
+              <div class="current-plan">{{ t('subscription.currentPlan', { name: data()!.restaurant.plan!.name }) }}</div>
             }
           </div>
           @if (data()!.activeSubscription?.status === 'active') {
-            <button class="btn-danger-outline" (click)="showCancelConfirm.set(true)">Annuler l'abonnement</button>
+            <button class="btn-danger-outline" (click)="showCancelConfirm.set(true)">{{ t('subscription.cancelSubscription') }}</button>
           }
         </div>
 
@@ -46,12 +53,12 @@ import type { Plan, BillingCycle } from '../../shared/models'
         @if (showCancelConfirm()) {
           <div class="confirm-overlay">
             <div class="confirm-box">
-              <h3>Annuler l'abonnement ?</h3>
-              <p>Votre accès sera maintenu jusqu'à la fin de la période en cours, puis votre compte basculera sur le plan Gratuit.</p>
+              <h3>{{ t('subscription.cancelConfirmTitle') }}</h3>
+              <p>{{ t('subscription.cancelConfirmMessage') }}</p>
               <div class="confirm-actions">
-                <button class="btn-outline" (click)="showCancelConfirm.set(false)">Annuler</button>
+                <button class="btn-outline" (click)="showCancelConfirm.set(false)">{{ t('common.cancel') }}</button>
                 <button class="btn-danger" (click)="cancelSubscription()" [disabled]="actionLoading()">
-                  {{ actionLoading() ? 'Annulation...' : 'Confirmer l\'annulation' }}
+                  {{ actionLoading() ? t('subscription.canceling') : t('subscription.cancelSubmit') }}
                 </button>
               </div>
             </div>
@@ -61,11 +68,11 @@ import type { Plan, BillingCycle } from '../../shared/models'
         <!-- Available plans -->
         <div class="plans-section">
           <div class="plans-header">
-            <h2>Choisir un plan</h2>
+            <h2>{{ t('subscription.choosePlan') }}</h2>
             <div class="cycle-toggle">
-              <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">Mensuel</button>
+              <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">{{ t('subscription.monthly') }}</button>
               <button [class.active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
-                Annuel <span class="discount">-17%</span>
+                {{ t('subscription.yearly') }} <span class="discount">{{ t('subscription.yearlySavings') }}</span>
               </button>
             </div>
           </div>
@@ -77,17 +84,17 @@ import type { Plan, BillingCycle } from '../../shared/models'
                   <div class="plan-name">{{ plan.name }}</div>
                   <div class="plan-price">
                     <span class="amount">{{ formatPrice(plan, cycle()) }}</span>
-                    <span class="period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+                    <span class="period">/ {{ cycle() === 'monthly' ? t('subscription.perMonth') : t('subscription.perYear') }}</span>
                   </div>
                   <ul class="features">
                     @for (f of enabledFeatures(plan); track f) { <li>✓ {{ f }}</li> }
                   </ul>
                   @if (isCurrentPlan(plan)) {
-                    <div class="current-badge">Plan actuel</div>
+                    <div class="current-badge">{{ t('subscription.currentPlanBadge') }}</div>
                   } @else {
                     <button class="btn-subscribe" (click)="initPayment(plan)"
                             [disabled]="actionLoading()">
-                      {{ actionLoading() && selectedPlan()?.id === plan.id ? 'Redirection...' : 'Choisir ce plan' }}
+                      {{ actionLoading() && selectedPlan()?.id === plan.id ? t('subscription.redirecting') : t('subscription.selectPlan') }}
                     </button>
                   }
                 </div>
@@ -101,9 +108,14 @@ import type { Plan, BillingCycle } from '../../shared/models'
         }
       }
     </div>
+    </ng-container>
   `,
   styles: [`
     .subscription-page { max-width: 900px; }
+
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-8); }
+    .page-title  { font-family: var(--font-display); font-size: 1.875rem; margin: 0 0 var(--space-1); color: var(--text-primary); line-height: 1.15; }
+    .page-subtitle { color: var(--text-muted); margin: 0; font-size: .9375rem; }
 
     .status-card {
       display: flex; align-items: center; gap: var(--space-5);
@@ -263,11 +275,14 @@ export class SubscriptionComponent implements OnInit {
   }
 
   statusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      trialing: 'Période d\'essai', active: 'Abonnement actif',
-      past_due: 'Paiement en retard', canceled: 'Abonnement annulé', suspended: 'Compte suspendu',
+    const keys: Record<string, string> = {
+      trialing: 'subscription.status.trialing',
+      active: 'subscription.status.active',
+      past_due: 'subscription.status.past_due',
+      canceled: 'subscription.status.canceled',
+      suspended: 'subscription.status.suspended',
     }
-    return labels[status] ?? status
+    return keys[status] ?? status
   }
 
   initPayment(plan: Plan): void {
@@ -281,7 +296,7 @@ export class SubscriptionComponent implements OnInit {
       },
       error: (err) => {
         this.actionLoading.set(false)
-        this.error.set(err.error?.message ?? 'Erreur lors de l\'initiation du paiement.')
+        this.error.set(err.error?.message ?? 'common.error')
       },
     })
   }
@@ -296,7 +311,7 @@ export class SubscriptionComponent implements OnInit {
       },
       error: (err) => {
         this.actionLoading.set(false)
-        this.error.set(err.error?.message ?? 'Erreur lors de l\'annulation.')
+        this.error.set(err.error?.message ?? 'common.error')
       },
     })
   }

@@ -1,14 +1,16 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core'
 import { CommonModule, NgTemplateOutlet } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { SubscriptionService } from '../../shared/services/subscription.service'
 import type { Plan, BillingCycle } from '../../shared/models'
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, NgTemplateOutlet, RouterLink],
+  imports: [CommonModule, NgTemplateOutlet, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="pricing-page">
 
       <!-- Nav -->
@@ -24,8 +26,8 @@ import type { Plan, BillingCycle } from '../../shared/models'
           MenuApp
         </a>
         <div class="nav-actions">
-          <a routerLink="/login" class="btn btn-ghost btn-sm">Se connecter</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm">Essai gratuit</a>
+          <a routerLink="/login" class="btn btn-ghost btn-sm">{{ t('public.pricing.navLogin') }}</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">{{ t('public.pricing.navRegister') }}</a>
         </div>
       </header>
 
@@ -33,21 +35,20 @@ import type { Plan, BillingCycle } from '../../shared/models'
       <section class="pricing-hero">
         <div class="hero-badge animate-fade">
           <span class="hero-badge-dot"></span>
-          Aucune carte bancaire requise
+          {{ t('public.pricing.noCreditCard') }}
         </div>
         <h1 class="hero-title animate-up">
-          Des tarifs simples,<br/>
-          <span class="hero-title-accent">sans surprises</span>
+          {{ t('public.pricing.heroTitle') }}<br/>
+          <span class="hero-title-accent">{{ t('public.pricing.heroTitleAccent') }}</span>
         </h1>
         <p class="hero-sub animate-up delay-1">
-          Commencez gratuitement. Évoluez quand vous êtes prêt.<br/>
-          Annulez à tout moment.
+          {{ t('public.pricing.heroSub') }}
         </p>
 
         <div class="cycle-toggle animate-up delay-2">
-          <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">Mensuel</button>
+          <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">{{ t('public.pricing.monthly') }}</button>
           <button [class.active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
-            Annuel
+            {{ t('public.pricing.yearly') }}
             @if (bestSavingPct() > 0) {
               <span class="saving-pill">−{{ bestSavingPct() }}%</span>
             }
@@ -82,7 +83,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
                    [style.animation-delay]="(i * 80) + 'ms'">
 
                 @if (isFeatured(i)) {
-                  <div class="plan-popular">Le plus populaire</div>
+                  <div class="plan-popular">{{ t('public.pricing.popular') }}</div>
                 }
 
                 <div class="plan-top">
@@ -97,13 +98,13 @@ import type { Plan, BillingCycle } from '../../shared/models'
 
                 <div class="plan-price">
                   @if (plan.priceMonthlyCents === 0) {
-                    <span class="price-main">Gratuit</span>
-                    <span class="price-forever">pour toujours</span>
+                    <span class="price-main">{{ t('public.pricing.free') }}</span>
+                    <span class="price-forever">{{ t('public.pricing.forever') }}</span>
                   } @else {
                     <span class="price-main">{{ formatPrice(plan, cycle()) }}</span>
-                    <span class="price-period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+                    <span class="price-period">{{ cycle() === 'monthly' ? t('public.pricing.perMonth') : t('public.pricing.perYear') }}</span>
                     @if (cycle() === 'yearly' && savingPct(plan) > 0) {
-                      <span class="price-saving">Économisez {{ savingPct(plan) }}%</span>
+                      <span class="price-saving">{{ t('public.pricing.savePercent', { value: savingPct(plan) }) }}</span>
                     }
                   }
                 </div>
@@ -112,20 +113,20 @@ import type { Plan, BillingCycle } from '../../shared/models'
                 <div class="plan-limits">
                   <span class="plan-limit-chip">
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2"/></svg>
-                    {{ plan.maxCategories === -1 ? '∞' : plan.maxCategories }} catégories
+                    {{ plan.maxCategories === -1 ? '∞' : plan.maxCategories }} {{ t('public.pricing.categoriesChip') }}
                   </span>
                   <span class="plan-limit-chip">
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-                    {{ plan.maxMenuItems === -1 ? '∞' : plan.maxMenuItems }} plats
+                    {{ plan.maxMenuItems === -1 ? '∞' : plan.maxMenuItems }} {{ t('public.pricing.itemsChip') }}
                   </span>
                   <span class="plan-limit-chip">
                     <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2.5"/><path d="M2 14c0-3 2-4 4-4s4 1 4 4"/><circle cx="12" cy="5" r="2" /><path d="M14 14c0-2-1-3-2-3"/></svg>
-                    {{ plan.maxUsers === -1 ? '∞' : plan.maxUsers }} utilisateurs
+                    {{ plan.maxUsers === -1 ? '∞' : plan.maxUsers }} {{ t('public.pricing.usersChip') }}
                   </span>
                 </div>
 
                 <a routerLink="/register" class="plan-cta" [class.plan-cta-featured]="isFeatured(i)">
-                  {{ plan.priceMonthlyCents === 0 ? 'Commencer gratuitement' : 'Essai 14 jours gratuit' }}
+                  {{ plan.priceMonthlyCents === 0 ? t('public.pricing.choosePlan') : t('public.pricing.startTrial') }}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                     <path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/>
                   </svg>
@@ -158,21 +159,21 @@ import type { Plan, BillingCycle } from '../../shared/models'
         <div class="proof-inner">
           <div class="proof-stat">
             <span class="proof-num">1 200+</span>
-            <span class="proof-label">Restaurants actifs</span>
+            <span class="proof-label">{{ t('public.pricing.proofRestaurants') }}</span>
           </div>
           <div class="proof-divider"></div>
           <div class="proof-stat">
             <span class="proof-num">14 pays</span>
-            <span class="proof-label">Afrique de l'Ouest &amp; Centrale</span>
+            <span class="proof-label">{{ t('public.pricing.proofPresence') }}</span>
           </div>
           <div class="proof-divider"></div>
           <div class="proof-stat">
             <span class="proof-num">4.9 ★</span>
-            <span class="proof-label">Note moyenne</span>
+            <span class="proof-label">{{ t('public.pricing.proofRating') }}</span>
           </div>
           <div class="proof-divider"></div>
           <div class="proof-stat">
-            <span class="proof-num">Mobile Money</span>
+            <span class="proof-num">{{ t('public.pricing.proofPayment') }}</span>
             <span class="proof-label">Orange · MTN · Wave</span>
           </div>
         </div>
@@ -180,12 +181,12 @@ import type { Plan, BillingCycle } from '../../shared/models'
 
       <!-- FAQ -->
       <section class="faq-section">
-        <h2 class="faq-title animate-up">Questions fréquentes</h2>
+        <h2 class="faq-title animate-up">{{ t('public.pricing.faqTitle') }}</h2>
         <div class="faq-grid">
-          @for (item of faq; track item.q; let i = $index) {
-            <div class="faq-item animate-up" [style.animation-delay]="(i * 60) + 'ms'">
-              <h4 class="faq-q">{{ item.q }}</h4>
-              <p class="faq-a">{{ item.a }}</p>
+          @for (i of [0,1,2,3]; track i; let idx = $index) {
+            <div class="faq-item animate-up" [style.animation-delay]="(idx * 60) + 'ms'">
+              <h4 class="faq-q">{{ t('public.pricing.faq' + i + 'q') }}</h4>
+              <p class="faq-a">{{ t('public.pricing.faq' + i + 'a') }}</p>
             </div>
           }
         </div>
@@ -194,13 +195,14 @@ import type { Plan, BillingCycle } from '../../shared/models'
       <!-- CTA footer -->
       <section class="cta-section animate-up">
         <div class="cta-inner">
-          <h2 class="cta-title">Prêt à digitaliser votre menu&nbsp;?</h2>
-          <p class="cta-sub">14 jours d'essai gratuit. Aucune carte de crédit.</p>
-          <a routerLink="/register" class="btn btn-primary btn-lg">Créer mon menu maintenant</a>
+          <h2 class="cta-title">{{ t('public.landing.ctaTitle') }}</h2>
+          <p class="cta-sub">{{ t('public.pricing.ctaSub') }}</p>
+          <a routerLink="/register" class="btn btn-primary btn-lg">{{ t('public.pricing.ctaCreate') }}</a>
         </div>
       </section>
 
     </div>
+    </ng-container>
 
     <!-- Icon templates by position -->
     <ng-template #planIcon let-i="i" let-total="total">
@@ -445,13 +447,6 @@ export class PricingComponent implements OnInit {
     const savings = paidPlans.map(p => this.savingPct(p))
     return Math.max(...savings)
   })
-
-  readonly faq = [
-    { q: 'Puis-je changer de plan à tout moment ?', a: 'Oui. Montée ou descente de plan immédiate, sans frais.' },
-    { q: 'Quels modes de paiement acceptez-vous ?', a: 'Cartes Visa/Mastercard et Mobile Money (Orange Money, MTN, Wave, Moov) via CinetPay.' },
-    { q: 'Que se passe-t-il à la fin de l\'essai ?', a: 'Votre compte bascule sur le plan Gratuit. Aucun prélèvement automatique.' },
-    { q: 'Mes données sont-elles sécurisées ?', a: 'Oui — hébergement Afrique de l\'Ouest, chiffrement au repos et en transit.' },
-  ]
 
   ngOnInit(): void {
     this.subscriptionService.getPublicPlans().subscribe({

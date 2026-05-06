@@ -1,25 +1,9 @@
 import { Component, signal, inject, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
+import { TranslocoModule } from '@jsverse/transloco'
 import { AuditService, AuditLogFilters } from '../../shared/services/audit.service'
 import type { AuditLog, PaginatedResponse } from '../../shared/models'
-
-const ACTION_LABELS: Record<string, string> = {
-  'category.created': 'Catégorie créée',
-  'category.updated': 'Catégorie modifiée',
-  'category.deleted': 'Catégorie supprimée',
-  'menu_item.created': 'Plat ajouté',
-  'menu_item.updated': 'Plat modifié',
-  'menu_item.deleted': 'Plat supprimé',
-  'menu_item.toggled': 'Disponibilité modifiée',
-  'user.created': 'Caissier ajouté',
-  'user.updated': 'Caissier modifié',
-  'user.deleted': 'Caissier supprimé',
-  'restaurant.updated': 'Restaurant modifié',
-  'restaurant.logo_uploaded': 'Logo mis à jour',
-  'subscription.created': 'Abonnement initié',
-  'subscription.canceled': 'Abonnement annulé',
-}
 
 const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
   created:  { bg: '#dcfce7', color: '#16a34a' },
@@ -30,18 +14,27 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
   uploaded: { bg: '#f3e8ff', color: '#9333ea' },
 }
 
+const ACTION_KEYS = [
+  'category.created', 'category.updated', 'category.deleted',
+  'menu_item.created', 'menu_item.updated', 'menu_item.deleted', 'menu_item.toggled',
+  'user.created', 'user.updated', 'user.deleted',
+  'restaurant.updated', 'restaurant.logo_uploaded',
+  'subscription.created', 'subscription.canceled',
+]
+
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="page-container-lg">
 
       <!-- Header -->
       <div class="page-header">
         <div>
-          <h1 class="page-title">Journal d'audit</h1>
-          <p class="page-subtitle">Historique de toutes les actions effectuées sur votre compte</p>
+          <h1 class="page-title">{{ t('auditLogs.title') }}</h1>
+          <p class="page-subtitle">{{ t('auditLogs.subtitle') }}</p>
         </div>
       </div>
 
@@ -49,9 +42,9 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
       <div class="filters-row">
         <div class="select-wrap">
           <select class="form-control" [(ngModel)]="filterAction" (ngModelChange)="applyFilters()">
-            <option value="">Toutes les actions</option>
-            @for (entry of actionEntries; track entry.key) {
-              <option [value]="entry.key">{{ entry.label }}</option>
+            <option value="">{{ t('auditLogs.filterAll') }}</option>
+            @for (key of actionKeys; track key) {
+              <option [value]="key">{{ t('auditLogs.actions.' + key) }}</option>
             }
           </select>
           <span class="select-chevron">
@@ -62,11 +55,11 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
         </div>
         <div class="select-wrap">
           <select class="form-control" [(ngModel)]="filterResource" (ngModelChange)="applyFilters()">
-            <option value="">Tous les types</option>
-            <option value="category">Catégories</option>
-            <option value="menu_item">Plats</option>
-            <option value="user">Utilisateurs</option>
-            <option value="restaurant">Restaurant</option>
+            <option value="">{{ t('auditLogs.filterTypeAll') }}</option>
+            <option value="category">{{ t('auditLogs.filterCategories') }}</option>
+            <option value="menu_item">{{ t('auditLogs.filterItems') }}</option>
+            <option value="user">{{ t('auditLogs.filterUsers') }}</option>
+            <option value="restaurant">{{ t('auditLogs.filterRestaurant') }}</option>
           </select>
           <span class="select-chevron">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -106,8 +99,8 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
               <polyline points="10 9 9 9 8 9"/>
             </svg>
           </div>
-          <p class="empty-title">Aucune entrée</p>
-          <p class="empty-desc">Le journal est vide pour les filtres sélectionnés.</p>
+          <p class="empty-title">{{ t('auditLogs.empty') }}</p>
+          <p class="empty-desc">{{ t('auditLogs.emptyMessage') }}</p>
         </div>
 
       <!-- Log list -->
@@ -117,7 +110,7 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
             <div class="log-entry" (click)="toggleDetails(log.id)" [class.is-expanded]="expandedId() === log.id">
               <div class="log-main">
                 <span class="action-badge" [style.background]="actionBg(log.action)" [style.color]="actionFg(log.action)">
-                  {{ actionLabel(log.action) }}
+                  {{ t('auditLogs.actions.' + log.action, {}, { missingHandler: { logMissingKey: false } }) || log.action }}
                 </span>
                 @if (log.resourceName) {
                   <span class="log-resource">{{ log.resourceName }}</span>
@@ -126,7 +119,7 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
                 <div class="log-meta">
                   <span class="log-user">{{ log.userEmail }}</span>
                   <span class="role-pill" [class.role-admin]="log.userRole === 'admin'" [class.role-cashier]="log.userRole === 'cashier'">
-                    {{ log.userRole === 'admin' ? 'Admin' : 'Caissier' }}
+                    {{ log.userRole === 'admin' ? t('auditLogs.roleAdmin') : t('auditLogs.roleCashier') }}
                   </span>
                   <span class="log-date">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px">
@@ -146,13 +139,13 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
                 <div class="log-details">
                   @if (log.oldValues) {
                     <div class="diff-block diff-old">
-                      <div class="diff-label">Avant</div>
+                      <div class="diff-label">{{ t('auditLogs.before') }}</div>
                       <pre>{{ log.oldValues | json }}</pre>
                     </div>
                   }
                   @if (log.newValues) {
                     <div class="diff-block diff-new">
-                      <div class="diff-label">Après</div>
+                      <div class="diff-label">{{ t('auditLogs.after') }}</div>
                       <pre>{{ log.newValues | json }}</pre>
                     </div>
                   }
@@ -161,7 +154,7 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px">
                         <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
                       </svg>
-                      IP : {{ log.ipAddress }}
+                      {{ t('auditLogs.ip', { ip: log.ipAddress }) }}
                     </div>
                   }
                 </div>
@@ -177,11 +170,11 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
-              Précédent
+              {{ t('common.previous') }}
             </button>
-            <span class="page-info">Page {{ currentPage() }} sur {{ result()!.meta.lastPage }}</span>
+            <span class="page-info">{{ t('common.page', { current: currentPage(), total: result()!.meta.lastPage }) }}</span>
             <button class="btn btn-ghost btn-sm" [disabled]="currentPage() === result()!.meta.lastPage" (click)="goPage(currentPage() + 1)">
-              Suivant
+              {{ t('common.next') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>
@@ -190,6 +183,7 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
         }
       }
     </div>
+    </ng-container>
   `,
   styles: [`
     .filters-row {
@@ -445,7 +439,7 @@ export class AuditLogsComponent implements OnInit {
   filterResource = ''
 
   readonly skeletons = [1, 2, 3, 4, 5, 6]
-  readonly actionEntries = Object.entries(ACTION_LABELS).map(([key, label]) => ({ key, label }))
+  readonly actionKeys = ACTION_KEYS
 
   ngOnInit(): void {
     this.load()
@@ -477,10 +471,6 @@ export class AuditLogsComponent implements OnInit {
 
   toggleDetails(id: number): void {
     this.expandedId.update((cur) => cur === id ? null : id)
-  }
-
-  actionLabel(action: string): string {
-    return ACTION_LABELS[action] ?? action
   }
 
   actionBg(action: string): string {

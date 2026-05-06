@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Plan, Subscription, SubscribePayload, InitPaymentResponse } from '../models'
+import type { Plan, Subscription, SubscribePayload, InitPaymentResponse, PlanUsage } from '../models'
 
 export interface SubscriptionShowResponse {
   restaurant: { subscriptionStatus: string; trialEndsAt: string | null; plan: Plan | null }
@@ -28,5 +28,9 @@ export class SubscriptionService {
 
   getPublicPlans(): Observable<Plan[]> {
     return this.http.get<Plan[]>(`${environment.apiUrl}/public/plans`)
+  }
+
+  getUsage(): Observable<PlanUsage> {
+    return this.http.get<PlanUsage>(`${environment.apiUrl}/admin/usage`)
   }
 }

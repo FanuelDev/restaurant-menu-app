@@ -390,7 +390,52 @@ export default class MainSeeder extends BaseSeeder {
     console.log(`✅ ${r2Items.length} plats créés pour "${r2.slug}"`)
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 5. RECAP
+    // 5. PAGE VIEWS FICTIVES — Le Comptoir des Saveurs (60 derniers jours)
+    // ══════════════════════════════════════════════════════════════════════════
+    const existingViews = await db.from('page_views').where('restaurant_id', r1.id).count('* as total')
+    if (Number((existingViews[0] as any).total) === 0) {
+      const viewsInserts: { restaurant_id: number; resource_type: string; resource_id: null; created_at: string }[] = []
+      const now = DateTime.now()
+
+      // Spikes on specific days for realistic look (relative to today)
+      const spikeDays = new Set([3, 10, 18, 25, 45])
+
+      for (let i = 59; i >= 0; i--) {
+        const date = now.minus({ days: i })
+        const isWeekend = date.weekday >= 6
+        const isSpike    = spikeDays.has(i)
+
+        const base  = isWeekend ? 28 : 14
+        const extra = isSpike   ? 20 : 0
+        const jitter = Math.round((Math.random() - 0.5) * 12)
+        const count = Math.max(2, base + extra + jitter)
+
+        for (let v = 0; v < count; v++) {
+          // Spread views between 11:00 and 22:00 (restaurant hours)
+          const hour = 11 + Math.floor(Math.random() * 11)
+          const minute = Math.floor(Math.random() * 60)
+          const second = Math.floor(Math.random() * 60)
+          viewsInserts.push({
+            restaurant_id: r1.id,
+            resource_type: 'menu',
+            resource_id: null,
+            created_at: date.set({ hour, minute, second }).toSQL()!,
+          })
+        }
+      }
+
+      // Batch insert (SQLite-safe chunks of 200)
+      const chunkSize = 200
+      for (let s = 0; s < viewsInserts.length; s += chunkSize) {
+        await db.table('page_views').insert(viewsInserts.slice(s, s + chunkSize))
+      }
+      console.log(`✅ ${viewsInserts.length} page_views fictives insérées pour "${r1.slug}"`)
+    } else {
+      console.log(`⏭️  page_views déjà présentes pour "${r1.slug}", skip`)
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 6. RECAP
     // ══════════════════════════════════════════════════════════════════════════
     await db.from('restaurants').update({ plan_id: proPlan.id, subscription_status: 'active' }).where('slug', 'demo')
 

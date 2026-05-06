@@ -55,4 +55,16 @@ export class SuperAdminService {
   deletePlan(id: number): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}/super-admin/plans/${id}`)
   }
+
+  assignPlan(restaurantId: number, payload: {
+    planSlug: string
+    billingCycle: 'monthly' | 'yearly'
+    duration?: number
+    note?: string
+  }): Observable<{ message: string; restaurant: Restaurant }> {
+    return this.http.post<{ message: string; restaurant: Restaurant }>(
+      `${environment.apiUrl}/super-admin/restaurants/${restaurantId}/assign-plan`,
+      payload
+    )
+  }
 }

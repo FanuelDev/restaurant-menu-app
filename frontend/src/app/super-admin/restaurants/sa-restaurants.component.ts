@@ -2,21 +2,23 @@ import { Component, signal, inject, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
 import type { Restaurant, PaginatedResponse } from '../../shared/models'
 
 @Component({
   selector: 'app-sa-restaurants',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="sa-restaurants">
 
       <header class="page-header">
         <div>
-          <h1 class="page-title">Restaurants</h1>
+          <h1 class="page-title">{{ t('superAdmin.restaurants.title') }}</h1>
           @if (result()) {
-            <p class="page-sub">{{ result()!.meta.total }} restaurant{{ result()!.meta.total > 1 ? 's' : '' }} enregistré{{ result()!.meta.total > 1 ? 's' : '' }}</p>
+            <p class="page-sub">{{ t('superAdmin.restaurants.subtitle') }}</p>
           }
         </div>
       </header>
@@ -26,14 +28,14 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
           <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
-          <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()" placeholder="Nom, slug ou pays…" class="search-input" />
+          <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()" [placeholder]="t('superAdmin.restaurants.searchPlaceholder')" class="search-input" />
         </div>
         <div class="filter-wrap">
           <select [(ngModel)]="statusFilter" (ngModelChange)="load()" class="filter-select">
-            <option value="">Tous les statuts</option>
-            <option value="active">Actifs</option>
-            <option value="trial">En essai</option>
-            <option value="blocked">Bloqués</option>
+            <option value="">{{ t('superAdmin.restaurants.filterAll') }}</option>
+            <option value="active">{{ t('superAdmin.restaurants.filterActive') }}</option>
+            <option value="trial">{{ t('superAdmin.restaurants.filterTrialing') }}</option>
+            <option value="blocked">{{ t('superAdmin.restaurants.filterBlocked') }}</option>
           </select>
           <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -50,12 +52,12 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
           <table>
             <thead>
               <tr>
-                <th>Restaurant</th>
-                <th>Slug</th>
-                <th>Pays</th>
-                <th>Plan</th>
-                <th>Statut</th>
-                <th>Inscrit le</th>
+                <th>{{ t('superAdmin.restaurants.colName') }}</th>
+                <th>{{ t('superAdmin.restaurants.colSlug') }}</th>
+                <th>{{ t('superAdmin.restaurants.colCountry') }}</th>
+                <th>{{ t('superAdmin.restaurants.colPlan') }}</th>
+                <th>{{ t('superAdmin.restaurants.colStatus') }}</th>
+                <th>{{ t('superAdmin.restaurants.colDate') }}</th>
                 <th></th>
               </tr>
             </thead>
@@ -73,21 +75,21 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
                   <td class="col-muted">{{ r.plan?.name ?? '—' }}</td>
                   <td>
                     <span class="status-badge status-{{ r.blockedAt ? 'blocked' : r.subscriptionStatus }}">
-                      {{ r.blockedAt ? 'Bloqué' : statusLabel(r.subscriptionStatus) }}
+                      {{ t('superAdmin.status.' + (r.blockedAt ? 'blocked' : r.subscriptionStatus)) }}
                     </span>
                   </td>
                   <td class="col-muted">{{ r.createdAt | date:'dd MMM yyyy' }}</td>
                   <td>
                     <div class="row-actions">
-                      <a [routerLink]="['/super-admin/restaurants', r.id]" class="action-btn" title="Voir le détail">
+                      <a [routerLink]="['/super-admin/restaurants', r.id]" class="action-btn" [title]="t('superAdmin.restaurants.viewDetails')">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       </a>
                       @if (!r.blockedAt) {
-                        <button class="action-btn action-danger" title="Bloquer" (click)="openBlockModal(r)">
+                        <button class="action-btn action-danger" [title]="t('superAdmin.restaurants.block')" (click)="openBlockModal(r)">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </button>
                       } @else {
-                        <button class="action-btn action-success" title="Débloquer" (click)="unblock(r)">
+                        <button class="action-btn action-success" [title]="t('superAdmin.restaurants.unblock')" (click)="unblock(r)">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
                         </button>
                       }
@@ -99,7 +101,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
                 <tr>
                   <td colspan="7" class="empty-row">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gray-300);margin-bottom:var(--space-2)"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                    <div>Aucun restaurant trouvé</div>
+                    <div>{{ t('superAdmin.restaurants.empty') }}</div>
                   </td>
                 </tr>
               }
@@ -111,11 +113,11 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
           <div class="pagination">
             <button class="page-btn" [disabled]="currentPage() === 1" (click)="goPage(currentPage() - 1)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              Précédent
+              {{ t('common.previous') }}
             </button>
-            <span class="page-info">{{ currentPage() }} / {{ result()!.meta.lastPage }}</span>
+            <span class="page-info">{{ t('common.page', { current: currentPage(), total: result()!.meta.lastPage }) }}</span>
             <button class="page-btn" [disabled]="currentPage() === result()!.meta.lastPage" (click)="goPage(currentPage() + 1)">
-              Suivant
+              {{ t('common.next') }}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -127,30 +129,31 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
       <div class="modal-overlay">
         <div class="modal">
           <div class="modal-header">
-            <h3>Bloquer « {{ blockingRestaurant()!.name }} »</h3>
+            <h3>{{ t('superAdmin.restaurants.blockModal.title') }} « {{ blockingRestaurant()!.name }} »</h3>
             <button (click)="blockingRestaurant.set(null)" class="close-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label class="form-label">Motif <span class="req">*</span></label>
-              <textarea [(ngModel)]="blockReason" rows="3" class="form-control" placeholder="Décrivez la raison du blocage…"></textarea>
+              <label class="form-label">{{ t('superAdmin.restaurants.blockModal.reasonLabel') }} <span class="req">*</span></label>
+              <textarea [(ngModel)]="blockReason" rows="3" class="form-control" [placeholder]="t('superAdmin.restaurants.blockModal.reasonPlaceholder')"></textarea>
             </div>
             @if (actionError()) {
               <div class="alert alert-error">{{ actionError() }}</div>
             }
           </div>
           <div class="modal-footer">
-            <button class="btn btn-ghost" (click)="blockingRestaurant.set(null)">Annuler</button>
+            <button class="btn btn-ghost" (click)="blockingRestaurant.set(null)">{{ t('common.cancel') }}</button>
             <button class="btn btn-danger" (click)="confirmBlock()" [disabled]="actionLoading() || !blockReason.trim()">
               @if (actionLoading()) { <span class="spinner"></span> }
-              Bloquer le restaurant
+              {{ t('superAdmin.restaurants.blockModal.submit') }}
             </button>
           </div>
         </div>
       </div>
     }
+    </ng-container>
   `,
   styles: [`
     .sa-restaurants { max-width: 1100px; }
@@ -301,11 +304,6 @@ export class SaRestaurantsComponent implements OnInit {
   }
 
   goPage(page: number): void { this.currentPage.set(page); this.load() }
-
-  statusLabel(s: string): string {
-    const map: Record<string, string> = { trialing: 'Essai', active: 'Actif', canceled: 'Annulé', suspended: 'Suspendu', past_due: 'En retard' }
-    return map[s] ?? s
-  }
 
   openBlockModal(r: Restaurant): void {
     this.blockingRestaurant.set(r)

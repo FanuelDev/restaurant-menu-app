@@ -1,12 +1,15 @@
 import { Component, inject } from '@angular/core'
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule, LangSwitcherComponent],
   template: `
+    <ng-container *transloco="let t">
     <div class="sa-shell">
 
       <aside class="sa-sidebar">
@@ -18,7 +21,7 @@ import { AuthService } from '../../shared/services/auth.service'
             </svg>
           </div>
           <div class="sa-brand-text">
-            <span class="sa-brand-title">Super Admin</span>
+            <span class="sa-brand-title">{{ t('superAdmin.layout.title') }}</span>
             <span class="sa-brand-sub">Plateforme</span>
           </div>
         </div>
@@ -32,14 +35,14 @@ import { AuthService } from '../../shared/services/auth.service'
               <rect x="1.5" y="10.5" width="6" height="6" rx="1.2"/>
               <rect x="10.5" y="10.5" width="6" height="6" rx="1.2"/>
             </svg>
-            <span>Tableau de bord</span>
+            <span>{{ t('superAdmin.layout.nav.dashboard') }}</span>
           </a>
           <a routerLink="/super-admin/restaurants" routerLinkActive="active" class="sa-link">
             <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M2 16V8l7-5 7 5v8H2z" stroke-linejoin="round"/>
               <rect x="6.5" y="11" width="5" height="5"/>
             </svg>
-            <span>Restaurants</span>
+            <span>{{ t('superAdmin.layout.nav.restaurants') }}</span>
           </a>
           <a routerLink="/super-admin/plans" routerLinkActive="active" class="sa-link">
             <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
@@ -47,7 +50,7 @@ import { AuthService } from '../../shared/services/auth.service'
               <path d="M1.5 8h15" stroke-linecap="round"/>
               <path d="M4.5 12h2.5" stroke-linecap="round"/>
             </svg>
-            <span>Plans tarifaires</span>
+            <span>{{ t('superAdmin.layout.nav.plans') }}</span>
           </a>
         </nav>
 
@@ -57,16 +60,16 @@ import { AuthService } from '../../shared/services/auth.service'
             <div class="sa-avatar">{{ initials() }}</div>
             <div class="sa-user-info">
               <div class="sa-user-name">{{ authService.user()?.fullName }}</div>
-              <div class="sa-user-role">Administrateur plateforme</div>
             </div>
           </div>
+          <app-lang-switcher />
           <button class="sa-logout" (click)="authService.logout()">
             <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>
               <path d="M12 13l4-4-4-4" stroke-linejoin="round"/>
               <path d="M16 9H7"/>
             </svg>
-            Déconnexion
+            {{ t('superAdmin.layout.logout') }}
           </button>
         </div>
       </aside>
@@ -75,6 +78,7 @@ import { AuthService } from '../../shared/services/auth.service'
         <router-outlet />
       </main>
     </div>
+    </ng-container>
   `,
   styles: [`
     .sa-shell {

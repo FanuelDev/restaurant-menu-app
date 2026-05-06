@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Category from '#models/category'
+import PageView from '#models/page_view'
 import {
   createCategoryValidator,
   updateCategoryValidator,
@@ -15,6 +16,9 @@ const subscriptionService = new SubscriptionService()
 export default class CategoriesController {
   /** GET /api/public/categories */
   async indexPublic({ restaurant, response }: HttpContext) {
+    // Fire-and-forget : on ne bloque pas la réponse en cas d'échec du tracking
+    PageView.create({ restaurantId: restaurant.id, resourceType: 'menu', resourceId: null }).catch(() => {})
+
     const categories = await Category.query()
       .where('restaurant_id', restaurant.id)
       .where('is_visible', true)

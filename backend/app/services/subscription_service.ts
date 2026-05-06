@@ -40,13 +40,27 @@ export default class SubscriptionService {
     const countMap = {
       categories: () => db.from('categories').where('restaurant_id', restaurant.id).count('* as total'),
       menu_items: () => db.from('menu_items').where('restaurant_id', restaurant.id).count('* as total'),
-      users: () => db.from('users').where('restaurant_id', restaurant.id).count('* as total'),
+      users: () => db.from('users').where('restaurant_id', restaurant.id).where('role', 'cashier').count('* as total'),
     }
 
     const rows = await countMap[resource]()
     const current = Number((rows[0] as { total: string | number }).total)
 
     return { allowed: current < max, current, max }
+  }
+
+  /** Retourne l'usage courant des 3 ressources limitées par le plan */
+  async getUsage(restaurant: Restaurant): Promise<{
+    categories: { current: number; max: number; allowed: boolean }
+    menuItems: { current: number; max: number; allowed: boolean }
+    users: { current: number; max: number; allowed: boolean }
+  }> {
+    const [categories, menuItems, users] = await Promise.all([
+      this.checkLimit(restaurant, 'categories'),
+      this.checkLimit(restaurant, 'menu_items'),
+      this.checkLimit(restaurant, 'users'),
+    ])
+    return { categories, menuItems, users }
   }
 
   /** Initie un paiement CinetPay pour un abonnement */

@@ -57,6 +57,13 @@ export default class CinetPayService {
     channels?: 'ALL' | 'MOBILE_MONEY' | 'CREDIT_CARD'
     metadata?: string
   }): Promise<CinetPayInitResult> {
+    if (!this.#apiKey || !this.#siteId) {
+      throw new Error('CinetPay non configuré : renseignez CINETPAY_API_KEY et CINETPAY_SITE_ID dans le fichier .env')
+    }
+    if (!this.#notifyUrl || !this.#returnUrl) {
+      throw new Error('CinetPay non configuré : renseignez CINETPAY_NOTIFY_URL et CINETPAY_RETURN_URL dans le fichier .env')
+    }
+
     const body = {
       apikey: this.#apiKey,
       site_id: this.#siteId,

@@ -100,6 +100,18 @@ export const routes: Routes = [
           import('./admin/audit-logs/audit-logs.component').then((m) => m.AuditLogsComponent),
         title: 'Journal d\'audit',
       },
+      {
+        path: 'stats',
+        loadComponent: () =>
+          import('./admin/stats/stats.component').then((m) => m.StatsComponent),
+        title: 'Statistiques',
+      },
+      {
+        path: 'api',
+        loadComponent: () =>
+          import('./admin/api/api.component').then((m) => m.ApiComponent),
+        title: 'API dédiée',
+      },
     ],
   },
 

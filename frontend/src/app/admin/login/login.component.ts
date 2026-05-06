@@ -2,13 +2,15 @@ import { Component, inject, signal } from '@angular/core'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="auth-page">
 
       <!-- Panneau gauche — visuel de marque -->
@@ -28,28 +30,26 @@ import { AuthService } from '../../shared/services/auth.service'
             </div>
           </div>
 
-          <h2 class="av-title">MenuApp</h2>
-          <p class="av-subtitle">La vitrine digitale pour vos plats</p>
+          <h2 class="av-title">{{ t('auth.appName') }}</h2>
+          <p class="av-subtitle">{{ t('auth.tagline') }}</p>
 
           <div class="av-testimonial">
-            <p class="av-quote">
-              "Notre QR menu a transformé l'expérience client. 40&nbsp;% de commandes supplémentaires en 3&nbsp;mois."
-            </p>
+            <p class="av-quote">{{ t('auth.testimonial') }}</p>
             <div class="av-author">
               <div class="av-avatar">M</div>
               <div>
-                <div class="av-author-name">Moussa Konaté</div>
-                <div class="av-author-role">Le Bivouac, Abidjan</div>
+                <div class="av-author-name">{{ t('auth.testimonialAuthor') }}</div>
+                <div class="av-author-role">{{ t('auth.testimonialPlace') }}</div>
               </div>
             </div>
           </div>
 
           <div class="av-stats">
-            <div class="av-stat"><span class="av-stat-val">1 200+</span><span class="av-stat-label">Restaurants</span></div>
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat1Value') }}</span><span class="av-stat-label">{{ t('auth.stat1Label') }}</span></div>
             <div class="av-stat-divider"></div>
-            <div class="av-stat"><span class="av-stat-val">14 pays</span><span class="av-stat-label">Présence</span></div>
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat2Value') }}</span><span class="av-stat-label">{{ t('auth.stat2Label') }}</span></div>
             <div class="av-stat-divider"></div>
-            <div class="av-stat"><span class="av-stat-val">4.9 ★</span><span class="av-stat-label">Satisfaction</span></div>
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat3Value') }}</span><span class="av-stat-label">{{ t('auth.stat3Label') }}</span></div>
           </div>
         </div>
 
@@ -70,36 +70,36 @@ import { AuthService } from '../../shared/services/auth.service'
             </svg>
           </div>
 
-          <h1 class="af-title">Bon retour&nbsp;!</h1>
-          <p class="af-sub">Connectez-vous à votre espace de gestion</p>
+          <h1 class="af-title">{{ t('auth.login.title') }}</h1>
+          <p class="af-sub">{{ t('auth.login.subtitle') }}</p>
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
             <div class="form-group">
-              <label class="form-label" for="email">Adresse e-mail</label>
+              <label class="form-label" for="email">{{ t('auth.login.email') }}</label>
               <input
                 id="email" type="email" class="form-control"
                 formControlName="email" autocomplete="email"
-                placeholder="admin@restaurant.fr"
+                [placeholder]="t('auth.login.emailPlaceholder')"
                 [class.is-invalid]="isFieldInvalid('email')"
               />
               @if (isFieldInvalid('email')) {
-                <span class="form-error" role="alert">Adresse e-mail invalide.</span>
+                <span class="form-error" role="alert">{{ t('auth.login.emailInvalid') }}</span>
               }
             </div>
 
             <div class="form-group">
               <div class="pw-label-row">
-                <label class="form-label" for="password">Mot de passe</label>
-                <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+                <label class="form-label" for="password">{{ t('auth.login.password') }}</label>
+                <a routerLink="/forgot-password" class="forgot-link">{{ t('auth.login.forgotPassword') }}</a>
               </div>
               <div class="pw-wrap">
                 <input
                   id="password" [type]="showPassword() ? 'text' : 'password'" class="form-control"
                   formControlName="password" autocomplete="current-password"
-                  placeholder="••••••••"
+                  [placeholder]="t('auth.login.passwordPlaceholder')"
                   [class.is-invalid]="isFieldInvalid('password')"
                 />
-                <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer' : 'Afficher'">
+                <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? t('auth.login.password') : t('auth.login.password')">
                   @if (showPassword()) {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -115,7 +115,7 @@ import { AuthService } from '../../shared/services/auth.service'
                 </button>
               </div>
               @if (isFieldInvalid('password')) {
-                <span class="form-error" role="alert">8 caractères minimum.</span>
+                <span class="form-error" role="alert">{{ t('auth.login.passwordMin') }}</span>
               }
             </div>
 
@@ -124,19 +124,20 @@ import { AuthService } from '../../shared/services/auth.service'
             }
 
             <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()" [attr.aria-busy]="loading()">
-              @if (loading()) { <span class="spinner"></span> Connexion&nbsp;… }
-              @else { Se connecter }
+              @if (loading()) { <span class="spinner"></span> {{ t('auth.login.submitting') }} }
+              @else { {{ t('auth.login.submit') }} }
             </button>
           </form>
 
           <p class="af-footer">
-            Pas encore de compte&nbsp;?
-            <a routerLink="/register">Essai gratuit 14&nbsp;jours</a>
+            {{ t('auth.login.noAccount') }}
+            <a routerLink="/register">{{ t('auth.login.freeTrial') }}</a>
           </p>
         </div>
       </div>
 
     </div>
+    </ng-container>
   `,
   styles: [`
     /* ── Page wrapper ─────────────────────────── */
@@ -300,6 +301,7 @@ export class LoginComponent {
   private readonly fb          = inject(FormBuilder)
   private readonly authService = inject(AuthService)
   private readonly router      = inject(Router)
+  private readonly transloco   = inject(TranslocoService)
 
   readonly loading      = signal(false)
   readonly apiError     = signal<string | null>(null)
@@ -329,8 +331,8 @@ export class LoginComponent {
         this.loading.set(false)
         this.apiError.set(
           err.status === 400 || err.status === 401
-            ? 'Identifiants incorrects. Veuillez réessayer.'
-            : 'Une erreur est survenue. Veuillez réessayer.'
+            ? this.transloco.translate('auth.login.errorCredentials')
+            : this.transloco.translate('auth.login.errorGeneric')
         )
       },
     })

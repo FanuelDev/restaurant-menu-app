@@ -1,20 +1,22 @@
 import { Component, signal, inject, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
 import type { SuperAdminStats } from '../../shared/models'
 
 @Component({
   selector: 'app-sa-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="sa-dashboard">
 
       <header class="page-header">
         <div>
-          <h1 class="page-title">Tableau de bord</h1>
-          <p class="page-sub">Vue d'ensemble de la plateforme</p>
+          <h1 class="page-title">{{ t('superAdmin.dashboard.title') }}</h1>
+          <p class="page-sub">{{ t('superAdmin.dashboard.subtitle') }}</p>
         </div>
       </header>
 
@@ -36,7 +38,7 @@ import type { SuperAdminStats } from '../../shared/models'
             </div>
             <div class="kpi-body">
               <div class="kpi-value">{{ stats()!.totals.restaurants }}</div>
-              <div class="kpi-label">Restaurants</div>
+              <div class="kpi-label">{{ t('superAdmin.dashboard.restaurants') }}</div>
             </div>
           </div>
 
@@ -51,7 +53,7 @@ import type { SuperAdminStats } from '../../shared/models'
             </div>
             <div class="kpi-body">
               <div class="kpi-value">{{ stats()!.totals.users }}</div>
-              <div class="kpi-label">Utilisateurs</div>
+              <div class="kpi-label">{{ t('superAdmin.dashboard.users') }}</div>
             </div>
           </div>
 
@@ -64,7 +66,7 @@ import type { SuperAdminStats } from '../../shared/models'
             </div>
             <div class="kpi-body">
               <div class="kpi-value">{{ stats()!.totals.activeSubscriptions }}</div>
-              <div class="kpi-label">Abonnements actifs</div>
+              <div class="kpi-label">{{ t('superAdmin.dashboard.activeSubscriptions') }}</div>
             </div>
             <div class="kpi-accent" style="background:var(--success)"></div>
           </div>
@@ -78,7 +80,7 @@ import type { SuperAdminStats } from '../../shared/models'
             </div>
             <div class="kpi-body">
               <div class="kpi-value">{{ stats()!.totals.trialRestaurants }}</div>
-              <div class="kpi-label">En période d'essai</div>
+              <div class="kpi-label">{{ t('superAdmin.dashboard.trialRestaurants') }}</div>
             </div>
             <div class="kpi-accent" style="background:var(--warning)"></div>
           </div>
@@ -92,7 +94,7 @@ import type { SuperAdminStats } from '../../shared/models'
             </div>
             <div class="kpi-body">
               <div class="kpi-value">{{ stats()!.totals.blockedRestaurants }}</div>
-              <div class="kpi-label">Bloqués</div>
+              <div class="kpi-label">{{ t('superAdmin.dashboard.blockedRestaurants') }}</div>
             </div>
             <div class="kpi-accent" style="background:var(--error)"></div>
           </div>
@@ -101,7 +103,7 @@ import type { SuperAdminStats } from '../../shared/models'
         <div class="bottom-grid">
           <div class="panel animate-up" style="--d:5">
             <div class="panel-head">
-              <h2 class="panel-title">Répartition par plan</h2>
+              <h2 class="panel-title">{{ t('superAdmin.dashboard.planDistribution') }}</h2>
             </div>
             <div class="plan-list">
               @for (p of stats()!.planStats; track p.planSlug) {
@@ -111,15 +113,15 @@ import type { SuperAdminStats } from '../../shared/models'
                 </div>
               }
               @if (!stats()!.planStats.length) {
-                <p class="empty-hint">Aucune donnée</p>
+                <p class="empty-hint">{{ t('common.loading') }}</p>
               }
             </div>
           </div>
 
           <div class="panel animate-up" style="--d:6">
             <div class="panel-head">
-              <h2 class="panel-title">Inscriptions récentes</h2>
-              <a routerLink="/super-admin/restaurants" class="see-all">Voir tout</a>
+              <h2 class="panel-title">{{ t('superAdmin.dashboard.recentSignups') }}</h2>
+              <a routerLink="/super-admin/restaurants" class="see-all">{{ t('common.show') }}</a>
             </div>
             <div class="signup-list">
               @for (r of stats()!.recentSignups; track r.id) {
@@ -130,19 +132,20 @@ import type { SuperAdminStats } from '../../shared/models'
                     <div class="signup-slug">{{ r.slug }}</div>
                   </div>
                   <div class="signup-right">
-                    <span class="status-badge status-{{ r.subscriptionStatus }}">{{ statusLabel(r.subscriptionStatus) }}</span>
+                    <span class="status-badge status-{{ r.subscriptionStatus }}">{{ t('superAdmin.status.' + r.subscriptionStatus) }}</span>
                     <div class="signup-date">{{ r.createdAt | date:'dd MMM yy' }}</div>
                   </div>
                 </a>
               }
               @if (!stats()!.recentSignups.length) {
-                <p class="empty-hint">Aucune inscription récente</p>
+                <p class="empty-hint">{{ t('superAdmin.dashboard.recentSignups') }}</p>
               }
             </div>
           </div>
         </div>
       }
     </div>
+    </ng-container>
   `,
   styles: [`
     .sa-dashboard { max-width: 1100px; }
@@ -262,8 +265,4 @@ export class SaDashboardComponent implements OnInit {
     })
   }
 
-  statusLabel(s: string): string {
-    const map: Record<string, string> = { trialing: 'Essai', active: 'Actif', canceled: 'Annulé', suspended: 'Suspendu', past_due: 'En retard' }
-    return map[s] ?? s
-  }
 }

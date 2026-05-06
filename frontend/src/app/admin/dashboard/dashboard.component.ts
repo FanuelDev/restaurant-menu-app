@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { AuthService } from '../../shared/services/auth.service'
@@ -9,22 +10,23 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="dashboard">
 
       <!-- Header -->
       <header class="page-header">
         <div>
-          <h1 class="page-title">Bonjour, {{ firstName() }}</h1>
-          <p class="page-subtitle">Voici un aperçu de votre menu aujourd'hui</p>
+          <h1 class="page-title">{{ t('dashboard.greeting', { name: firstName() }) }}</h1>
+          <p class="page-subtitle">{{ t('dashboard.subtitle') }}</p>
         </div>
         <a [href]="menuUrl()" target="_blank" rel="noopener" class="btn btn-outline">
           <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7">
             <path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/>
             <circle cx="9" cy="9" r="2.5"/>
           </svg>
-          Voir le menu
+          {{ t('dashboard.viewMenu') }}
         </a>
       </header>
 
@@ -39,7 +41,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
           </div>
           <div class="kpi-body">
             <div class="kpi-value">{{ categories().length }}</div>
-            <div class="kpi-label">Catégories</div>
+            <div class="kpi-label">{{ t('dashboard.categories') }}</div>
           </div>
           <div class="kpi-arrow">→</div>
         </a>
@@ -55,7 +57,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
           </div>
           <div class="kpi-body">
             <div class="kpi-value">{{ totalItems() }}</div>
-            <div class="kpi-label">Plats au total</div>
+            <div class="kpi-label">{{ t('dashboard.totalItems') }}</div>
           </div>
           <div class="kpi-arrow">→</div>
         </a>
@@ -68,7 +70,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
           </div>
           <div class="kpi-body">
             <div class="kpi-value">{{ availableItems() }}</div>
-            <div class="kpi-label">Disponibles</div>
+            <div class="kpi-label">{{ t('dashboard.available') }}</div>
           </div>
           <div class="kpi-percent">
             @if (totalItems() > 0) {
@@ -86,7 +88,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
           </div>
           <div class="kpi-body">
             <div class="kpi-value">{{ unavailableItems() }}</div>
-            <div class="kpi-label">Indisponibles</div>
+            <div class="kpi-label">{{ t('dashboard.unavailable') }}</div>
           </div>
         </div>
       </div>
@@ -101,8 +103,8 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
           @if (restaurant()) {
             <div class="restaurant-card animate-up delay-3">
               <div class="rc-header">
-                <h2 class="rc-title">Votre restaurant</h2>
-                <a routerLink="/admin/restaurant" class="btn btn-sm btn-outline">Modifier</a>
+                <h2 class="rc-title">{{ t('dashboard.yourRestaurant') }}</h2>
+                <a routerLink="/admin/restaurant" class="btn btn-sm btn-outline">{{ t('dashboard.edit') }}</a>
               </div>
               <div class="rc-body">
                 @if (restaurant()!.logoUrl) {
@@ -121,7 +123,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                     <div class="rc-color-dot" [style.background]="restaurant()!.brandColor"></div>
                     <span>{{ restaurant()!.brandColor }}</span>
                     <span class="rc-sep">·</span>
-                    <span class="badge" [class]="subscriptionBadgeClass()">{{ subscriptionLabel() }}</span>
+                    <span class="badge" [class]="subscriptionBadgeClass()">{{ subscriptionLabel(t) }}</span>
                   </div>
                 </div>
               </div>
@@ -133,8 +135,8 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
             <div class="qr-card animate-up delay-4">
               <div class="qr-header">
                 <div class="qr-title-wrap">
-                  <h2 class="qr-title">QR Code menu</h2>
-                  <p class="qr-desc">Donnez ce code à vos clients pour accéder au menu</p>
+                  <h2 class="qr-title">{{ t('dashboard.qrCode') }}</h2>
+                  <p class="qr-desc">{{ t('dashboard.qrDescription') }}</p>
                 </div>
                 <button
                   class="btn btn-primary btn-sm"
@@ -152,7 +154,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                       <line x1="12" y1="15" x2="12" y2="3"/>
                     </svg>
                   }
-                  Télécharger PNG
+                  {{ t('dashboard.downloadPng') }}
                 </button>
               </div>
 
@@ -169,7 +171,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                 <!-- URL + info -->
                 <div class="qr-info">
                   <div class="qr-url-block">
-                    <span class="qr-url-label">URL du menu</span>
+                    <span class="qr-url-label">{{ t('dashboard.menuUrl') }}</span>
                     <a [href]="menuUrl()" target="_blank" rel="noopener" class="qr-url">{{ menuUrl() }}</a>
                   </div>
                   <div class="qr-tips">
@@ -177,13 +179,13 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                       </svg>
-                      Imprimez en haute résolution pour de meilleures performances
+                      {{ t('dashboard.qrTip1') }}
                     </div>
                     <div class="qr-tip">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                       </svg>
-                      Compatible avec tous les smartphones sans application
+                      {{ t('dashboard.qrTip2') }}
                     </div>
                   </div>
                 </div>
@@ -194,7 +196,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 
         <!-- Right column: quick actions -->
         <div class="quick-actions animate-up delay-4">
-          <h2 class="qa-title">Actions rapides</h2>
+          <h2 class="qa-title">{{ t('dashboard.quickActions') }}</h2>
           <div class="qa-grid">
             <a routerLink="/admin/categories" class="qa-item">
               <div class="qa-icon">
@@ -202,7 +204,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                   <path d="M9 3v12M3 9h12" stroke-linecap="round"/>
                 </svg>
               </div>
-              <span>Catégorie</span>
+              <span>{{ t('dashboard.quickCategory') }}</span>
             </a>
             <a routerLink="/admin/menu-items" class="qa-item">
               <div class="qa-icon">
@@ -212,7 +214,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                   <path d="M13 6.5V17"/>
                 </svg>
               </div>
-              <span>Nouveau plat</span>
+              <span>{{ t('dashboard.quickItem') }}</span>
             </a>
             <a routerLink="/admin/restaurant" class="qa-item">
               <div class="qa-icon">
@@ -221,7 +223,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                   <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke-linecap="round"/>
                 </svg>
               </div>
-              <span>Charte graphique</span>
+              <span>{{ t('dashboard.quickBranding') }}</span>
             </a>
             <a [href]="menuUrl()" target="_blank" rel="noopener" class="qa-item">
               <div class="qa-icon">
@@ -230,7 +232,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                   <circle cx="9" cy="9" r="2.5"/>
                 </svg>
               </div>
-              <span>Voir le menu</span>
+              <span>{{ t('dashboard.viewMenu') }}</span>
             </a>
           </div>
 
@@ -241,15 +243,15 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
                  [class.sub-expired]="restaurant()!.subscriptionStatus === 'canceled'">
               <div class="sub-dot"></div>
               <div class="sub-info">
-                <span class="sub-label">{{ subscriptionLabel() }}</span>
+                <span class="sub-label">{{ subscriptionLabel(t) }}</span>
                 @if (restaurant()!.subscriptionStatus === 'trialing' && restaurant()!.trialEndsAt) {
-                  <span class="sub-detail">Essai jusqu'au {{ restaurant()!.trialEndsAt | date:'d MMM yyyy' }}</span>
+                  <span class="sub-detail">{{ t('dashboard.trialUntil', { date: (restaurant()!.trialEndsAt | date:'d MMM yyyy') }) }}</span>
                 } @else if (restaurant()!.subscriptionStatus === 'active') {
-                  <span class="sub-detail">Plan {{ restaurant()!.plan?.name ?? '' }}</span>
+                  <span class="sub-detail">{{ t('dashboard.plan', { name: restaurant()!.plan?.name ?? '' }) }}</span>
                 }
               </div>
               @if (restaurant()!.subscriptionStatus !== 'active') {
-                <a routerLink="/admin/subscription" class="btn btn-sm btn-primary" style="margin-left:auto">Passer Pro</a>
+                <a routerLink="/admin/subscription" class="btn btn-sm btn-primary" style="margin-left:auto">{{ t('dashboard.upgradePro') }}</a>
               }
             </div>
           }
@@ -257,6 +259,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .dashboard { max-width: 1000px; }
@@ -447,6 +450,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   private readonly restaurantService = inject(RestaurantService)
   private readonly authService       = inject(AuthService)
   private readonly qrCodeService     = inject(QrCodeService)
+  private readonly transloco         = inject(TranslocoService)
 
   readonly user        = this.authService.user
   readonly restaurant  = this.restaurantService.restaurant
@@ -468,10 +472,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return this.qrCodeService.menuUrl(slug)
   })
 
-  readonly subscriptionLabel = computed(() => {
+  subscriptionLabel(t: (key: string) => string): string {
     const s = this.restaurant()?.subscriptionStatus
-    return s === 'active' ? 'Abonnement actif' : s === 'trialing' ? 'Période d\'essai' : s === 'canceled' ? 'Expiré' : s ?? ''
-  })
+    if (s === 'active') return t('dashboard.subscriptionActive')
+    if (s === 'trialing') return t('dashboard.subscriptionTrial')
+    if (s === 'canceled') return t('dashboard.subscriptionExpired')
+    return s ?? ''
+  }
 
   readonly subscriptionBadgeClass = computed(() => {
     const s = this.restaurant()?.subscriptionStatus

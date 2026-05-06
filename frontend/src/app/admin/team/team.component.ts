@@ -1,26 +1,47 @@
-import { Component, signal, inject, OnInit } from '@angular/core'
+import { Component, signal, computed, inject, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
+import { RouterLink } from '@angular/router'
 import { TeamService, CreateMemberPayload } from '../../shared/services/team.service'
-import type { TeamMember } from '../../shared/models'
+import { SubscriptionService } from '../../shared/services/subscription.service'
+import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
+import type { TeamMember, ResourceUsage } from '../../shared/models'
+import { TranslocoModule } from '@jsverse/transloco'
 
 @Component({
   selector: 'app-team',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, PlanLimitBarComponent, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="page-container-lg">
 
       <div class="page-header">
         <div>
-          <h1 class="page-title">Équipe</h1>
-          <p class="page-subtitle">{{ members().length }} caissier{{ members().length > 1 ? 's' : '' }} dans votre équipe</p>
+          <h1 class="page-title">{{ t('team.title') }}</h1>
+          <p class="page-subtitle">{{ t('team.subtitle', { count: members().length, plural: members().length > 1 ? 's' : '' }) }}</p>
         </div>
-        <button class="btn btn-primary" (click)="openCreateModal()">
+        <button
+          class="btn btn-primary"
+          (click)="openCreateModal()"
+          [disabled]="atLimit()"
+          [title]="atLimit() ? t('team.limitReached') : ''"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Ajouter un caissier
+          {{ t('team.addMember') }}
         </button>
       </div>
+
+      <!-- Usage bar -->
+      @if (usage()) {
+        <div class="usage-section">
+          <app-plan-limit-bar
+            [label]="t('team.usageLabel')"
+            [current]="usage()!.current"
+            [max]="usage()!.max"
+          />
+        </div>
+      }
 
       @if (loading()) {
         <div class="members-skeleton">
@@ -36,11 +57,11 @@ import type { TeamMember } from '../../shared/models'
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <h3 class="empty-title">Aucun caissier</h3>
-          <p class="empty-desc">Ajoutez des caissiers pour qu'ils puissent gérer le menu.</p>
+          <h3 class="empty-title">{{ t('team.emptyTitle') }}</h3>
+          <p class="empty-desc">{{ t('team.emptyMessage') }}</p>
           <button class="btn btn-primary" (click)="openCreateModal()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Ajouter un caissier
+            {{ t('team.addMember') }}
           </button>
         </div>
       } @else {
@@ -58,18 +79,18 @@ import type { TeamMember } from '../../shared/models'
               <div class="member-meta">
                 <span class="status-pill" [class.pill-active]="m.isActive" [class.pill-inactive]="!m.isActive">
                   <span class="pill-dot"></span>
-                  {{ m.isActive ? 'Actif' : 'Inactif' }}
+                  {{ m.isActive ? t('common.show') : t('common.hide') }}
                 </span>
                 @if (m.lastLoginAt) {
-                  <div class="last-login">Connecté le {{ m.lastLoginAt | date:'dd MMM yyyy' }}</div>
+                  <div class="last-login">{{ t('team.lastLogin', { date: m.lastLoginAt | date:'dd MMM yyyy' }) }}</div>
                 }
               </div>
 
               <div class="member-actions">
-                <button class="action-btn" title="Modifier" (click)="openEditModal(m)">
+                <button class="action-btn" [title]="t('common.edit')" (click)="openEditModal(m)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="action-btn action-btn-danger" title="Supprimer" (click)="confirmDelete(m)">
+                <button class="action-btn action-btn-danger" [title]="t('common.delete')" (click)="confirmDelete(m)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>
               </div>
@@ -84,28 +105,28 @@ import type { TeamMember } from '../../shared/models'
       <div class="modal-overlay" (click)="closeModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3 class="modal-title">{{ editingMember() ? 'Modifier le caissier' : 'Ajouter un caissier' }}</h3>
+            <h3 class="modal-title">{{ editingMember() ? t('team.modalTitleEdit') : t('team.modalTitleNew') }}</h3>
             <button class="modal-close" (click)="closeModal()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label class="form-label">Nom complet <span class="req">*</span></label>
-              <input [(ngModel)]="form.fullName" type="text" class="form-control" placeholder="Fatou Diallo" />
+              <label class="form-label">{{ t('team.fieldFullName') }} <span class="req">*</span></label>
+              <input [(ngModel)]="form.fullName" type="text" class="form-control" [placeholder]="t('team.fieldFullNamePlaceholder')" />
             </div>
             <div class="form-group">
-              <label class="form-label">Adresse e-mail <span class="req">*</span></label>
-              <input [(ngModel)]="form.email" type="email" class="form-control" placeholder="fatou@restaurant.ci"
+              <label class="form-label">{{ t('team.fieldEmail') }} <span class="req">*</span></label>
+              <input [(ngModel)]="form.email" type="email" class="form-control" [placeholder]="t('team.fieldEmailPlaceholder')"
                      [disabled]="!!editingMember()" />
             </div>
             <div class="form-group">
-              <label class="form-label">Téléphone <span class="opt">optionnel</span></label>
-              <input [(ngModel)]="form.phone" type="text" class="form-control" placeholder="+225 07 00 00 00 00" />
+              <label class="form-label">{{ t('team.fieldPhone') }} <span class="opt">{{ t('common.loading') }}</span></label>
+              <input [(ngModel)]="form.phone" type="text" class="form-control" [placeholder]="t('team.fieldPhonePlaceholder')" />
             </div>
             @if (!editingMember()) {
               <div class="form-group">
-                <label class="form-label">Mot de passe <span class="req">*</span></label>
+                <label class="form-label">{{ t('team.fieldPassword') }} <span class="req">*</span></label>
                 <input [(ngModel)]="form.password" type="password" class="form-control" placeholder="••••••••" />
               </div>
             }
@@ -113,8 +134,8 @@ import type { TeamMember } from '../../shared/models'
               <div class="form-group">
                 <div class="toggle-row">
                   <div>
-                    <div class="toggle-label-text">Compte actif</div>
-                    <div class="toggle-hint">Le caissier peut se connecter</div>
+                    <div class="toggle-label-text">{{ t('team.fieldActive') }}</div>
+                    <div class="toggle-hint">{{ t('team.fieldActiveHint') }}</div>
                   </div>
                   <label class="toggle">
                     <input type="checkbox" [(ngModel)]="form.isActive" />
@@ -128,10 +149,10 @@ import type { TeamMember } from '../../shared/models'
             }
           </div>
           <div class="modal-footer">
-            <button class="btn btn-ghost" (click)="closeModal()">Annuler</button>
+            <button class="btn btn-ghost" (click)="closeModal()">{{ t('common.cancel') }}</button>
             <button class="btn btn-primary" (click)="submitModal()" [disabled]="modalLoading()">
               @if (modalLoading()) { <span class="spinner"></span> }
-              {{ editingMember() ? 'Enregistrer' : 'Ajouter le caissier' }}
+              {{ editingMember() ? t('team.submitEdit') : t('team.submitAdd') }}
             </button>
           </div>
         </div>
@@ -143,7 +164,7 @@ import type { TeamMember } from '../../shared/models'
       <div class="modal-overlay" (click)="deletingMember.set(null)">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3 class="modal-title">Supprimer ce caissier ?</h3>
+            <h3 class="modal-title">{{ t('team.deleteConfirmTitle') }}</h3>
             <button class="modal-close" (click)="deletingMember.set(null)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -153,24 +174,27 @@ import type { TeamMember } from '../../shared/models'
               <div class="delete-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </div>
-              <p>Voulez-vous vraiment supprimer <strong>{{ deletingMember()!.fullName }}</strong> ? Cette action est irréversible.</p>
+              <p>{{ t('team.deleteConfirmMessage', { name: deletingMember()!.fullName }) }}</p>
             </div>
             @if (modalError()) {
               <div class="alert alert-error" style="margin-top:var(--space-4)">{{ modalError() }}</div>
             }
           </div>
           <div class="modal-footer">
-            <button class="btn btn-ghost" (click)="deletingMember.set(null)">Annuler</button>
+            <button class="btn btn-ghost" (click)="deletingMember.set(null)">{{ t('common.cancel') }}</button>
             <button class="btn btn-danger" (click)="deleteMember()" [disabled]="modalLoading()">
               @if (modalLoading()) { <span class="spinner spinner-dark"></span> }
-              Supprimer définitivement
+              {{ t('team.deleteSubmit') }}
             </button>
           </div>
         </div>
       </div>
     }
+    </ng-container>
   `,
   styles: [`
+    .usage-section { margin-bottom: var(--space-5); }
+
     /* Skeleton */
     .members-skeleton { display: flex; flex-direction: column; gap: var(--space-3); }
     .skeleton-row {
@@ -264,6 +288,7 @@ import type { TeamMember } from '../../shared/models'
 })
 export class TeamComponent implements OnInit {
   private readonly teamService = inject(TeamService)
+  private readonly subscriptionService = inject(SubscriptionService)
 
   readonly members = signal<TeamMember[]>([])
   readonly loading = signal(true)
@@ -272,15 +297,27 @@ export class TeamComponent implements OnInit {
   readonly deletingMember = signal<TeamMember | null>(null)
   readonly modalLoading = signal(false)
   readonly modalError = signal<string | null>(null)
+  readonly usage = signal<ResourceUsage | null>(null)
+
+  readonly atLimit = computed(() => {
+    const u = this.usage()
+    return u !== null && u.max !== -1 && u.current >= u.max
+  })
 
   form = { fullName: '', email: '', phone: '', password: '', isActive: true }
 
-  ngOnInit(): void { this.load() }
+  ngOnInit(): void { this.load(); this.loadUsage() }
 
   private load(): void {
     this.teamService.getMembers().subscribe({
       next: (m) => { this.members.set(m); this.loading.set(false) },
       error: () => this.loading.set(false),
+    })
+  }
+
+  private loadUsage(): void {
+    this.subscriptionService.getUsage().subscribe({
+      next: (u) => this.usage.set(u.users),
     })
   }
 
@@ -321,7 +358,7 @@ export class TeamComponent implements OnInit {
           this.modalLoading.set(false)
           this.closeModal()
         },
-        error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'Erreur lors de la mise à jour.') },
+        error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'team.errorUpdate') },
       })
     } else {
       const payload: CreateMemberPayload = {
@@ -331,8 +368,15 @@ export class TeamComponent implements OnInit {
         phone: this.form.phone || undefined,
       }
       this.teamService.createMember(payload).subscribe({
-        next: (m) => { this.members.update((ms) => [...ms, m]); this.modalLoading.set(false); this.closeModal() },
-        error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'Erreur lors de la création.') },
+        next: (m) => { this.members.update((ms) => [...ms, m]); this.modalLoading.set(false); this.closeModal(); this.loadUsage() },
+        error: (err) => {
+          this.modalLoading.set(false)
+          if (err?.status === 402) {
+            this.modalError.set(err.error?.message ?? 'team.limitMessage')
+          } else {
+            this.modalError.set(err.error?.message ?? 'team.errorCreate')
+          }
+        },
       })
     }
   }
@@ -346,8 +390,9 @@ export class TeamComponent implements OnInit {
         this.members.update((ms) => ms.filter((x) => x.id !== m.id))
         this.modalLoading.set(false)
         this.deletingMember.set(null)
+        this.loadUsage()
       },
-      error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'Erreur lors de la suppression.') },
+      error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'team.errorDelete') },
     })
   }
 }

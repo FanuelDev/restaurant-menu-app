@@ -1,28 +1,54 @@
 // frontend/src/app/admin/categories/categories.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core'
+import { Component, inject, OnInit, signal, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
+import { RouterLink } from '@angular/router'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
-import type { Category } from '../../shared/models'
+import { SubscriptionService } from '../../shared/services/subscription.service'
+import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
+import type { Category, ResourceUsage } from '../../shared/models'
 
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PlanLimitBarComponent, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="page-container">
       <header class="page-header">
         <div>
-          <h1 class="page-title">Catégories</h1>
-          <p class="page-subtitle">Organisez votre menu par sections</p>
+          <h1 class="page-title">{{ t('categories.title') }}</h1>
+          <p class="page-subtitle">{{ t('categories.subtitle') }}</p>
         </div>
-        <button class="btn btn-primary" (click)="openForm()">➕ Nouvelle catégorie</button>
+        <button
+          class="btn btn-primary"
+          (click)="openForm()"
+          [disabled]="atLimit()"
+          [title]="atLimit() ? t('categories.limitReached') : ''"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+          </svg>
+          {{ t('categories.newCategory') }}
+        </button>
       </header>
+
+      <!-- Usage bar -->
+      @if (usage()) {
+        <div class="usage-section">
+          <app-plan-limit-bar
+            [label]="t('categories.usageLabel')"
+            [current]="usage()!.current"
+            [max]="usage()!.max"
+          />
+        </div>
+      }
 
       <div class="categories-list">
         @for (cat of categories(); track cat.id) {
           <div class="category-row" [class.category-row-hidden]="!cat.isVisible">
-            <div class="drag-handle" aria-hidden="true" title="Réordonner">⠿</div>
+            <div class="drag-handle" aria-hidden="true" [title]="t('categories.reorder')">⠿</div>
             <div class="category-info">
               <span class="category-name">{{ cat.name }}</span>
               @if (cat.description) {
@@ -30,21 +56,30 @@ import type { Category } from '../../shared/models'
               }
             </div>
             <div class="category-meta">
-              <span class="badge-count">{{ cat.menuItemsCount ?? 0 }} plat(s)</span>
-              <label class="toggle" [attr.aria-label]="'Visibilité de ' + cat.name">
+              <span class="badge-count">{{ t('categories.itemCount', { count: cat.menuItemsCount ?? 0 }) }}</span>
+              <label class="toggle" [attr.aria-label]="t('categories.visibilityAria', { name: cat.name })">
                 <input type="checkbox" [checked]="cat.isVisible" (change)="toggleVisibility(cat)" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
             <div class="category-actions">
-              <button class="btn-icon" (click)="openForm(cat)" [attr.aria-label]="'Modifier ' + cat.name">✏️</button>
-              <button class="btn-icon btn-icon-danger" (click)="confirmDelete(cat)" [attr.aria-label]="'Supprimer ' + cat.name">🗑️</button>
+              <button class="btn-icon" (click)="openForm(cat)" [attr.aria-label]="t('categories.editAria', { name: cat.name })">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn-icon btn-icon-danger" (click)="confirmDelete(cat)" [attr.aria-label]="t('categories.deleteAria', { name: cat.name })">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
             </div>
           </div>
         } @empty {
           <div class="empty-state">
-            <p>Aucune catégorie pour l'instant.</p>
-            <button class="btn btn-primary" (click)="openForm()">Créer la première catégorie</button>
+            <p>{{ t('categories.empty') }}</p>
+            <button class="btn btn-primary" (click)="openForm()" [disabled]="atLimit()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+              </svg>
+              {{ t('categories.createFirst') }}
+            </button>
           </div>
         }
       </div>
@@ -54,24 +89,26 @@ import type { Category } from '../../shared/models'
       <div class="modal-overlay" (click)="closeForm()" role="dialog" aria-modal="true">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h2 class="modal-title">{{ editTarget() ? 'Modifier' : 'Nouvelle' }} catégorie</h2>
-            <button class="modal-close" (click)="closeForm()" aria-label="Fermer">✕</button>
+            <h2 class="modal-title">{{ editTarget() ? t('categories.modalTitleEdit') : t('categories.modalTitleNew') }}</h2>
+            <button class="modal-close" (click)="closeForm()" [attr.aria-label]="t('common.cancel')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-body">
             <div class="form-group">
-              <label class="form-label" for="cat-name">Nom *</label>
-              <input id="cat-name" type="text" class="form-control" formControlName="name" placeholder="Ex : Entrées" />
+              <label class="form-label" for="cat-name">{{ t('categories.fieldName') }} *</label>
+              <input id="cat-name" type="text" class="form-control" formControlName="name" [placeholder]="t('categories.fieldNamePlaceholder')" />
               @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                <span class="form-error" role="alert">Le nom est obligatoire.</span>
+                <span class="form-error" role="alert">{{ t('categories.fieldNameRequired') }}</span>
               }
             </div>
             <div class="form-group">
-              <label class="form-label" for="cat-desc">Description</label>
-              <input id="cat-desc" type="text" class="form-control" formControlName="description" placeholder="Description courte (optionnel)" />
+              <label class="form-label" for="cat-desc">{{ t('categories.fieldDescription') }}</label>
+              <input id="cat-desc" type="text" class="form-control" formControlName="description" [placeholder]="t('categories.fieldDescriptionPlaceholder')" />
             </div>
             <div class="form-group">
               <label class="form-label toggle-label">
-                Visible sur la vitrine
+                {{ t('categories.fieldVisible') }}
                 <label class="toggle">
                   <input type="checkbox" formControlName="isVisible" />
                   <span class="toggle-slider"></span>
@@ -82,18 +119,21 @@ import type { Category } from '../../shared/models'
               <div class="alert-error" role="alert">{{ formError() }}</div>
             }
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline" (click)="closeForm()">Annuler</button>
+              <button type="button" class="btn btn-outline" (click)="closeForm()">{{ t('common.cancel') }}</button>
               <button type="submit" class="btn btn-primary" [disabled]="saving()">
-                {{ saving() ? 'Enregistrement…' : (editTarget() ? 'Modifier' : 'Créer') }}
+                {{ saving() ? t('common.saving') : (editTarget() ? t('categories.submitEdit') : t('categories.submitCreate')) }}
               </button>
             </div>
           </form>
         </div>
       </div>
     }
+    </ng-container>
   `,
   styles: [`
     .page-container { max-width: 800px; }
+
+    .usage-section { margin-bottom: var(--space-5); }
 
     .categories-list {
       background: white; border-radius: var(--radius-lg);
@@ -125,17 +165,85 @@ import type { Category } from '../../shared/models'
       border-radius: var(--radius-full); white-space: nowrap;
     }
     .category-actions { display: flex; gap: var(--space-2); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 0.625rem 1.25rem; border-radius: var(--radius-md);
+      font-weight: 500; font-size: 0.9375rem; cursor: pointer;
+      border: 1px solid transparent; transition: all .2s;
+    }
+    .btn-primary { background: var(--color-brand); color: white; border-color: var(--color-brand); }
+    .btn-primary:hover:not(:disabled) { background: var(--color-brand-dark); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-outline { border-color: var(--border); color: var(--text-secondary); background: var(--surface-1); }
+    .btn-outline:hover { border-color: var(--color-brand); color: var(--color-brand); }
+
+    .btn-icon {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-muted); cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
+    }
+    .btn-icon-danger:hover { background: var(--error-bg) !important; color: var(--error) !important; border-color: var(--error-border) !important; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: var(--space-4); }
+    .modal { background: var(--surface-1); border-radius: var(--radius-xl); width: 100%; max-width: 480px; box-shadow: var(--shadow-xl); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); }
+    .modal-title { font-size: 1.125rem; font-weight: 700; margin: 0; }
+    .modal-close {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-muted); cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-50); color: var(--text-primary); }
+    }
+    .modal-body { padding: var(--space-6); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); margin-top: var(--space-4); }
+
+    .form-group { margin-bottom: var(--space-4); }
+    .form-label { display: block; font-weight: 500; font-size: .875rem; color: var(--text-secondary); margin-bottom: var(--space-2); }
+    .form-control {
+      width: 100%; padding: .75rem 1rem; border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); font-size: 1rem; background: var(--surface-1);
+      color: var(--text-primary); box-sizing: border-box;
+      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
+    }
+    .form-error { color: var(--error); font-size: .8125rem; display: block; margin-top: var(--space-1); }
+    .alert-error { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error); padding: var(--space-3); border-radius: var(--radius-md); font-size: .875rem; }
+
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: var(--border); border-radius: 24px; transition: .2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s;
+    }
+    input:checked + .toggle-slider { background: var(--color-brand); }
+    input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .toggle-label { display: flex; justify-content: space-between; align-items: center; }
+
+    .empty-state { text-align: center; padding: var(--space-12); color: var(--text-muted); }
   `],
 })
 export class CategoriesComponent implements OnInit {
   private readonly menuService = inject(MenuService)
+  private readonly subscriptionService = inject(SubscriptionService)
   private readonly fb = inject(FormBuilder)
+  private readonly transloco = inject(TranslocoService)
 
   readonly categories = this.menuService.categories
   readonly showForm = signal(false)
   readonly editTarget = signal<Category | null>(null)
   readonly saving = signal(false)
   readonly formError = signal<string | null>(null)
+  readonly usage = signal<ResourceUsage | null>(null)
+
+  readonly atLimit = computed(() => {
+    const u = this.usage()
+    return u !== null && u.max !== -1 && u.current >= u.max
+  })
 
   form = this.fb.group({
     name: ['', [Validators.required]],
@@ -145,6 +253,13 @@ export class CategoriesComponent implements OnInit {
 
   ngOnInit(): void {
     this.menuService.loadAdminCategories().subscribe()
+    this.loadUsage()
+  }
+
+  private loadUsage(): void {
+    this.subscriptionService.getUsage().subscribe({
+      next: (u) => this.usage.set(u.categories),
+    })
   }
 
   openForm(category?: Category): void {
@@ -172,8 +287,15 @@ export class CategoriesComponent implements OnInit {
     const target = this.editTarget()
     const req$ = target ? this.menuService.updateCategory(target.id, data) : this.menuService.createCategory(data)
     req$.subscribe({
-      next: () => { this.saving.set(false); this.closeForm() },
-      error: (err) => { this.saving.set(false); this.formError.set(err?.error?.message ?? 'Une erreur est survenue.') },
+      next: () => { this.saving.set(false); this.closeForm(); this.loadUsage() },
+      error: (err) => {
+        this.saving.set(false)
+        if (err?.status === 402) {
+          this.formError.set(err?.error?.message ?? this.transloco.translate('categories.limitMessage'))
+        } else {
+          this.formError.set(err?.error?.message ?? this.transloco.translate('categories.errorGeneric'))
+        }
+      },
     })
   }
 
@@ -182,8 +304,10 @@ export class CategoriesComponent implements OnInit {
   }
 
   confirmDelete(cat: Category): void {
-    if (confirm(`Supprimer la catégorie "${cat.name}" et tous ses plats ?`)) {
-      this.menuService.deleteCategory(cat.id).subscribe()
+    if (confirm(this.transloco.translate('categories.deleteConfirm', { name: cat.name }))) {
+      this.menuService.deleteCategory(cat.id).subscribe({
+        next: () => this.loadUsage(),
+      })
     }
   }
 }

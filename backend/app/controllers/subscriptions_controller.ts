@@ -50,15 +50,27 @@ export default class SubscriptionsController {
       return response.badRequest({ message: 'Le plan gratuit ne nécessite pas de paiement.' })
     }
 
-    const { paymentUrl, transactionId } = await this.#subscriptionService.initiatePayment({
-      restaurant,
-      plan,
-      billingCycle,
-      customerName: user.fullName?.split(' ')[0] ?? 'Client',
-      customerSurname: user.fullName?.split(' ').slice(1).join(' ') ?? '',
-      customerEmail: user.email,
-      customerPhone: user.phone ?? restaurant.phone ?? '0000000000',
-    })
+    let paymentUrl: string
+    let transactionId: string
+    try {
+      const result = await this.#subscriptionService.initiatePayment({
+        restaurant,
+        plan,
+        billingCycle,
+        customerName: user.fullName?.split(' ')[0] ?? 'Client',
+        customerSurname: user.fullName?.split(' ').slice(1).join(' ') ?? '',
+        customerEmail: user.email,
+        customerPhone: (user as any).phone ?? restaurant.phone ?? '0000000000',
+      })
+      paymentUrl = result.paymentUrl
+      transactionId = result.transactionId
+    } catch (err: any) {
+      const msg: string = err?.message ?? 'Erreur de paiement'
+      if (msg.includes('non configuré')) {
+        return response.serviceUnavailable({ message: 'Le système de paiement n\'est pas encore configuré. Contactez l\'administrateur.' })
+      }
+      return response.internalServerError({ message: msg })
+    }
 
     await this.#auditService.log({
       ctx: { request } as never,
@@ -83,6 +95,12 @@ export default class SubscriptionsController {
     })
 
     return response.ok({ message: 'Abonnement annulé.' })
+  }
+
+  /** GET /api/admin/usage — usage courant des ressources du plan */
+  async usage({ restaurant, response }: HttpContext) {
+    const data = await this.#subscriptionService.getUsage(restaurant)
+    return response.ok(data)
   }
 
   /** GET /api/public/plans — liste publique pour la page pricing */

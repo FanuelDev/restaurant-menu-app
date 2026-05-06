@@ -2,37 +2,62 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
+import { RouterLink } from '@angular/router'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
-import type { Category, MenuItem, MenuItemBadge } from '../../shared/models'
+import { SubscriptionService } from '../../shared/services/subscription.service'
+import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
+import type { Category, MenuItem, MenuItemBadge, ResourceUsage } from '../../shared/models'
 
-const BADGES: { value: MenuItemBadge; label: string }[] = [
-  { value: null, label: 'Aucun' },
-  { value: 'new', label: 'Nouveau' },
-  { value: 'popular', label: 'Populaire' },
-  { value: 'vegetarian', label: 'Végétarien' },
-  { value: 'spicy', label: 'Épicé' },
-]
+const BADGE_KEYS: Record<string, string> = {
+  new: 'menuItems.badgeNew',
+  popular: 'menuItems.badgePopular',
+  vegetarian: 'menuItems.badgeVegetarian',
+  spicy: 'menuItems.badgeSpicy',
+}
 
 @Component({
   selector: 'app-menu-items',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PlanLimitBarComponent, TranslocoModule],
   template: `
+    <ng-container *transloco="let t">
     <div class="page-container">
       <header class="page-header">
         <div>
-          <h1 class="page-title">Plats du menu</h1>
-          <p class="page-subtitle">{{ menuItems().length }} plat(s) au total</p>
+          <h1 class="page-title">{{ t('menuItems.title') }}</h1>
+          <p class="page-subtitle">{{ t('menuItems.subtitle', { count: menuItems().length }) }}</p>
         </div>
-        <button class="btn btn-primary" (click)="openForm()">➕ Nouveau plat</button>
+        <button
+          class="btn btn-primary"
+          (click)="openForm()"
+          [disabled]="atLimit()"
+          [title]="atLimit() ? t('menuItems.limitReached') : ''"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+          </svg>
+          {{ t('menuItems.newItem') }}
+        </button>
       </header>
+
+      <!-- Usage bar -->
+      @if (usage()) {
+        <div class="usage-section">
+          <app-plan-limit-bar
+            [label]="t('menuItems.usageLabel')"
+            [current]="usage()!.current"
+            [max]="usage()!.max"
+          />
+        </div>
+      }
 
       <div class="filter-bar">
         <button
           class="filter-tab"
           [class.active]="!activeCategoryId()"
           (click)="activeCategoryId.set(null)"
-        >Tous</button>
+        >{{ t('menuItems.filterAll') }}</button>
         @for (cat of categories(); track cat.id) {
           <button
             class="filter-tab"
@@ -52,7 +77,7 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
                 <div class="item-card__image-placeholder" aria-hidden="true">🍽️</div>
               }
               @if (item.badge) {
-                <span class="badge badge--{{ item.badge }}">{{ getBadgeLabel(item.badge) }}</span>
+                <span class="badge badge--{{ item.badge }}">{{ t(getBadgeKey(item.badge)) }}</span>
               }
             </div>
 
@@ -68,21 +93,25 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
             </div>
 
             <div class="item-card__footer">
-              <label class="toggle" [attr.aria-label]="'Disponibilité de ' + item.name">
+              <label class="toggle" [attr.aria-label]="t('menuItems.availability', { name: item.name })">
                 <input type="checkbox" [checked]="item.isAvailable" (change)="toggleAvailability(item)" />
                 <span class="toggle-slider"></span>
               </label>
-              <span class="item-card__status">{{ item.isAvailable ? 'Disponible' : 'Indisponible' }}</span>
+              <span class="item-card__status">{{ item.isAvailable ? t('menuItems.statusAvailable') : t('menuItems.statusUnavailable') }}</span>
 
               <div class="item-card__actions">
-                <button class="btn-icon" (click)="openForm(item)" [attr.aria-label]="'Modifier ' + item.name">✏️</button>
-                <button class="btn-icon btn-icon--danger" (click)="confirmDelete(item)" [attr.aria-label]="'Supprimer ' + item.name">🗑️</button>
+                <button class="btn-icon" (click)="openForm(item)" [attr.aria-label]="t('menuItems.editAria', { name: item.name })">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-icon btn-icon--danger" (click)="confirmDelete(item)" [attr.aria-label]="t('menuItems.deleteAria', { name: item.name })">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
               </div>
             </div>
           </div>
         } @empty {
           <div class="empty-state">
-            <p>Aucun plat dans cette catégorie.</p>
+            <p>{{ t('menuItems.empty') }}</p>
           </div>
         }
       </div>
@@ -92,13 +121,15 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
       <div class="modal-overlay" (click)="closeForm()" role="dialog" aria-modal="true">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal__header">
-            <h2 class="modal__title">{{ editTarget() ? 'Modifier le plat' : 'Nouveau plat' }}</h2>
-            <button class="modal__close" (click)="closeForm()" aria-label="Fermer">✕</button>
+            <h2 class="modal__title">{{ editTarget() ? t('menuItems.modalTitleEdit') : t('menuItems.modalTitleNew') }}</h2>
+            <button class="modal__close" (click)="closeForm()" [attr.aria-label]="t('common.cancel')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal__body" enctype="multipart/form-data">
             <div class="form-group">
-              <label class="form-label">Image du plat</label>
+              <label class="form-label">{{ t('menuItems.imageLabel') }}</label>
               <div class="image-upload-zone" (click)="fileInput.click()" role="button" tabindex="0" (keydown.enter)="fileInput.click()">
                 @if (imagePreview()) {
                   <img [src]="imagePreview()" alt="Aperçu" class="image-preview" />
@@ -107,64 +138,66 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
                 } @else {
                   <div class="image-upload-placeholder">
                     <span aria-hidden="true">📷</span>
-                    <span>Cliquer pour uploader une image</span>
-                    <small>JPEG, PNG, WebP · max 5 Mo</small>
+                    <span>{{ t('menuItems.imageClick') }}</span>
+                    <small>{{ t('menuItems.imageHint') }}</small>
                   </div>
                 }
               </div>
-              <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileChange($event)" aria-label="Sélectionner une image" />
+              <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileChange($event)" [attr.aria-label]="t('menuItems.imageLabel')" />
             </div>
 
             <div class="form-row">
               <div class="form-group flex-2">
-                <label class="form-label" for="item-name">Nom *</label>
-                <input id="item-name" type="text" class="form-control" formControlName="name" placeholder="Ex : Tartare de thon" />
+                <label class="form-label" for="item-name">{{ t('menuItems.fieldName') }} *</label>
+                <input id="item-name" type="text" class="form-control" formControlName="name" [placeholder]="t('menuItems.fieldNamePlaceholder')" />
                 @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                  <span class="form-error" role="alert">Le nom est obligatoire.</span>
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldNameRequired') }}</span>
                 }
               </div>
 
               <div class="form-group flex-1">
-                <label class="form-label" for="item-price">Prix (en €) *</label>
-                <input id="item-price" type="number" step="0.01" min="0" class="form-control" formControlName="priceEuros" placeholder="12.50" />
+                <label class="form-label" for="item-price">{{ t('menuItems.fieldPrice') }} *</label>
+                <input id="item-price" type="number" step="0.01" min="0" class="form-control" formControlName="priceEuros" [placeholder]="t('menuItems.fieldPricePlaceholder')" />
                 @if (form.get('priceEuros')?.invalid && form.get('priceEuros')?.touched) {
-                  <span class="form-error" role="alert">Prix invalide.</span>
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldPriceInvalid') }}</span>
                 }
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="item-desc">Description</label>
-              <textarea id="item-desc" class="form-control" formControlName="description" rows="3" placeholder="Description du plat…"></textarea>
+              <label class="form-label" for="item-desc">{{ t('menuItems.fieldDescription') }}</label>
+              <textarea id="item-desc" class="form-control" formControlName="description" rows="3" [placeholder]="t('menuItems.fieldDescriptionPlaceholder')"></textarea>
             </div>
 
             <div class="form-row">
               <div class="form-group flex-1">
-                <label class="form-label" for="item-cat">Catégorie *</label>
+                <label class="form-label" for="item-cat">{{ t('menuItems.fieldCategory') }} *</label>
                 <select id="item-cat" class="form-control" formControlName="categoryId">
-                  <option value="">— Choisir —</option>
+                  <option value="">{{ t('menuItems.fieldCategoryPlaceholder') }}</option>
                   @for (cat of categories(); track cat.id) {
                     <option [value]="cat.id">{{ cat.name }}</option>
                   }
                 </select>
                 @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
-                  <span class="form-error" role="alert">Catégorie obligatoire.</span>
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldCategoryRequired') }}</span>
                 }
               </div>
 
               <div class="form-group flex-1">
-                <label class="form-label" for="item-badge">Badge</label>
+                <label class="form-label" for="item-badge">{{ t('menuItems.fieldBadge') }}</label>
                 <select id="item-badge" class="form-control" formControlName="badge">
-                  @for (b of badgeOptions; track b.value) {
-                    <option [value]="b.value ?? ''">{{ b.label }}</option>
-                  }
+                  <option value="">{{ t('menuItems.badgeNone') }}</option>
+                  <option value="new">{{ t('menuItems.badgeNew') }}</option>
+                  <option value="popular">{{ t('menuItems.badgePopular') }}</option>
+                  <option value="vegetarian">{{ t('menuItems.badgeVegetarian') }}</option>
+                  <option value="spicy">{{ t('menuItems.badgeSpicy') }}</option>
                 </select>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label toggle-label">
-                Disponible à la commande
+                {{ t('menuItems.fieldAvailable') }}
                 <label class="toggle">
                   <input type="checkbox" formControlName="isAvailable" />
                   <span class="toggle-slider"></span>
@@ -177,21 +210,23 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
             }
 
             <div class="modal__footer">
-              <button type="button" class="btn btn-outline" (click)="closeForm()">Annuler</button>
+              <button type="button" class="btn btn-outline" (click)="closeForm()">{{ t('common.cancel') }}</button>
               <button type="submit" class="btn btn-primary" [disabled]="saving()">
-                {{ saving() ? 'Enregistrement…' : (editTarget() ? 'Modifier' : 'Créer') }}
+                {{ saving() ? t('common.saving') : (editTarget() ? t('menuItems.submitEdit') : t('menuItems.submitCreate')) }}
               </button>
             </div>
           </form>
         </div>
       </div>
     }
+    </ng-container>
   `,
   styles: [`
     .page-container { max-width: 1100px; }
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-5); }
-    .page-title { font-family: var(--font-display); font-size: 2rem; margin: 0 0 var(--space-1); }
-    .page-subtitle { color: var(--text-muted); margin: 0; }
+    .usage-section { margin-bottom: var(--space-5); }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-8); }
+    .page-title { font-family: var(--font-display); font-size: 1.875rem; margin: 0 0 var(--space-1); color: var(--text-primary); line-height: 1.15; }
+    .page-subtitle { color: var(--text-muted); margin: 0; font-size: .9375rem; }
 
     .filter-bar { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
     .filter-tab {
@@ -289,11 +324,12 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
     .empty-state { grid-column: 1 / -1; text-align: center; padding: var(--space-12); color: var(--text-muted); }
 
     .btn-icon {
-      background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: var(--space-1) var(--space-2); cursor: pointer; font-size: 0.9rem;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-muted); cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
     }
-    .btn-icon:hover { background: var(--surface-2); }
-    .btn-icon--danger:hover { background: var(--error-bg); border-color: var(--error-border); }
+    .btn-icon--danger:hover { background: var(--error-bg) !important; color: var(--error) !important; border-color: var(--error-border) !important; }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: var(--space-4); overflow-y: auto; }
     .modal {
@@ -306,7 +342,12 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
     }
     .modal__header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface-1); z-index: 1; }
     .modal__title { font-size: 1.25rem; font-weight: 700; margin: 0; }
-    .modal__close { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--text-muted); }
+    .modal__close {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-md);
+      color: var(--text-muted); cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-50); color: var(--text-primary); }
+    }
     .modal__body { padding: var(--space-6); }
     .modal__footer { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6); }
 
@@ -356,9 +397,10 @@ const BADGES: { value: MenuItemBadge; label: string }[] = [
 })
 export class MenuItemsComponent implements OnInit {
   private readonly menuService = inject(MenuService)
+  private readonly subscriptionService = inject(SubscriptionService)
   private readonly fb = inject(FormBuilder)
+  private readonly transloco = inject(TranslocoService)
 
-  readonly badgeOptions = BADGES
   readonly categories = this.menuService.categories
   readonly menuItems = this.menuService.menuItems
   readonly showForm = signal(false)
@@ -367,6 +409,12 @@ export class MenuItemsComponent implements OnInit {
   readonly formError = signal<string | null>(null)
   readonly activeCategoryId = signal<number | null>(null)
   readonly imagePreview = signal<string | null>(null)
+  readonly usage = signal<ResourceUsage | null>(null)
+
+  readonly atLimit = computed(() => {
+    const u = this.usage()
+    return u !== null && u.max !== -1 && u.current >= u.max
+  })
 
   private selectedFile: File | null = null
 
@@ -388,10 +436,17 @@ export class MenuItemsComponent implements OnInit {
   ngOnInit(): void {
     this.menuService.loadAdminCategories().subscribe()
     this.menuService.loadAdminItems().subscribe()
+    this.loadUsage()
   }
 
-  getBadgeLabel(badge: MenuItemBadge): string {
-    return BADGES.find((b) => b.value === badge)?.label ?? ''
+  private loadUsage(): void {
+    this.subscriptionService.getUsage().subscribe({
+      next: (u) => this.usage.set(u.menuItems),
+    })
+  }
+
+  getBadgeKey(badge: MenuItemBadge): string {
+    return BADGE_KEYS[badge as string] ?? 'menuItems.badgeNone'
   }
 
   getCategoryName(catId: number): string {
@@ -471,10 +526,15 @@ export class MenuItemsComponent implements OnInit {
       next: () => {
         this.saving.set(false)
         this.closeForm()
+        this.loadUsage()
       },
       error: (err) => {
         this.saving.set(false)
-        this.formError.set(err?.error?.message ?? 'Une erreur est survenue.')
+        if (err?.status === 402) {
+          this.formError.set(err?.error?.message ?? this.transloco.translate('menuItems.limitMessage'))
+        } else {
+          this.formError.set(err?.error?.message ?? this.transloco.translate('menuItems.errorGeneric'))
+        }
       },
     })
   }
@@ -484,8 +544,10 @@ export class MenuItemsComponent implements OnInit {
   }
 
   confirmDelete(item: MenuItem): void {
-    if (confirm(`Supprimer le plat "${item.name}" ?`)) {
-      this.menuService.deleteMenuItem(item.id).subscribe()
+    if (confirm(this.transloco.translate('menuItems.deleteConfirm', { name: item.name }))) {
+      this.menuService.deleteMenuItem(item.id).subscribe({
+        next: () => this.loadUsage(),
+      })
     }
   }
 }
