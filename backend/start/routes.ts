@@ -18,6 +18,8 @@ const TeamController = () => import('#controllers/team_controller')
 const AuditLogsController = () => import('#controllers/audit_logs_controller')
 const StatsController = () => import('#controllers/stats_controller')
 const WebhooksController = () => import('#controllers/webhooks_controller')
+const OrdersController = () => import('#controllers/orders_controller')
+const ReservationsController = () => import('#controllers/reservations_controller')
 
 // Super admin
 const SARestaurantsController = () => import('#controllers/super_admin/restaurants_controller')
@@ -77,6 +79,12 @@ router
     router.get('/restaurant', [RestaurantController, 'showPublic'])
     router.get('/categories', [CategoriesController, 'indexPublic'])
     router.get('/menu-items', [MenuItemsController, 'indexPublic'])
+    router.get('/features', [OrdersController, 'featureCheck'])
+    router.post('/orders', [OrdersController, 'store']).use(middleware.enterpriseGuard())
+    router.get('/orders/:orderNumber', [OrdersController, 'show'])
+    router.get('/redeem/:token', [OrdersController, 'redeemInfo'])
+    router.post('/redeem/:token', [OrdersController, 'redeem'])
+    router.post('/reservations', [ReservationsController, 'store']).use(middleware.enterpriseGuard())
   })
   .prefix('/api/public')
   .use(middleware.tenant())
@@ -119,6 +127,22 @@ router
 
     // Audit logs — admin only
     router.get('/audit-logs', [AuditLogsController, 'index'])
+      .use(middleware.role(['admin']))
+
+    // Orders (Enterprise feature)
+    router.get('/orders', [OrdersController, 'adminIndex'])
+      .use(middleware.role(['admin']))
+    router.get('/orders/scan/:token', [OrdersController, 'adminScanToken'])
+      .use(middleware.role(['admin']))
+    router.patch('/orders/:id/status', [OrdersController, 'adminUpdateStatus'])
+      .use(middleware.role(['admin']))
+    router.post('/orders/:id/revoke-gift', [OrdersController, 'adminRevokeGift'])
+      .use(middleware.role(['admin']))
+
+    // Reservations (Enterprise feature)
+    router.get('/reservations', [ReservationsController, 'adminIndex'])
+      .use(middleware.role(['admin']))
+    router.patch('/reservations/:id/status', [ReservationsController, 'adminUpdateStatus'])
       .use(middleware.role(['admin']))
 
     // Categories — admin + cashier can read/create/update; only admin can delete

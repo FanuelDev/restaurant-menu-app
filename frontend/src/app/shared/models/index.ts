@@ -232,6 +232,83 @@ export interface StatsData {
   topItems: StatsTopItem[]
 }
 
+// ─── Orders ──────────────────────────────────────────────────────────────────
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'no_show'
+
+export interface CartItem {
+  menuItem: MenuItem
+  quantity: number
+  specialInstructions: string
+}
+
+export interface OrderItem {
+  id: number
+  orderId: number
+  menuItemId: number | null
+  menuItemName: string
+  menuItemPriceInCents: number
+  quantity: number
+  specialInstructions: string | null
+  subtotalInCents: number
+}
+
+export interface Order {
+  id: number
+  restaurantId: number
+  orderNumber: string
+  customerName: string
+  customerPhone: string | null
+  customerEmail: string | null
+  status: OrderStatus
+  notes: string | null
+  totalInCents: number
+  isGift: boolean
+  giftMessage: string | null
+  giftToken: string | null
+  giftRedeemedAt: string | null
+  giftRedeemedBy: string | null
+  giftRedeemedContact: string | null
+  giftRevokedAt: string | null
+  items: OrderItem[]
+  createdAt: string
+}
+
+export interface Reservation {
+  id: number
+  restaurantId: number
+  customerName: string
+  customerPhone: string
+  customerEmail: string | null
+  reservedDate: string
+  reservedTime: string
+  guestsCount: number
+  specialRequests: string | null
+  status: ReservationStatus
+  notes: string | null
+  createdAt: string
+}
+
+export interface PlaceOrderPayload {
+  customerName: string
+  customerPhone: string | null
+  customerEmail: string | null
+  notes: string | null
+  isGift: boolean
+  giftMessage: string | null
+  items: { menuItemId: number; quantity: number; specialInstructions: string | null }[]
+}
+
+export interface CreateReservationPayload {
+  customerName: string
+  customerPhone: string
+  customerEmail: string | null
+  reservedDate: string
+  reservedTime: string
+  guestsCount: number
+  specialRequests: string | null
+}
+
 // ─── Misc ────────────────────────────────────────────────────────────────────
 export interface ApiError {
   message: string

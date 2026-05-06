@@ -1,20 +1,21 @@
 // frontend/src/app/public/dish-card/dish-card.component.ts
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core'
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule } from '@jsverse/transloco'
 import { trigger, state, style, animate, transition } from '@angular/animations'
 import type { MenuItem, MenuItemBadge } from '../../shared/models'
 
-const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: string }> = {
-  new:        { label: 'Nouveau',     icon: '✨', cssClass: 'badge-new' },
-  popular:    { label: 'Populaire',   icon: '⭐', cssClass: 'badge-popular' },
-  vegetarian: { label: 'Végétarien', icon: '🌿', cssClass: 'badge-vegetarian' },
-  spicy:      { label: 'Épicé',       icon: '🌶️', cssClass: 'badge-spicy' },
+const BADGE_CONFIG: Record<string, { key: string; icon: string; cssClass: string }> = {
+  new:        { key: 'public.menu.badgeNew',        icon: '✨', cssClass: 'badge-new' },
+  popular:    { key: 'public.menu.badgePopular',    icon: '⭐', cssClass: 'badge-popular' },
+  vegetarian: { key: 'public.menu.badgeVegetarian', icon: '🌿', cssClass: 'badge-vegetarian' },
+  spicy:      { key: 'public.menu.badgeSpicy',       icon: '🌶️', cssClass: 'badge-spicy' },
 }
 
 @Component({
   selector: 'app-dish-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('cardReveal', [
@@ -25,6 +26,7 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: stri
     ]),
   ],
   template: `
+    <ng-container *transloco="let t">
     <article
       class="dish-card"
       [class.dish-card-unavailable]="!item.isAvailable"
@@ -42,14 +44,14 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: stri
           <span
             class="dish-badge"
             [ngClass]="getBadge(item.badge)!.cssClass"
-            [attr.aria-label]="getBadge(item.badge)!.label"
+            [attr.aria-label]="t(getBadge(item.badge)!.key)"
           >
-            {{ getBadge(item.badge)!.icon }} {{ getBadge(item.badge)!.label }}
+            {{ getBadge(item.badge)!.icon }} {{ t(getBadge(item.badge)!.key) }}
           </span>
         }
         @if (!item.isAvailable) {
-          <div class="dish-unavailable-overlay" aria-label="Indisponible">
-            <span>Indisponible</span>
+          <div class="dish-unavailable-overlay" [attr.aria-label]="t('public.menu.unavailableOverlay')">
+            <span>{{ t('public.menu.unavailableOverlay') }}</span>
           </div>
         }
       </div>
@@ -61,8 +63,24 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: stri
         @if (item.description) {
           <p class="dish-desc">{{ item.description }}</p>
         }
+        @if (cartEnabled && item.isAvailable) {
+          <div class="dish-cart-row">
+            @if (qty > 0) {
+              <div class="dish-qty-ctrl">
+                <button class="qty-btn" (click)="remove.emit()" type="button" aria-label="Remove one">−</button>
+                <span class="qty-val">{{ qty }}</span>
+                <button class="qty-btn" (click)="add.emit()" type="button" aria-label="Add one">+</button>
+              </div>
+            } @else {
+              <button class="dish-add-btn" (click)="add.emit()" type="button">
+                + {{ t('publicOrder.addToCart') }}
+              </button>
+            }
+          </div>
+        }
       </div>
     </article>
+    </ng-container>
   `,
   styles: [`
     .dish-card {
@@ -156,10 +174,50 @@ const BADGE_CONFIG: Record<string, { label: string; icon: string; cssClass: stri
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+    .dish-cart-row {
+      margin-top: var(--space-4);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .dish-add-btn {
+      padding: 7px 16px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-brand);
+      background: transparent;
+      color: var(--color-brand);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .dish-add-btn:hover { background: var(--color-brand); color: white; }
+    .dish-qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--gray-100);
+      border-radius: var(--radius-full);
+      padding: 4px 6px;
+    }
+    .qty-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%; border: none;
+      background: white; color: var(--text-primary);
+      font-size: 1.1rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,.12);
+      transition: background 0.15s;
+    }
+    .qty-btn:hover { background: var(--gray-200); }
+    .qty-val { font-size: 0.9375rem; font-weight: 700; min-width: 24px; text-align: center; color: var(--text-primary); }
   `],
 })
 export class DishCardComponent {
   @Input({ required: true }) item!: MenuItem
+  @Input() cartEnabled = false
+  @Input() qty = 0
+  @Output() add = new EventEmitter<void>()
+  @Output() remove = new EventEmitter<void>()
 
   getBadge(badge: MenuItemBadge) {
     return badge ? BADGE_CONFIG[badge] ?? null : null

@@ -27,6 +27,12 @@ export const routes: Routes = [
       import('./public/register/register.component').then((m) => m.RegisterComponent),
     title: 'Inscription',
   },
+  {
+    path: 'redeem/:token',
+    loadComponent: () =>
+      import('./public/redeem/redeem.component').then((m) => m.RedeemComponent),
+    title: 'Récupérer votre cadeau',
+  },
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
   {
@@ -105,6 +111,18 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/stats/stats.component').then((m) => m.StatsComponent),
         title: 'Statistiques',
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./admin/orders/orders.component').then((m) => m.OrdersComponent),
+        title: 'Commandes',
+      },
+      {
+        path: 'reservations',
+        loadComponent: () =>
+          import('./admin/reservations/reservations.component').then((m) => m.ReservationsComponent),
+        title: 'Réservations',
       },
       {
         path: 'api',

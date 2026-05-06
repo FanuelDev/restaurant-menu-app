@@ -1,18 +1,19 @@
-import { Component, Input, ChangeDetectionStrategy, computed, signal } from '@angular/core'
+import { Component, Input, ChangeDetectionStrategy, computed, signal, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { trigger, style, animate, transition } from '@angular/animations'
 import type { Restaurant } from '../../shared/models'
 
-const DAYS_FR: Record<string, string> = {
-  monday: 'Lun', tuesday: 'Mar', wednesday: 'Mer',
-  thursday: 'Jeu', friday: 'Ven', saturday: 'Sam', sunday: 'Dim',
+const DAY_KEYS: Record<string, string> = {
+  monday: 'public.menu.dayMon', tuesday: 'public.menu.dayTue', wednesday: 'public.menu.dayWed',
+  thursday: 'public.menu.dayThu', friday: 'public.menu.dayFri', saturday: 'public.menu.daySat', sunday: 'public.menu.daySun',
 }
 const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('fadeUp', [
@@ -23,7 +24,8 @@ const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'satu
     ]),
   ],
   template: `
-    <section class="hero" aria-label="Présentation du restaurant">
+    <ng-container *transloco="let t">
+    <section class="hero" [attr.aria-label]="t('public.menu.heroAriaLabel')">
       <!-- Background photo (custom or default) -->
       <div class="hero-bg" aria-hidden="true"
            [style.background-image]="coverBg()"></div>
@@ -79,7 +81,7 @@ const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'satu
 
         <a href="#menu-content" class="hero-cta">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-          Voir le menu
+          {{ t('public.menu.viewMenu') }}
         </a>
       </div>
 
@@ -90,7 +92,7 @@ const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'satu
             @for (entry of openingHoursEntries(); track entry.day) {
               <div class="hero-hours-day" [class.hero-hours-today]="entry.isToday" [class.hero-hours-closed]="entry.closed">
                 <span class="hero-hours-label">{{ entry.label }}</span>
-                <span class="hero-hours-time">{{ entry.closed ? 'Fermé' : entry.open + '–' + entry.close }}</span>
+                <span class="hero-hours-time">{{ entry.closed ? t('public.menu.hoursClosedDay') : entry.open + '–' + entry.close }}</span>
               </div>
             }
           </div>
@@ -102,6 +104,7 @@ const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'satu
         <div class="hero-scroll-dot"></div>
       </div>
     </section>
+    </ng-container>
   `,
   styles: [`
     .hero {
@@ -265,11 +268,17 @@ const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'satu
   `],
 })
 export class HeroComponent {
+  private readonly transloco = inject(TranslocoService)
+
   static readonly DEFAULT_COVER = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80'
 
   @Input() set restaurant(r: Restaurant | null) { this._restaurant = r }
   get restaurant() { return this._restaurant }
   private _restaurant: Restaurant | null = null
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.transloco.translate(key, params)
+  }
 
   coverBg(): string {
     const url = this._restaurant?.coverImageUrl || HeroComponent.DEFAULT_COVER
@@ -283,7 +292,7 @@ export class HeroComponent {
     const dayKey = DAY_ORDER[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]
     const day = hours[dayKey]
     if (!day) return null
-    if (day.closed) return { open: false, label: 'Fermé aujourd\'hui' }
+    if (day.closed) return { open: false, label: this.t('public.menu.statusClosed') }
 
     const now = new Date()
     const [oh, om] = day.open.split(':').map(Number)
@@ -293,8 +302,10 @@ export class HeroComponent {
     const closeMin = ch * 60 + cm
     const isOpen = nowMin >= openMin && nowMin < closeMin
     return isOpen
-      ? { open: true, label: `Ouvert · ferme à ${day.close}` }
-      : { open: false, label: nowMin < openMin ? `Ouvre à ${day.open}` : `Fermé · rouvre ${this.nextOpenDay()}` }
+      ? { open: true, label: this.t('public.menu.statusOpen', { time: day.close }) }
+      : { open: false, label: nowMin < openMin
+          ? this.t('public.menu.statusOpenAt', { time: day.open })
+          : this.t('public.menu.statusClosedReopen', { next: this.nextOpenDay() }) }
   }
 
   openingHoursEntries(): { day: string; label: string; open: string; close: string; closed: boolean; isToday: boolean }[] {
@@ -305,7 +316,7 @@ export class HeroComponent {
       const h = hours[day]
       return {
         day,
-        label: DAYS_FR[day],
+        label: this.t(DAY_KEYS[day]),
         open: h?.open ?? '',
         close: h?.close ?? '',
         closed: h?.closed ?? true,
@@ -321,7 +332,7 @@ export class HeroComponent {
     for (let i = 1; i <= 7; i++) {
       const idx = (todayIdx + i) % 7
       const h = hours[DAY_ORDER[idx]]
-      if (h && !h.closed) return `${DAYS_FR[DAY_ORDER[idx]]} à ${h.open}`
+      if (h && !h.closed) return `${this.t(DAY_KEYS[DAY_ORDER[idx]])} à ${h.open}`
     }
     return ''
   }

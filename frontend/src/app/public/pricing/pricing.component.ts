@@ -144,7 +144,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
                           <path d="M4 4l8 8M12 4l-8 8"/>
                         </svg>
                       }
-                      {{ entry.key }}
+                      {{ entry.label }}
                     </li>
                   }
                 </ul>
@@ -459,12 +459,32 @@ export class PricingComponent implements OnInit {
     return index === this.featuredIndex()
   }
 
-  /** Convert Record<string, boolean> features to sorted key/value entries */
-  featureEntries(plan: Plan): { key: string; value: boolean }[] {
-    if (!plan.features) return []
-    return Object.entries(plan.features)
-      .sort(([, a], [, b]) => (b ? 1 : 0) - (a ? 1 : 0)) // true features first
-      .map(([key, value]) => ({ key, value }))
+  private readonly featureLabels: Record<string, string> = {
+    stats: 'Statistics & analytics',
+    api_access: 'API access',
+    orders_and_reservations: 'Orders & table reservations',
+    gift_qr: 'Gift QR codes',
+    priority_support: 'Priority support',
+    custom_domain: 'Custom domain',
+    white_label: 'White-label branding',
+  }
+
+  private readonly ALL_FEATURES = [
+    'stats',
+    'api_access',
+    'orders_and_reservations',
+    'gift_qr',
+    'priority_support',
+  ]
+
+  /** Convert plan features to a sorted list with human-readable labels */
+  featureEntries(plan: Plan): { key: string; label: string; value: boolean }[] {
+    const feats = plan.features ?? {}
+    return this.ALL_FEATURES.map((k) => ({
+      key: k,
+      label: this.featureLabels[k] ?? k,
+      value: !!feats[k],
+    }))
   }
 
   /** Yearly saving % compared to paying monthly × 12 */

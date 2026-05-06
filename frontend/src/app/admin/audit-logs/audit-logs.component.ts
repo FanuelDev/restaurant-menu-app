@@ -110,7 +110,7 @@ const ACTION_KEYS = [
             <div class="log-entry" (click)="toggleDetails(log.id)" [class.is-expanded]="expandedId() === log.id">
               <div class="log-main">
                 <span class="action-badge" [style.background]="actionBg(log.action)" [style.color]="actionFg(log.action)">
-                  {{ t('auditLogs.actions.' + log.action, {}, { missingHandler: { logMissingKey: false } }) || log.action }}
+                  {{ t('auditLogs.actions.' + log.action) || log.action }}
                 </span>
                 @if (log.resourceName) {
                   <span class="log-resource">{{ log.resourceName }}</span>

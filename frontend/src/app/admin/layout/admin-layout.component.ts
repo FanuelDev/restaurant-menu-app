@@ -3,12 +3,11 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
-import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule, LangSwitcherComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule],
   template: `
     <ng-container *transloco="let t">
     <div class="shell">
@@ -124,6 +123,16 @@ import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lan
               }
             </a>
 
+            <a routerLink="/admin/orders" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.orders') : ''">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z" /><path d="M6 8v4M12 8v4" /></svg>
+              @if (!collapsed()) { <span>{{ t('nav.orders') }}</span> }
+            </a>
+
+            <a routerLink="/admin/reservations" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.reservations') : ''">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="14" height="13" rx="1.5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="2" y1="8" x2="16" y2="8"/></svg>
+              @if (!collapsed()) { <span>{{ t('nav.reservations') }}</span> }
+            </a>
+
             <a
               routerLink="/admin/api"
               routerLinkActive="active"
@@ -157,7 +166,6 @@ import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lan
 
         <!-- Footer utilisateur -->
         <div class="sb-footer">
-          <app-lang-switcher />
           <div class="sb-user" [class.sb-user-mini]="collapsed()">
             <div class="sb-avatar">{{ userInitials() }}</div>
             @if (!collapsed()) {

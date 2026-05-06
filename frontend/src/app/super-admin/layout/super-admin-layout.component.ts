@@ -2,12 +2,11 @@ import { Component, inject } from '@angular/core'
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
-import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule, LangSwitcherComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule],
   template: `
     <ng-container *transloco="let t">
     <div class="sa-shell">
@@ -62,7 +61,6 @@ import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lan
               <div class="sa-user-name">{{ authService.user()?.fullName }}</div>
             </div>
           </div>
-          <app-lang-switcher />
           <button class="sa-logout" (click)="authService.logout()">
             <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>

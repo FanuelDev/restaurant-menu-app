@@ -1,111 +1,39 @@
 import { Component, signal, computed, AfterViewInit, OnDestroy, OnInit, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core'
 import { isPlatformBrowser, CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 import { SubscriptionService } from '../../shared/services/subscription.service'
 import type { Plan, BillingCycle } from '../../shared/models'
 
-const FEATURES = [
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
-    color: '#C0392B',
-    title: 'QR Menu instantané',
-    desc: 'Un QR code élégant généré automatiquement. Vos clients scannent, votre menu apparaît en une seconde sur leur téléphone.',
-  },
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
-    color: '#2563EB',
-    title: 'Mises à jour en temps réel',
-    desc: 'Modifiez prix, disponibilités et nouveautés depuis votre smartphone. Les changements sont visibles instantanément.',
-  },
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    color: '#16A34A',
-    title: "Gestion d'équipe",
-    desc: "Invitez vos caissiers avec leur propre accès. Chaque rôle dispose des permissions adaptées à ses responsabilités.",
-  },
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
-    color: '#D97706',
-    title: "Journal d'audit complet",
-    desc: 'Chaque modification est tracée avec horodatage, utilisateur et détail du changement. Transparence totale.',
-  },
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
-    color: '#8E44AD',
-    title: "Horaires d'ouverture",
-    desc: 'Configurez vos horaires jour par jour. Vos clients savent toujours quand vous êtes ouverts avant de se déplacer.',
-  },
-  {
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-    color: '#0891B2',
-    title: 'Interface 100% mobile',
-    desc: 'Gérez votre menu depuis votre téléphone, tablette ou ordinateur. Conçu pour fonctionner partout, même hors connexion.',
-  },
+interface Feature { icon: string; color: string; badge?: string }
+
+const FEATURES: Feature[] = [
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`, color: '#C0392B' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`, color: '#2563EB' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, color: '#16A34A' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`, color: '#D97706' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`, color: '#8E44AD' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`, color: '#0891B2' },
+  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`, color: '#7C3AED', badge: 'Enterprise' },
 ]
 
-const STEPS = [
-  {
-    num: '01',
-    title: 'Créez votre compte',
-    desc: 'Inscrivez-vous en 30 secondes. Aucune carte bancaire requise. Votre essai gratuit de 14 jours commence immédiatement.',
-    highlight: 'Gratuit & sans engagement',
-  },
-  {
-    num: '02',
-    title: 'Configurez votre menu',
-    desc: 'Ajoutez vos catégories, plats, photos et prix. Personnalisez les couleurs à votre image. Interface simple et intuitive.',
-    highlight: '5 minutes en moyenne',
-  },
-  {
-    num: '03',
-    title: 'Partagez votre QR code',
-    desc: 'Imprimez votre QR code ou partagez le lien sur vos réseaux. Vos clients accèdent à votre menu depuis leur téléphone.',
-    highlight: 'Partage instantané',
-  },
-]
+const STEPS = ['01', '02', '03']
 
 const TESTIMONIALS = [
-  {
-    quote: 'Notre menu est toujours à jour même en plein service. Les clients adorent scanner et voir les plats du jour en temps réel. Ça a vraiment changé notre relation client.',
-    name: 'Aminata Koné',
-    role: 'Propriétaire',
-    restaurant: 'Le Bistrot Lagune — Abidjan',
-    initial: 'A',
-    color: '#E67E22',
-  },
-  {
-    quote: "J'ai remplacé mes menus plastifiés en 20 minutes. La simplicité d'utilisation est bluffante. Je modifie mes prix en direct pendant les heures de pointe.",
-    name: 'Oumar Diallo',
-    role: 'Gérant',
-    restaurant: 'Chez Oumar — Dakar',
-    initial: 'O',
-    color: '#27AE60',
-  },
-  {
-    quote: "Le journal d'audit et la gestion des rôles sont parfaits pour notre chaîne de 3 restaurants. On sait exactement qui a modifié quoi et quand.",
-    name: 'Ibrahim Traoré',
-    role: 'Directeur général',
-    restaurant: 'Saveurs du Sahel — Ouagadougou',
-    initial: 'I',
-    color: '#8E44AD',
-  },
+  { name: 'Aminata Koné',   initial: 'A', color: '#E67E22', restaurant: 'Le Bistrot Lagune — Abidjan' },
+  { name: 'Oumar Diallo',   initial: 'O', color: '#27AE60', restaurant: 'Chez Oumar — Dakar' },
+  { name: 'Ibrahim Traoré', initial: 'I', color: '#8E44AD', restaurant: 'Saveurs du Sahel — Ouagadougou' },
 ]
 
-
-const FAQS = [
-  { q: 'Comment fonctionne l\'essai gratuit ?', a: 'Votre essai démarre dès l\'inscription, sans carte bancaire. Pendant 14 jours, vous avez accès à toutes les fonctionnalités Pro. À la fin, vous choisissez le plan qui vous convient.' },
-  { q: 'Puis-je modifier mon plan à tout moment ?', a: 'Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment depuis votre espace de gestion. Les changements prennent effet immédiatement.' },
-  { q: 'Comment mes clients accèdent-ils au menu ?', a: 'Chaque restaurant dispose d\'une URL unique et d\'un QR code. Vos clients scannent le QR code ou utilisent le lien, sans téléchargement d\'application requis.' },
-  { q: 'Mes données sont-elles sécurisées ?', a: 'Toutes les données sont chiffrées en transit (HTTPS) et au repos. Nous hébergeons en Europe et respectons les bonnes pratiques RGPD. Vos données ne sont jamais partagées.' },
-  { q: 'Y a-t-il des frais cachés ?', a: 'Non. Le tarif affiché est tout inclus. Aucun frais par transaction, aucun supplément pour les mises à jour, aucune surprise sur votre facture.' },
-]
+const FAQ_INDICES = [0, 1, 2, 3, 4]
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-container *transloco="let t">
     <!-- ── Nav ─────────────────────────────────────────────── -->
     <nav class="lp-nav" [class.lp-nav-scrolled]="scrolled()">
       <div class="lp-nav-inner">
@@ -121,15 +49,15 @@ const FAQS = [
         </a>
 
         <div class="lp-nav-links">
-          <a href="#features" class="lp-nav-link" (click)="scrollTo($event, 'features')">Fonctionnalités</a>
-          <a href="#how" class="lp-nav-link" (click)="scrollTo($event, 'how')">Comment ça marche</a>
-          <a href="#pricing" class="lp-nav-link" (click)="scrollTo($event, 'pricing')">Tarifs</a>
+          <a href="#features" class="lp-nav-link" (click)="scrollTo($event, 'features')">{{ t('public.landing.navFeatures') }}</a>
+          <a href="#how" class="lp-nav-link" (click)="scrollTo($event, 'how')">{{ t('public.landing.navHow') }}</a>
+          <a href="#pricing" class="lp-nav-link" (click)="scrollTo($event, 'pricing')">{{ t('public.landing.navPricing') }}</a>
         </div>
 
         <div class="lp-nav-ctas">
-          <a routerLink="/login" class="lp-nav-login">Se connecter</a>
+          <a routerLink="/login" class="lp-nav-login">{{ t('public.landing.navLogin') }}</a>
           <a routerLink="/register" class="lp-nav-cta">
-            Essai gratuit
+            {{ t('public.landing.navRegister') }}
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -145,12 +73,12 @@ const FAQS = [
 
       @if (mobileOpen()) {
         <div class="lp-mobile-drawer">
-          <a href="#features" class="lp-mobile-link" (click)="scrollTo($event, 'features'); mobileOpen.set(false)">Fonctionnalités</a>
-          <a href="#how" class="lp-mobile-link" (click)="scrollTo($event, 'how'); mobileOpen.set(false)">Comment ça marche</a>
-          <a href="#pricing" class="lp-mobile-link" (click)="scrollTo($event, 'pricing'); mobileOpen.set(false)">Tarifs</a>
+          <a href="#features" class="lp-mobile-link" (click)="scrollTo($event, 'features'); mobileOpen.set(false)">{{ t('public.landing.navFeatures') }}</a>
+          <a href="#how" class="lp-mobile-link" (click)="scrollTo($event, 'how'); mobileOpen.set(false)">{{ t('public.landing.navHow') }}</a>
+          <a href="#pricing" class="lp-mobile-link" (click)="scrollTo($event, 'pricing'); mobileOpen.set(false)">{{ t('public.landing.navPricing') }}</a>
           <div class="lp-mobile-sep"></div>
-          <a routerLink="/login" class="lp-mobile-link">Se connecter</a>
-          <a routerLink="/register" class="lp-mobile-cta">Démarrer l'essai gratuit →</a>
+          <a routerLink="/login" class="lp-mobile-link">{{ t('public.landing.navLogin') }}</a>
+          <a routerLink="/register" class="lp-mobile-cta">{{ t('public.landing.navMobileCta') }}</a>
         </div>
       }
     </nav>
@@ -167,28 +95,26 @@ const FAQS = [
         <div class="hero-copy">
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
-            Plus de 1&nbsp;200 restaurants actifs dans 14 pays
+            {{ t('public.landing.heroBadge') }}
           </div>
 
           <h1 class="hero-h1">
-            Votre menu digital,<br>
-            <em class="hero-accent">toujours à jour.</em>
+            {{ t('public.landing.heroH1Line1') }}<br>
+            <em class="hero-accent">{{ t('public.landing.heroH1Accent') }}</em>
           </h1>
 
-          <p class="hero-desc">
-            Créez un menu QR élégant pour votre restaurant en 5&nbsp;minutes. Modifiez prix, disponibilités et plats en temps réel depuis n'importe quel appareil.
-          </p>
+          <p class="hero-desc">{{ t('public.landing.heroDesc') }}</p>
 
           <div class="hero-ctas">
             <a routerLink="/register" class="btn-hero-primary">
-              Créer mon menu gratuitement
+              {{ t('public.landing.heroPrimaryBtn') }}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
             <a href="#how" class="btn-hero-ghost" (click)="scrollTo($event, 'how')">
               <span class="btn-play">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><polygon points="2,1 9,5 2,9"/></svg>
               </span>
-              Voir comment ça marche
+              {{ t('public.landing.heroSecondaryBtn') }}
             </a>
           </div>
 
@@ -201,7 +127,7 @@ const FAQS = [
             </div>
             <div>
               <div class="proof-stars">★★★★★</div>
-              <div class="proof-label">4.9/5 — Noté excellent par nos clients</div>
+              <div class="proof-label">{{ t('public.landing.heroProofLabel') }}</div>
             </div>
           </div>
         </div>
@@ -311,7 +237,7 @@ const FAQS = [
     <!-- ── Trusted bar ──────────────────────────────────────── -->
     <div class="lp-trusted">
       <div class="lp-container">
-        <span class="trusted-label">Ils gèrent leur carte avec MenuApp</span>
+        <span class="trusted-label">{{ t('public.landing.trustedLabel') }}</span>
         <div class="trusted-logos">
           @for (name of trustedNames; track name) {
             <span class="trusted-name">{{ name }}</span>
@@ -324,16 +250,19 @@ const FAQS = [
     <section class="lp-section lp-features" id="features">
       <div class="lp-container">
         <div class="section-head reveal">
-          <div class="section-tag">Fonctionnalités</div>
-          <h2 class="section-h2">Tout ce dont votre restaurant a besoin</h2>
-          <p class="section-sub">Une plateforme pensée pour les restaurateurs d'Afrique de l'Ouest, simple à prendre en main dès le premier jour.</p>
+          <div class="section-tag">{{ t('public.landing.featuresTag') }}</div>
+          <h2 class="section-h2">{{ t('public.landing.featuresH2') }}</h2>
+          <p class="section-sub">{{ t('public.landing.featuresSub') }}</p>
         </div>
         <div class="features-grid">
-          @for (f of features; track f.title; let i = $index) {
+          @for (f of features; track f.color; let i = $index) {
             <div class="feat-card reveal" [attr.data-delay]="i % 3">
               <div class="feat-icon" [style.background]="f.color + '18'" [style.color]="f.color" [innerHTML]="f.icon"></div>
-              <h3 class="feat-title">{{ f.title }}</h3>
-              <p class="feat-desc">{{ f.desc }}</p>
+              <h3 class="feat-title">{{ t('public.landing.feat' + i + 'title') }}</h3>
+              @if (f.badge) {
+                <span class="feat-badge">{{ f.badge }}</span>
+              }
+              <p class="feat-desc">{{ t('public.landing.feat' + i + 'desc') }}</p>
             </div>
           }
         </div>
@@ -344,37 +273,21 @@ const FAQS = [
     <section class="lp-showcase">
       <div class="lp-container showcase-layout">
         <div class="showcase-copy reveal">
-          <div class="section-tag">Interface d'administration</div>
-          <h2 class="section-h2">Conçue pour aller vite</h2>
-          <p class="section-sub" style="max-width:420px">Chaque écran a été pensé pour réduire les clics. Modifiez un plat en 3 secondes, gérez vos catégories par glisser-déposer.</p>
+          <div class="section-tag">{{ t('public.landing.showcaseTag') }}</div>
+          <h2 class="section-h2">{{ t('public.landing.showcaseH2') }}</h2>
+          <p class="section-sub" style="max-width:420px">{{ t('public.landing.showcaseSub') }}</p>
           <ul class="showcase-list">
-            <li>
-              <span class="showcase-check">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              Navigation latérale rétractable
-            </li>
-            <li>
-              <span class="showcase-check">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              Tableaux de bord avec KPIs en temps réel
-            </li>
-            <li>
-              <span class="showcase-check">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              Upload de photos depuis mobile
-            </li>
-            <li>
-              <span class="showcase-check">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              Bascule de disponibilité en un tap
-            </li>
+            @for (i of [1,2,3,4]; track i) {
+              <li>
+                <span class="showcase-check">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                {{ t('public.landing.showcaseList' + i) }}
+              </li>
+            }
           </ul>
           <a routerLink="/register" class="btn-showcase">
-            Essayer gratuitement
+            {{ t('public.landing.showcaseTryBtn') }}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -420,19 +333,19 @@ const FAQS = [
     <section class="lp-section lp-how" id="how">
       <div class="lp-container">
         <div class="section-head reveal">
-          <div class="section-tag">Comment ça marche</div>
-          <h2 class="section-h2">Prêt en 5 minutes, vraiment</h2>
-          <p class="section-sub">Pas besoin d'un développeur, ni d'une formation. Suivez ces 3 étapes et votre menu est en ligne.</p>
+          <div class="section-tag">{{ t('public.landing.howTag') }}</div>
+          <h2 class="section-h2">{{ t('public.landing.howH2') }}</h2>
+          <p class="section-sub">{{ t('public.landing.howSub') }}</p>
         </div>
 
         <div class="steps-layout">
           <div class="steps-connector" aria-hidden="true"></div>
-          @for (step of steps; track step.num; let i = $index) {
+          @for (num of steps; track num; let i = $index) {
             <div class="step-card reveal" [attr.data-delay]="i">
-              <div class="step-num">{{ step.num }}</div>
-              <h3 class="step-title">{{ step.title }}</h3>
-              <p class="step-desc">{{ step.desc }}</p>
-              <div class="step-badge">{{ step.highlight }}</div>
+              <div class="step-num">{{ num }}</div>
+              <h3 class="step-title">{{ t('public.landing.step' + i + 'title') }}</h3>
+              <p class="step-desc">{{ t('public.landing.step' + i + 'desc') }}</p>
+              <div class="step-badge">{{ t('public.landing.step' + i + 'highlight') }}</div>
             </div>
           }
         </div>
@@ -443,23 +356,23 @@ const FAQS = [
     <section class="lp-stats">
       <div class="lp-container stats-grid">
         <div class="stat-item reveal">
-          <div class="stat-val" #stat1>1 200+</div>
-          <div class="stat-label">Restaurants actifs</div>
+          <div class="stat-val">1 200+</div>
+          <div class="stat-label">{{ t('public.landing.stat1label') }}</div>
         </div>
         <div class="stat-div"></div>
         <div class="stat-item reveal" data-delay="1">
           <div class="stat-val">14</div>
-          <div class="stat-label">Pays en Afrique</div>
+          <div class="stat-label">{{ t('public.landing.stat2label') }}</div>
         </div>
         <div class="stat-div"></div>
         <div class="stat-item reveal" data-delay="2">
           <div class="stat-val">5 min</div>
-          <div class="stat-label">Pour créer son menu</div>
+          <div class="stat-label">{{ t('public.landing.stat3label') }}</div>
         </div>
         <div class="stat-div"></div>
         <div class="stat-item reveal" data-delay="3">
           <div class="stat-val">4.9 ★</div>
-          <div class="stat-label">Satisfaction client</div>
+          <div class="stat-label">{{ t('public.landing.stat4label') }}</div>
         </div>
       </div>
     </section>
@@ -468,19 +381,19 @@ const FAQS = [
     <section class="lp-section lp-testimonials">
       <div class="lp-container">
         <div class="section-head reveal">
-          <div class="section-tag">Témoignages</div>
-          <h2 class="section-h2">Ils l'ont adopté, ils ne reviennent plus</h2>
+          <div class="section-tag">{{ t('public.landing.testiTag') }}</div>
+          <h2 class="section-h2">{{ t('public.landing.testiH2') }}</h2>
         </div>
         <div class="testimonials-grid">
-          @for (t of testimonials; track t.name; let i = $index) {
+          @for (testi of testimonials; track testi.name; let i = $index) {
             <div class="testi-card reveal" [attr.data-delay]="i">
               <div class="testi-quote-mark">"</div>
-              <p class="testi-text">{{ t.quote }}</p>
+              <p class="testi-text">{{ t('public.landing.testi' + i + 'quote') }}</p>
               <div class="testi-author">
-                <div class="testi-av" [style.background]="t.color">{{ t.initial }}</div>
+                <div class="testi-av" [style.background]="testi.color">{{ testi.initial }}</div>
                 <div>
-                  <div class="testi-name">{{ t.name }}</div>
-                  <div class="testi-role">{{ t.role }} · {{ t.restaurant }}</div>
+                  <div class="testi-name">{{ testi.name }}</div>
+                  <div class="testi-role">{{ t('public.landing.testi' + i + 'role') }} · {{ testi.restaurant }}</div>
                 </div>
               </div>
             </div>
@@ -493,15 +406,15 @@ const FAQS = [
     <section class="lp-section lp-pricing" id="pricing">
       <div class="lp-container">
         <div class="section-head reveal">
-          <div class="section-tag">Tarifs</div>
-          <h2 class="section-h2">Simple, transparent, sans surprise</h2>
-          <p class="section-sub">Commencez gratuitement. Évoluez quand vous en avez besoin. Résiliez quand vous le souhaitez.</p>
+          <div class="section-tag">{{ t('public.landing.pricingTag') }}</div>
+          <h2 class="section-h2">{{ t('public.landing.pricingH2') }}</h2>
+          <p class="section-sub">{{ t('public.landing.pricingSub') }}</p>
         </div>
 
         <div class="pricing-toggle reveal">
-          <button [class.ptog-active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">Mensuel</button>
+          <button [class.ptog-active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">{{ t('public.pricing.monthly') }}</button>
           <button [class.ptog-active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
-            Annuel
+            {{ t('public.pricing.yearly') }}
             @if (bestSavingPct() > 0) {
               <span class="ptog-save">−{{ bestSavingPct() }}%</span>
             }
@@ -527,14 +440,14 @@ const FAQS = [
           <div class="pricing-grid" [style.--plan-cols]="plans().length">
             @for (plan of plans(); track plan.id; let i = $index) {
               <div class="price-card price-card-appear" [class.price-card-featured]="isFeatured(i)" [style.animation-delay]="(i * 100) + 'ms'">
-                @if (isFeatured(i)) { <div class="price-badge">Recommandé</div> }
+                @if (isFeatured(i)) { <div class="price-badge">{{ t('public.landing.planFeatured') }}</div> }
                 <div class="price-name">{{ plan.name }}</div>
                 <div class="price-amount">
                   @if (plan.priceMonthlyCents === 0) {
-                    <span class="price-val">Gratuit</span>
+                    <span class="price-val">{{ t('public.pricing.free') }}</span>
                   } @else {
                     <span class="price-val">{{ formatPrice(plan, cycle()) }}</span>
-                    <span class="price-period">/ {{ cycle() === 'monthly' ? 'mois' : 'an' }}</span>
+                    <span class="price-period">{{ cycle() === 'monthly' ? t('public.pricing.perMonth') : t('public.pricing.perYear') }}</span>
                   }
                 </div>
                 <p class="price-desc">{{ plan.description }}</p>
@@ -549,7 +462,7 @@ const FAQS = [
                   }
                 </ul>
                 <a routerLink="/register" class="price-cta" [class.price-cta-featured]="isFeatured(i)">
-                  {{ plan.priceMonthlyCents === 0 ? 'Démarrer gratuitement' : 'Essai 14 jours gratuit' }}
+                  {{ plan.priceMonthlyCents === 0 ? t('public.landing.planCTAfree') : t('public.landing.planCTApaid') }}
                 </a>
               </div>
             }
@@ -558,7 +471,7 @@ const FAQS = [
 
         <p class="pricing-note reveal">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          14 jours d'essai gratuit sur tous les plans payants · Aucune carte requise · Résiliation en un clic
+          {{ t('public.landing.pricingNote') }}
         </p>
       </div>
     </section>
@@ -567,25 +480,25 @@ const FAQS = [
     <section class="lp-section lp-faq">
       <div class="lp-container faq-layout">
         <div class="faq-left reveal">
-          <div class="section-tag">FAQ</div>
-          <h2 class="section-h2" style="font-size:2rem">Des questions ?<br>On a les réponses.</h2>
-          <p class="section-sub" style="max-width:280px">Une question qui n'est pas là ? Écrivez-nous, on répond sous 24h.</p>
+          <div class="section-tag">{{ t('public.landing.faqTag') }}</div>
+          <h2 class="section-h2" style="font-size:2rem">{{ t('public.landing.faqH2') }}</h2>
+          <p class="section-sub" style="max-width:280px">{{ t('public.landing.faqSub') }}</p>
           <a href="mailto:hello@menuapp.co" class="faq-contact">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             hello&#64;menuapp.co
           </a>
         </div>
         <div class="faq-list reveal" data-delay="1">
-          @for (faq of faqs; track faq.q; let i = $index) {
+          @for (i of faqIndices; track i) {
             <div class="faq-item" [class.faq-open]="openFaq() === i">
               <button class="faq-q" (click)="toggleFaq(i)">
-                {{ faq.q }}
+                {{ t('public.landing.faq' + i + 'q') }}
                 <span class="faq-chevron">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </span>
               </button>
               @if (openFaq() === i) {
-                <div class="faq-a">{{ faq.a }}</div>
+                <div class="faq-a">{{ t('public.landing.faq' + i + 'a') }}</div>
               }
             </div>
           }
@@ -602,16 +515,16 @@ const FAQS = [
       <div class="lp-container lp-cta-inner reveal">
         <div class="cta-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Démarrez en 5 minutes
+          {{ t('public.landing.ctaBadge') }}
         </div>
-        <h2 class="cta-h2">Rejoignez 1 200+ restaurants<br>qui ont digitalisé leur menu</h2>
-        <p class="cta-sub">14 jours d'essai gratuit · Aucune carte requise · Résiliez à tout moment</p>
+        <h2 class="cta-h2">{{ t('public.landing.ctaH2Line1') }}<br>{{ t('public.landing.ctaH2Line2') }}</h2>
+        <p class="cta-sub">{{ t('public.landing.ctaSub') }}</p>
         <div class="cta-btns">
           <a routerLink="/register" class="btn-cta-primary">
-            Créer mon restaurant gratuitement
+            {{ t('public.landing.ctaPrimaryBtn') }}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
-          <a routerLink="/pricing" class="btn-cta-ghost">Voir les tarifs</a>
+          <a routerLink="/pricing" class="btn-cta-ghost">{{ t('public.landing.ctaGhostBtn') }}</a>
         </div>
       </div>
     </section>
@@ -630,42 +543,43 @@ const FAQS = [
             </div>
             <span>MenuApp</span>
           </div>
-          <p class="footer-tagline">La vitrine digitale pour les restaurants d'Afrique.</p>
+          <p class="footer-tagline">{{ t('public.landing.footerTagline') }}</p>
           <div class="footer-countries">CI · SN · ML · CM · BF · TG · BJ · GH</div>
         </div>
 
         <div class="footer-col">
-          <div class="footer-col-title">Produit</div>
-          <a href="#features" class="footer-link" (click)="scrollTo($event, 'features')">Fonctionnalités</a>
-          <a href="#pricing" class="footer-link" (click)="scrollTo($event, 'pricing')">Tarifs</a>
-          <a href="#how" class="footer-link" (click)="scrollTo($event, 'how')">Comment ça marche</a>
-          <a routerLink="/pricing" class="footer-link">Plans détaillés</a>
+          <div class="footer-col-title">{{ t('public.landing.footerColProduct') }}</div>
+          <a href="#features" class="footer-link" (click)="scrollTo($event, 'features')">{{ t('public.landing.footerLinkFeatures') }}</a>
+          <a href="#pricing" class="footer-link" (click)="scrollTo($event, 'pricing')">{{ t('public.landing.footerLinkPricing') }}</a>
+          <a href="#how" class="footer-link" (click)="scrollTo($event, 'how')">{{ t('public.landing.footerLinkHow') }}</a>
+          <a routerLink="/pricing" class="footer-link">{{ t('public.landing.footerLinkDetailed') }}</a>
         </div>
 
         <div class="footer-col">
-          <div class="footer-col-title">Compte</div>
-          <a routerLink="/login" class="footer-link">Se connecter</a>
-          <a routerLink="/register" class="footer-link">S'inscrire</a>
-          <a routerLink="/forgot-password" class="footer-link">Mot de passe oublié</a>
+          <div class="footer-col-title">{{ t('public.landing.footerColAccount') }}</div>
+          <a routerLink="/login" class="footer-link">{{ t('public.landing.footerLinkLogin') }}</a>
+          <a routerLink="/register" class="footer-link">{{ t('public.landing.footerLinkRegister') }}</a>
+          <a routerLink="/forgot-password" class="footer-link">{{ t('public.landing.footerLinkForgot') }}</a>
         </div>
 
         <div class="footer-col">
-          <div class="footer-col-title">Contact</div>
+          <div class="footer-col-title">{{ t('public.landing.footerColContact') }}</div>
           <a href="mailto:hello@menuapp.co" class="footer-link">hello&#64;menuapp.co</a>
           <a href="mailto:support@menuapp.co" class="footer-link">support&#64;menuapp.co</a>
-          <div class="footer-col-title" style="margin-top:var(--space-4)">Légal</div>
-          <a href="#" class="footer-link">CGU</a>
-          <a href="#" class="footer-link">Confidentialité</a>
+          <div class="footer-col-title" style="margin-top:var(--space-4)">{{ t('public.landing.footerLinkLegal') }}</div>
+          <a href="#" class="footer-link">{{ t('public.landing.footerLinkTos') }}</a>
+          <a href="#" class="footer-link">{{ t('public.landing.footerLinkPrivacy') }}</a>
         </div>
       </div>
 
       <div class="footer-bottom">
         <div class="lp-container footer-bottom-inner">
-          <span>© 2025 MenuApp. Tous droits réservés.</span>
-          <span>Fait avec ♥ pour les restaurateurs africains</span>
+          <span>{{ t('public.landing.footerCopy') }}</span>
+          <span>{{ t('public.landing.footerMadeWith') }}</span>
         </div>
       </div>
     </footer>
+    </ng-container>
   `,
   styles: [`
     /* ── Globals ────────────────────────────────────────── */
@@ -999,6 +913,7 @@ const FAQS = [
       margin-bottom: var(--space-5);
     }
     .feat-title { font-size: 1.0625rem; font-weight: 700; margin: 0 0 var(--space-3); color: var(--text-primary); }
+    .feat-badge { display: inline-block; font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: linear-gradient(135deg, #7C3AED, #5B21B6); color: white; padding: 2px 8px; border-radius: 999px; margin-top: 4px; margin-bottom: var(--space-3); }
     .feat-desc  { font-size: .9375rem; color: var(--text-secondary); line-height: 1.7; margin: 0; }
 
     /* ── Showcase ───────────────────────────────────────── */
@@ -1317,7 +1232,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
   readonly features     = FEATURES
   readonly steps        = STEPS
   readonly testimonials = TESTIMONIALS
-  readonly faqs         = FAQS
+  readonly faqIndices   = FAQ_INDICES
 
   readonly plans        = signal<Plan[]>([])
   readonly plansLoading = signal(true)

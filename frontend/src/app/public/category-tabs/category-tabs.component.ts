@@ -1,15 +1,17 @@
 // frontend/src/app/public/category-tabs/category-tabs.component.ts
 import { Component, Input, Output, EventEmitter, OnChanges, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
+import { TranslocoModule } from '@jsverse/transloco'
 import type { Category } from '../../shared/models'
 
 @Component({
   selector: 'app-category-tabs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <nav class="cat-tabs" aria-label="Navigation par catégorie" #tabsNav>
+    <ng-container *transloco="let t">
+    <nav class="cat-tabs" [attr.aria-label]="t('public.menu.catNavAriaLabel')" #tabsNav>
       <div class="cat-tabs-inner container">
         @for (cat of categories; track cat.id) {
           <button
@@ -23,6 +25,7 @@ import type { Category } from '../../shared/models'
         }
       </div>
     </nav>
+    </ng-container>
   `,
   styles: [`
     .cat-tabs {
