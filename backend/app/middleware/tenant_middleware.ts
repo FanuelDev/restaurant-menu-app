@@ -17,8 +17,10 @@ export default class TenantMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     const { request, response } = ctx
 
-    const slug = this.#extractSlug(request.host() ?? '')
-      ?? request.header('x-tenant-slug')
+    // X-Tenant-Slug a la priorité (dev + appels API directs via backend.*)
+    // Le sous-domaine sert de fallback pour les vitrines publiques (bistrot.saemenus.com)
+    const slug = request.header('x-tenant-slug')
+      ?? this.#extractSlug(request.host() ?? '')
 
     if (!slug) {
       return response.unprocessableEntity({ message: 'Tenant non identifiable — sous-domaine manquant.' })
@@ -48,7 +50,7 @@ export default class TenantMiddleware {
     // host: "bistrot.localhost" ou "bistrot.monapp.com"
     const parts = host.split('.')
     // Ignorer "www", "api", "admin", "app" et les hôtes sans sous-domaine
-    const reserved = new Set(['www', 'api', 'admin', 'app', 'localhost', ''])
+    const reserved = new Set(['www', 'api', 'admin', 'app', 'backend', 'localhost', ''])
     if (parts.length < 2) return null
     const sub = parts[0]
     return reserved.has(sub) ? null : sub
