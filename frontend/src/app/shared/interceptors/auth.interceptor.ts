@@ -4,12 +4,17 @@ import { Router } from '@angular/router'
 import { catchError, throwError } from 'rxjs'
 import { AuthService } from '../services/auth.service'
 
-/** Extracts subdomain from hostname (e.g. "bistrot.localhost" → "bistrot"). */
+/** Extracts subdomain from hostname (e.g. "bistrot.saemenus.com" → "bistrot").
+ *  Returns null for the root domain (saemenus.com) and localhost. */
 function extractSubdomainFromHostname(): string | null {
   const hostname = window.location.hostname
   const parts = hostname.split('.')
+  // Need at least 3 parts to have a real subdomain (sub.domain.tld)
+  // Exception: dev uses sub.localhost (2 parts) → still valid
+  const isLocalDev = parts[parts.length - 1] === 'localhost'
+  if (!isLocalDev && parts.length < 3) return null
+  if (isLocalDev && parts.length < 2) return null
   const reserved = new Set(['www', 'api', 'admin', 'app', 'localhost', ''])
-  if (parts.length < 2) return null
   const sub = parts[0]
   return reserved.has(sub) ? null : sub
 }
