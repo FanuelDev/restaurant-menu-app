@@ -21,8 +21,8 @@ function readTranslations(raw: unknown): Record<string, string> {
 }
 
 export default class CategoriesController {
-  private readonly auditService = new AuditService()
-  private readonly subscriptionService = new SubscriptionService()
+  readonly #auditService = new AuditService()
+  readonly #subscriptionService = new SubscriptionService()
 
   /** GET /api/public/categories */
   async indexPublic({ restaurant, response }: HttpContext) {
@@ -52,7 +52,7 @@ export default class CategoriesController {
 
   /** POST /api/admin/categories */
   async store({ request, response, auth, restaurant }: HttpContext) {
-    const limit = await subscriptionService.checkLimit(restaurant, 'categories')
+    const limit = await this.#subscriptionService.checkLimit(restaurant, 'categories')
     if (!limit.allowed) {
       return response.paymentRequired({
         message: `Limite atteinte (${limit.current}/${limit.max} catégories). Passez à un plan supérieur.`,
@@ -81,7 +81,7 @@ export default class CategoriesController {
       descriptionTranslations,
     })
 
-    await auditService.log({
+    await this.#auditService.log({
       ctx: { request } as never,
       user: auth.user!,
       restaurantId: restaurant.id,
@@ -114,7 +114,7 @@ export default class CategoriesController {
 
     await category.save()
 
-    await auditService.log({
+    await this.#auditService.log({
       ctx: { request } as never,
       user: auth.user!,
       restaurantId: restaurant.id,
@@ -136,7 +136,7 @@ export default class CategoriesController {
       .where('restaurant_id', restaurant.id)
       .firstOrFail()
 
-    await auditService.log({
+    await this.#auditService.log({
       ctx: { request } as never,
       user: auth.user!,
       restaurantId: restaurant.id,

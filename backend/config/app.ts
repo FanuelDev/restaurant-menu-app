@@ -1,8 +1,7 @@
 // backend/config/app.ts
 import env from '#start/env'
-import { defineConfig } from '@adonisjs/core/app'
 
-export default defineConfig({
+export default {
   appKey: env.get('APP_KEY'),
   appUrl: env.get('APP_URL', 'http://localhost:3333'),
   http: {
@@ -34,4 +33,4 @@ export default defineConfig({
       sameSite: 'lax',
     },
   },
-})
+}

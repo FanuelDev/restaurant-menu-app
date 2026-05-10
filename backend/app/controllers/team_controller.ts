@@ -69,7 +69,7 @@ export default class TeamController {
       action: 'user.created',
       resourceType: 'user',
       resourceId: member.id,
-      resourceName: member.fullName,
+      resourceName: member.fullName ?? undefined,
       newValues: { email: member.email, role: member.role },
     })
 
@@ -101,7 +101,7 @@ export default class TeamController {
       action: 'user.updated',
       resourceType: 'user',
       resourceId: member.id,
-      resourceName: member.fullName,
+      resourceName: member.fullName ?? undefined,
       oldValues: old,
       newValues: AuditService.serialize(member as never, ['fullName', 'phone', 'isActive']),
     })
@@ -124,7 +124,7 @@ export default class TeamController {
       action: 'user.deleted',
       resourceType: 'user',
       resourceId: member.id,
-      resourceName: member.fullName,
+      resourceName: member.fullName ?? undefined,
       oldValues: { email: member.email },
     })
 

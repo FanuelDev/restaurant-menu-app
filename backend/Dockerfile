@@ -12,7 +12,7 @@ COPY package*.json ./
 RUN npm ci --prefer-offline
 
 COPY . .
-RUN node ace build
+RUN node --import=tsx/esm ace.js build
 
 # ── Étape 2 : Production ─────────────────────────────────────────────────────
 FROM node:22-alpine AS production

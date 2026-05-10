@@ -14,7 +14,6 @@ const subscriptionService = new SubscriptionService()
 async function serializeItem(item: MenuItem) {
   const serialized = item.serialize()
   serialized.imageUrl = await imageService.getUrl(item.imageKey)
-  serialized.priceFormatted = item.priceFormatted
   return serialized
 }
 

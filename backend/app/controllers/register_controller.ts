@@ -5,7 +5,6 @@ import db from '@adonisjs/lucid/services/db'
 import Restaurant from '#models/restaurant'
 import User from '#models/user'
 import Plan from '#models/plan'
-import SubscriptionService from '#services/subscription_service'
 
 const registerValidator = vine.compile(
   vine.object({

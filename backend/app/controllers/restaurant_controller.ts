@@ -42,7 +42,16 @@ export default class RestaurantController {
   /** PUT /api/admin/restaurant */
   async update({ request, response, restaurant }: HttpContext) {
     const data = await request.validateUsing(updateRestaurantValidator)
-    restaurant.merge(data)
+    // Normalize openingHours: closed is optional in the validator but required in the model (defaults to false)
+    const openingHours = data.openingHours
+      ? (Object.fromEntries(
+          Object.entries(data.openingHours).map(([day, sched]) => [
+            day,
+            sched ? { ...sched, closed: sched.closed ?? false } : sched,
+          ])
+        ) as Restaurant['openingHours'])
+      : data.openingHours
+    restaurant.merge({ ...data, openingHours })
     await restaurant.save()
     return response.ok(await serializeRestaurant(restaurant))
   }
