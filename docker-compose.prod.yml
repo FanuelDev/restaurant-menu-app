@@ -74,7 +74,7 @@ services:
       # URL publique des images — proxy nginx /media/ → MinIO
       S3_CDN_URL:          ${S3_CDN_URL}
 
-      CORS_ORIGIN:         ${CORS_ORIGIN}
+      CORS_ORIGIN:         https://saemenus.com
       MAX_IMAGE_SIZE_MB:   5
 
       CINETPAY_API_KEY:    ${CINETPAY_API_KEY}
