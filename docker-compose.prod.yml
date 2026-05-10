@@ -87,4 +87,4 @@ services:
   # reste actif. Bloquer ce port via le pare-feu du serveur.
   frontend:
     ports:
-      - "80:80"
+      - "8080:80"
