@@ -1,7 +1,8 @@
 import { Component, signal, computed, AfterViewInit, OnDestroy, OnInit, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core'
 import { isPlatformBrowser, CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
-import { TranslocoModule } from '@jsverse/transloco'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
+import { take } from 'rxjs/operators'
 import { SubscriptionService } from '../../shared/services/subscription.service'
 import type { Plan, BillingCycle } from '../../shared/models'
 
@@ -1228,6 +1229,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
 export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
   private readonly platformId        = inject(PLATFORM_ID)
   private readonly subscriptionSvc   = inject(SubscriptionService)
+  private readonly transloco         = inject(TranslocoService)
 
   readonly features     = FEATURES
   readonly steps        = STEPS
@@ -1296,6 +1298,17 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
 
     window.addEventListener('scroll', this.onScroll, { passive: true })
 
+    // Transloco loads translations asynchronously via HTTP.
+    // *transloco="let t" renders its content only AFTER translations arrive,
+    // which is AFTER ngAfterViewInit. We wait for the translation to be ready
+    // before querying .reveal elements, then give Angular one extra tick to
+    // flush the DOM updates.
+    this.transloco.selectTranslation().pipe(take(1)).subscribe(() => {
+      setTimeout(() => this.setupRevealObserver(), 0)
+    })
+  }
+
+  private setupRevealObserver(): void {
     this.observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible') }),
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
@@ -1320,6 +1333,6 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
 
   formatPrice(plan: Plan, cycle: BillingCycle): string {
     const cents = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
-    return new Intl.NumberFormat('fr-FR').format(cents / 100) + ' FCFA'
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   }
 }

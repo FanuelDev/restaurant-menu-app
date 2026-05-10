@@ -51,6 +51,13 @@ import { AuthService } from '../../shared/services/auth.service'
             </svg>
             <span>{{ t('superAdmin.layout.nav.plans') }}</span>
           </a>
+          <a routerLink="/super-admin/audit-logs" routerLinkActive="active" class="sa-link">
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M14 2H4a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/>
+              <path d="M5.5 7h7M5.5 10h7M5.5 13h4" stroke-linecap="round"/>
+            </svg>
+            <span>{{ t('superAdmin.layout.nav.auditLogs') }}</span>
+          </a>
         </nav>
 
         <!-- Footer -->

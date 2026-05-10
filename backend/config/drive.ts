@@ -24,6 +24,8 @@ const driveConfig = defineConfig({
       endpoint: env.get('S3_ENDPOINT'),
       forcePathStyle: true,
       visibility: 'public',
+      // En prod, pointe vers le proxy nginx /media/ pour éviter d'exposer MinIO directement
+      cdnUrl: env.get('S3_CDN_URL'),
     }),
   },
 })

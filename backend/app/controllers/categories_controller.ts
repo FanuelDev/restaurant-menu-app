@@ -10,10 +10,20 @@ import AuditService from '#services/audit_service'
 import SubscriptionService from '#services/subscription_service'
 import db from '@adonisjs/lucid/services/db'
 
-const auditService = new AuditService()
-const subscriptionService = new SubscriptionService()
+/** Lit un champ JSON depuis le corps de la requête (body JSON → objet direct). */
+function readTranslations(raw: unknown): Record<string, string> {
+  if (!raw) return {}
+  if (typeof raw === 'object') return raw as Record<string, string>
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw) } catch { return {} }
+  }
+  return {}
+}
 
 export default class CategoriesController {
+  private readonly auditService = new AuditService()
+  private readonly subscriptionService = new SubscriptionService()
+
   /** GET /api/public/categories */
   async indexPublic({ restaurant, response }: HttpContext) {
     // Fire-and-forget : on ne bloque pas la réponse en cas d'échec du tracking
@@ -60,10 +70,15 @@ export default class CategoriesController {
       data.sortOrder = ((last?.$extras.max as number) ?? 0) + 1
     }
 
+    const nameTranslations = readTranslations(request.input('nameTranslations'))
+    const descriptionTranslations = readTranslations(request.input('descriptionTranslations'))
+
     const category = await Category.create({
       ...data,
       restaurantId: restaurant.id,
       isVisible: data.isVisible ?? true,
+      nameTranslations,
+      descriptionTranslations,
     })
 
     await auditService.log({
@@ -90,6 +105,13 @@ export default class CategoriesController {
     const old = AuditService.serialize(category as never, ['name', 'isVisible', 'sortOrder'])
     const data = await request.validateUsing(updateCategoryValidator)
     category.merge(data)
+
+    // Translations (optional — preserves existing if not sent)
+    const ntRaw = request.input('nameTranslations')
+    const dtRaw = request.input('descriptionTranslations')
+    if (ntRaw !== undefined && ntRaw !== null) category.nameTranslations = readTranslations(ntRaw)
+    if (dtRaw !== undefined && dtRaw !== null) category.descriptionTranslations = readTranslations(dtRaw)
+
     await category.save()
 
     await auditService.log({

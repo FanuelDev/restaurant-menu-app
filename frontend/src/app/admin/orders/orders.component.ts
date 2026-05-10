@@ -105,7 +105,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
                         {{ t('orders.status.' + scannedOrder()!.status) }}
                       </div>
                     </div>
-                    <div class="scanned-total">{{ formatPrice(scannedOrder()!.totalInCents) }}</div>
+                    <div class="scanned-total">{{ formatPrice(scannedOrder()!.total) }}</div>
                     @if (scannedOrder()!.isGift) {
                       <div class="scanned-gift-info">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
@@ -175,7 +175,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
             } @else {
               <div class="orders-list">
                 @for (order of orders(); track order.id) {
-                  <div class="order-card">
+                  <div class="order-card" (click)="openDetail(order)" role="button" tabindex="0" (keyup.enter)="openDetail(order)">
                     <div class="order-card-top">
                       <div class="order-meta">
                         <div class="order-number">#{{ order.orderNumber }}</div>
@@ -186,7 +186,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
                         <div class="status-badge" [style.color]="statusColor(order.status)" [style.background]="statusBg(order.status)">
                           {{ t('orders.status.' + order.status) }}
                         </div>
-                        <div class="order-total">{{ formatPrice(order.totalInCents) }}</div>
+                        <div class="order-total">{{ formatPrice(order.total) }}</div>
                       </div>
                     </div>
 
@@ -208,11 +208,14 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
                           }
                         </span>
                       }
+                      <span class="detail-hint">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        {{ t('orders.viewDetail') }}
+                      </span>
                     </div>
 
                     <!-- Action bar -->
-                    <div class="order-actions">
-                      <!-- Quick status buttons -->
+                    <div class="order-actions" (click)="$event.stopPropagation()">
                       <div class="status-quick">
                         @for (s of quickStatuses(order.status); track s) {
                           <button
@@ -226,8 +229,6 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
                           </button>
                         }
                       </div>
-
-                      <!-- Revoke gift button -->
                       @if (order.isGift && !order.giftRevokedAt && !order.giftRedeemedAt) {
                         <button
                           class="revoke-btn"
@@ -242,6 +243,140 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
                   </div>
                 }
               </div>
+
+              <!-- Detail drawer backdrop -->
+              @if (detailOrder()) {
+                <div class="detail-backdrop" (click)="closeDetail()"></div>
+                <aside class="detail-drawer">
+                  <div class="detail-header">
+                    <div class="detail-header-left">
+                      <div class="status-badge" [style.color]="statusColor(detailOrder()!.status)" [style.background]="statusBg(detailOrder()!.status)">
+                        {{ t('orders.status.' + detailOrder()!.status) }}
+                      </div>
+                      <span class="detail-order-num">#{{ detailOrder()!.orderNumber }}</span>
+                    </div>
+                    <button class="detail-close" (click)="closeDetail()">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+
+                  <div class="detail-body">
+
+                    <!-- Customer info -->
+                    <div class="detail-section">
+                      <div class="detail-section-title">{{ t('orders.detailCustomer') }}</div>
+                      <div class="detail-info-grid">
+                        <div class="detail-info-row">
+                          <span class="di-label">{{ t('orders.detailName') }}</span>
+                          <span class="di-value">{{ detailOrder()!.customerName }}</span>
+                        </div>
+                        @if (detailOrder()!.customerPhone) {
+                          <div class="detail-info-row">
+                            <span class="di-label">{{ t('orders.detailPhone') }}</span>
+                            <a [href]="'tel:' + detailOrder()!.customerPhone" class="di-value di-link">{{ detailOrder()!.customerPhone }}</a>
+                          </div>
+                        }
+                        @if (detailOrder()!.customerEmail) {
+                          <div class="detail-info-row">
+                            <span class="di-label">{{ t('orders.detailEmail') }}</span>
+                            <a [href]="'mailto:' + detailOrder()!.customerEmail" class="di-value di-link">{{ detailOrder()!.customerEmail }}</a>
+                          </div>
+                        }
+                        <div class="detail-info-row">
+                          <span class="di-label">{{ t('orders.detailDate') }}</span>
+                          <span class="di-value">{{ detailOrder()!.createdAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Items -->
+                    <div class="detail-section">
+                      <div class="detail-section-title">{{ t('orders.detailItems') }}</div>
+                      <div class="detail-items-list">
+                        @for (item of detailOrder()!.items; track item.id) {
+                          <div class="detail-item">
+                            <div class="detail-item-left">
+                              <span class="detail-item-qty">{{ item.quantity }}×</span>
+                              <div>
+                                <div class="detail-item-name">{{ item.menuItemName }}</div>
+                                @if (item.specialInstructions) {
+                                  <div class="detail-item-instr">{{ item.specialInstructions }}</div>
+                                }
+                              </div>
+                            </div>
+                            <span class="detail-item-price">{{ formatPrice(item.subtotal) }}</span>
+                          </div>
+                        }
+                        <div class="detail-total-row">
+                          <span>{{ t('orders.detailTotal') }}</span>
+                          <strong>{{ formatPrice(detailOrder()!.total) }}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Notes -->
+                    @if (detailOrder()!.notes) {
+                      <div class="detail-section">
+                        <div class="detail-section-title">{{ t('orders.detailNotes') }}</div>
+                        <div class="detail-notes">{{ detailOrder()!.notes }}</div>
+                      </div>
+                    }
+
+                    <!-- Gift info -->
+                    @if (detailOrder()!.isGift) {
+                      <div class="detail-section detail-gift-section">
+                        <div class="detail-section-title gift-title">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+                          {{ t('orders.detailGift') }}
+                        </div>
+                        @if (detailOrder()!.giftMessage) {
+                          <div class="detail-gift-msg">"{{ detailOrder()!.giftMessage }}"</div>
+                        }
+                        @if (detailOrder()!.giftRevokedAt) {
+                          <div class="detail-gift-status detail-gift-revoked">{{ t('orders.giftRevoked') }}</div>
+                        } @else if (detailOrder()!.giftRedeemedAt) {
+                          <div class="detail-gift-status detail-gift-redeemed">
+                            ✅ {{ t('orders.giftRedeemed') }}
+                            @if (detailOrder()!.giftRedeemedBy) {
+                              <span class="di-sub">{{ t('orders.detailRedeemedBy') }} {{ detailOrder()!.giftRedeemedBy }}</span>
+                            }
+                          </div>
+                        } @else {
+                          <div class="detail-gift-status detail-gift-pending">⏳ {{ t('orders.giftPending') }}</div>
+                        }
+                        @if (!detailOrder()!.giftRevokedAt && !detailOrder()!.giftRedeemedAt) {
+                          <button class="revoke-btn revoke-full" (click)="revokeGift(detailOrder()!); closeDetail()" [disabled]="updatingId() === detailOrder()!.id">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            {{ t('orders.revokeQr') }}
+                          </button>
+                        }
+                      </div>
+                    }
+
+                    <!-- Status actions -->
+                    @if (quickStatuses(detailOrder()!.status).length > 0) {
+                      <div class="detail-section">
+                        <div class="detail-section-title">{{ t('orders.detailChangeStatus') }}</div>
+                        <div class="detail-actions">
+                          @for (s of quickStatuses(detailOrder()!.status); track s) {
+                            <button
+                              class="action-btn action-btn-full"
+                              [style.color]="statusColor(s)"
+                              [style.border-color]="statusColor(s) + '55'"
+                              [style.background]="statusBg(s)"
+                              (click)="updateStatusAndSync(detailOrder()!, s)"
+                              [disabled]="updatingId() === detailOrder()!.id"
+                            >
+                              {{ t('orders.status.' + s) }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                  </div>
+                </aside>
+              }
 
               <!-- Pagination -->
               @if (meta().lastPage > 1) {
@@ -646,14 +781,138 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
 
     /* Spinner */
     .spinner-sm {
-      width: 14px;
-      height: 14px;
+      width: 14px; height: 14px;
       border: 2px solid rgba(255,255,255,.4);
       border-top-color: white;
       border-radius: 50%;
       animation: spin .7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Card clickable */
+    .order-card { cursor: pointer; }
+    .order-card:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+    .detail-hint {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .75rem; color: var(--text-muted);
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity var(--t-fast);
+    }
+    .order-card:hover .detail-hint { opacity: 1; }
+
+    /* Detail drawer */
+    .detail-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+    }
+    .detail-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(440px, 100vw);
+      background: white;
+      z-index: 201;
+      display: flex; flex-direction: column;
+      box-shadow: -4px 0 32px rgba(0,0,0,.14);
+      animation: slideIn .22s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    .detail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      background: var(--gray-50);
+      gap: var(--space-3);
+      flex-shrink: 0;
+    }
+    .detail-header-left { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+    .detail-order-num { font-size: .9375rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .detail-close {
+      width: 32px; height: 32px; flex-shrink: 0;
+      border: none; background: var(--gray-200); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-muted);
+      transition: background var(--t-fast), color var(--t-fast);
+    }
+    .detail-close:hover { background: var(--gray-300); color: var(--text-primary); }
+
+    .detail-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+
+    .detail-section {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-section:last-child { border-bottom: none; }
+    .detail-section-title {
+      font-size: .75rem; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: var(--space-4);
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+
+    .detail-info-grid { display: flex; flex-direction: column; gap: var(--space-3); }
+    .detail-info-row { display: flex; align-items: baseline; gap: var(--space-3); }
+    .di-label { font-size: .8125rem; color: var(--text-muted); min-width: 90px; flex-shrink: 0; }
+    .di-value { font-size: .9rem; color: var(--text-primary); font-weight: 500; }
+    .di-link { color: var(--color-brand); text-decoration: none; }
+    .di-link:hover { text-decoration: underline; }
+    .di-sub { display: block; font-size: .8125rem; color: var(--text-muted); margin-top: 2px; }
+
+    .detail-items-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .detail-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: var(--space-3) var(--space-4); gap: var(--space-3);
+      border-bottom: 1px solid var(--gray-100);
+      background: white;
+    }
+    .detail-item:last-of-type { border-bottom: none; }
+    .detail-item-left { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; }
+    .detail-item-qty {
+      min-width: 26px; height: 22px;
+      background: var(--gray-100); border-radius: 5px;
+      font-size: .75rem; font-weight: 700; color: var(--text-primary);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .detail-item-name { font-size: .9rem; font-weight: 600; color: var(--text-primary); }
+    .detail-item-instr { font-size: .8125rem; color: var(--text-muted); margin-top: 2px; font-style: italic; }
+    .detail-item-price { font-size: .9rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+    .detail-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--space-3) var(--space-4);
+      background: var(--gray-50);
+      border-top: 1.5px solid var(--border);
+      font-size: .9375rem; color: var(--text-secondary);
+    }
+    .detail-total-row strong { font-size: 1.0625rem; font-weight: 800; color: var(--text-primary); }
+
+    .detail-notes {
+      font-size: .9rem; color: var(--text-secondary);
+      background: var(--gray-50); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      line-height: 1.6;
+    }
+
+    .detail-gift-section { background: #FFFBEB; }
+    .gift-title { color: #92400E; }
+    .detail-gift-msg {
+      font-size: .9375rem; color: #78350F;
+      font-style: italic; line-height: 1.6;
+      margin-bottom: var(--space-3);
+    }
+    .detail-gift-status {
+      font-size: .875rem; font-weight: 600;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .detail-gift-revoked { color: #EF4444; }
+    .detail-gift-redeemed { color: #10B981; }
+    .detail-gift-pending { color: #F59E0B; }
+
+    .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .action-btn-full { flex: 1; justify-content: center; font-size: .875rem; padding: var(--space-3) var(--space-4); }
+    .revoke-full { width: 100%; margin-top: var(--space-3); justify-content: center; }
   `],
 })
 export class OrdersComponent implements OnInit {
@@ -669,6 +928,7 @@ export class OrdersComponent implements OnInit {
   readonly scanning = signal(false)
   readonly scannedOrder = signal<Order | null>(null)
   readonly scanError = signal('')
+  readonly detailOrder = signal<Order | null>(null)
 
   readonly activeTab = signal<'all' | 'pending' | 'confirmed' | 'gift'>('all')
 
@@ -686,8 +946,8 @@ export class OrdersComponent implements OnInit {
   statusColor(status: OrderStatus): string { return STATUS_COLORS[status] ?? '#6B7280' }
   statusBg(status: OrderStatus): string { return STATUS_BG[status] ?? '#F9FAFB' }
 
-  formatPrice(cents: number): string {
-    return (cents / 100).toLocaleString('fr-FR') + ' FCFA'
+  formatPrice(euros: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
   }
 
   quickStatuses(current: OrderStatus): OrderStatus[] {
@@ -744,6 +1004,15 @@ export class OrdersComponent implements OnInit {
   nextPage(): void {
     this.meta.update(m => ({ ...m, currentPage: m.currentPage + 1 }))
     this.loadOrders()
+  }
+
+  openDetail(order: Order): void { this.detailOrder.set(order) }
+  closeDetail(): void { this.detailOrder.set(null) }
+
+  updateStatusAndSync(order: Order, status: OrderStatus): void {
+    this.updateStatus(order, status)
+    // update detail panel live
+    this.detailOrder.update(o => o ? { ...o, status } : null)
   }
 
   updateStatus(order: Order, status: OrderStatus): void {

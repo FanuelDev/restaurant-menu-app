@@ -1,0 +1,90 @@
+# docker-compose.prod.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# Surcharge de production — utiliser avec :
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --env-file .env.production up -d
+#
+# Prérequis :
+#   1. Copier .env.production.example → .env.production et remplir les valeurs
+#   2. Générer APP_KEY : cd backend && node ace generate:key
+#
+# Sécurité réseau :
+#   Bloquer via pare-feu (ufw / iptables / security group cloud) :
+#     - 3306 (MySQL) — interne uniquement
+#     - 3333 (backend) — interne uniquement, proxié par nginx
+#     - 9000 (MinIO API) — interne, proxié par nginx /media/
+#     - 9001 (MinIO console) — interne uniquement
+#   Autoriser uniquement : 80 (HTTP) et 443 (HTTPS si TLS externalisé)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Base de données ──────────────────────────────────────────────────────────
+  db:
+    environment:
+      MYSQL_DATABASE:      ${DB_DATABASE}
+      MYSQL_USER:          ${DB_USER}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+  # ── MinIO ────────────────────────────────────────────────────────────────────
+  minio:
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  # ── Init bucket MinIO ────────────────────────────────────────────────────────
+  minio-init:
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
+        mc mb --ignore-existing local/restaurant-menu;
+        mc anonymous set public local/restaurant-menu;
+        echo 'Bucket restaurant-menu pret';
+      "
+
+  # ── Backend AdonisJS ─────────────────────────────────────────────────────────
+  backend:
+    environment:
+      NODE_ENV:            production
+      PORT:                3333
+      HOST:                0.0.0.0
+      LOG_LEVEL:           info
+      TZ:                  UTC
+      APP_KEY:             ${APP_KEY}
+      APP_URL:             ${APP_URL}
+
+      DB_HOST:             db
+      DB_PORT:             3306
+      DB_DATABASE:         ${DB_DATABASE}
+      DB_USER:             ${DB_USER}
+      DB_PASSWORD:         ${DB_PASSWORD}
+
+      DRIVE_DISK:          s3
+      S3_KEY:              ${MINIO_ROOT_USER}
+      S3_SECRET:           ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET:           restaurant-menu
+      S3_ENDPOINT:         http://minio:9000
+      S3_REGION:           us-east-1
+      S3_FORCE_PATH_STYLE: "true"
+      # URL publique des images — proxy nginx /media/ → MinIO
+      S3_CDN_URL:          ${S3_CDN_URL}
+
+      CORS_ORIGIN:         ${CORS_ORIGIN}
+      MAX_IMAGE_SIZE_MB:   5
+
+      CINETPAY_API_KEY:    ${CINETPAY_API_KEY}
+      CINETPAY_SITE_ID:    ${CINETPAY_SITE_ID}
+      CINETPAY_NOTIFY_URL: ${CINETPAY_NOTIFY_URL}
+      CINETPAY_RETURN_URL: ${CINETPAY_RETURN_URL}
+
+  # ── Frontend Angular (nginx) ─────────────────────────────────────────────────
+  # Note : docker compose merge les ports — le port 4200 de la config de base
+  # reste actif. Bloquer ce port via le pare-feu du serveur.
+  frontend:
+    ports:
+      - "80:80"

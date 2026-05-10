@@ -27,7 +27,13 @@
     "hide": "Hide",
     "noData": "No data.",
     "page": "Page {{ current }} of {{ total }}",
-    "deleteConfirmIrreversible": "This action is irreversible."
+    "deleteConfirmIrreversible": "This action is irreversible.",
+    "translations": "Translations",
+    "translationsHint": "Optional — if empty, the original content will be displayed.",
+    "translationsAvailable": "Translations available",
+    "langEn": "English",
+    "langDe": "German",
+    "langZh": "Simplified Chinese"
   },
 
   "nav": {
@@ -400,7 +406,16 @@
       "restaurant.updated": "Restaurant updated",
       "restaurant.logo_uploaded": "Logo updated",
       "subscription.created": "Subscription initiated",
-      "subscription.canceled": "Subscription cancelled"
+      "subscription.canceled": "Subscription cancelled",
+      "subscription.granted": "Subscription granted (free)",
+      "restaurant.blocked": "Restaurant blocked",
+      "restaurant.unblocked": "Restaurant unblocked",
+      "category.reordered": "Categories reordered",
+      "order.created": "Order placed",
+      "order.status_updated": "Order status changed",
+      "order.gift_revoked": "Gift QR revoked",
+      "reservation.created": "Reservation created",
+      "reservation.status_updated": "Reservation status changed"
     }
   },
 
@@ -416,7 +431,8 @@
       "nav": {
         "dashboard": "Dashboard",
         "restaurants": "Restaurants",
-        "plans": "Plans"
+        "plans": "Plans",
+        "auditLogs": "Audit log"
       },
       "logout": "Logout"
     },
@@ -799,6 +815,18 @@
     "revokeQr": "Revoke QR",
     "prevPage": "Previous",
     "nextPage": "Next",
+    "viewDetail": "View details",
+    "detailCustomer": "Customer",
+    "detailName": "Name",
+    "detailPhone": "Phone",
+    "detailEmail": "Email",
+    "detailDate": "Date",
+    "detailItems": "Ordered items",
+    "detailTotal": "Total",
+    "detailNotes": "Notes",
+    "detailGift": "Gift order",
+    "detailRedeemedBy": "Claimed by",
+    "detailChangeStatus": "Change status",
     "status": {
       "pending": "Pending",
       "confirmed": "Confirmed",
@@ -911,9 +939,24 @@
     "redeemSuccessTitle": "Gift claimed!"
   },
 
+  "saAuditLogs": {
+    "title": "Global audit log",
+    "subtitle": "History of all actions across all restaurants",
+    "filterOrders": "Orders",
+    "filterReservations": "Reservations",
+    "filterAllRoles": "All roles",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "clearDates": "Clear dates",
+    "firstPage": "First page",
+    "lastPage": "Last page"
+  },
+
   "lang": {
     "fr": "Français",
     "en": "English",
+    "de": "Deutsch",
+    "zh": "中文",
     "switch": "Switch language"
   }
 }

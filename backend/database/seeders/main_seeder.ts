@@ -28,7 +28,7 @@ async function upsertCategory(restaurantId: number, data: {
 // ─── Helper : upsert menu item by name + category ────────────────────────────
 async function upsertItem(restaurantId: number, data: {
   categoryId: number; name: string; description: string
-  priceInCents: number; isAvailable: boolean; badge: MenuItemBadge; sortOrder: number
+  price: number; isAvailable: boolean; badge: MenuItemBadge; sortOrder: number
 }): Promise<void> {
   const existing = await MenuItem.query()
     .where('restaurant_id', restaurantId)
@@ -75,8 +75,8 @@ export default class MainSeeder extends BaseSeeder {
         name: 'Pro',
         slug: 'pro',
         description: 'Pour les restaurants en croissance',
-        priceMonthlyCents: 1500000,
-        priceYearlyCents: 15000000,
+        priceMonthlyCents: 10000,
+        priceYearlyCents: 100000,
         maxCategories: 20,
         maxMenuItems: 200,
         maxUsers: 5,
@@ -96,8 +96,8 @@ export default class MainSeeder extends BaseSeeder {
         name: 'Enterprise',
         slug: 'enterprise',
         description: 'Puissance illimitée pour les grandes enseignes',
-        priceMonthlyCents: 5000000,
-        priceYearlyCents: 50000000,
+        priceMonthlyCents: 30000,
+        priceYearlyCents: 300000,
         maxCategories: -1,
         maxMenuItems: -1,
         maxUsers: -1,
@@ -170,24 +170,23 @@ export default class MainSeeder extends BaseSeeder {
     ])
     console.log(`✅ Restaurant 1 : ${r1.name} (slug: ${r1.slug})`)
 
-    // Active subscription for r1
-    const existingSub1 = await Subscription.query().where('restaurant_id', r1.id).where('status', 'active').first()
-    if (!existingSub1) {
-      await Subscription.create({
+    // Active subscription for r1 — upsert pour éviter les conflits sur cinetpayTransactionId
+    await Subscription.updateOrCreate(
+      { cinetpayTransactionId: `seed_sub_${r1.id}_pro` },
+      {
         restaurantId: r1.id,
         planId: proPlan.id,
-        cinetpayTransactionId: `seed_sub_${r1.id}_pro`,
         cinetpayPaymentToken: null,
         billingCycle: 'yearly',
         status: 'active',
         amountCents: proPlan.priceYearlyCents,
-        currency: 'XOF',
+        currency: 'EUR',
         currentPeriodStart: DateTime.now(),
         currentPeriodEnd: DateTime.now().plus({ years: 1 }),
         canceledAt: null,
         paymentMetadata: { source: 'seeder' },
-      })
-    }
+      }
+    )
 
     // Users for r1
     const [admin1] = await User.updateOrCreateMany('email', [
@@ -236,45 +235,45 @@ export default class MainSeeder extends BaseSeeder {
 
     const r1Items: Array<{ cat: keyof typeof r1Cats; name: string; description: string; price: number; available: boolean; badge: MenuItemBadge; order: number }> = [
       // Entrées
-      { cat: 'entrees', name: 'Soupe de tomate confite', description: "Tomates rôties au four, huile d'olive extra-vierge, basilic frais", price: 250000, available: true, badge: 'popular', order: 1 },
-      { cat: 'entrees', name: 'Tartare de thon mi-cuit', description: "Thon rouge frais, avocat crémeux, mangue en brunoise, vinaigrette citron-sésame", price: 380000, available: true, badge: 'new', order: 2 },
-      { cat: 'entrees', name: 'Salade César revisitée', description: "Laitue romaine croquante, poulet grillé, parmesan 24 mois, croûtons au beurre, sauce César maison", price: 320000, available: true, badge: 'vegetarian', order: 3 },
-      { cat: 'entrees', name: 'Velouté de patate douce', description: "Patate douce rôtie, lait de coco, gingembre frais, crème fleurette", price: 280000, available: true, badge: null, order: 4 },
-      { cat: 'entrees', name: "Foie gras de canard mi-cuit", description: "Foie gras maison, chutney de mangue, brioche toastée, fleur de sel", price: 650000, available: true, badge: 'new', order: 5 },
+      { cat: 'entrees', name: 'Soupe de tomate confite', description: "Tomates rôties au four, huile d'olive extra-vierge, basilic frais", price: 8.50, available: true, badge: 'popular', order: 1 },
+      { cat: 'entrees', name: 'Tartare de thon mi-cuit', description: "Thon rouge frais, avocat crémeux, mangue en brunoise, vinaigrette citron-sésame", price: 14.00, available: true, badge: 'new', order: 2 },
+      { cat: 'entrees', name: 'Salade César revisitée', description: "Laitue romaine croquante, poulet grillé, parmesan 24 mois, croûtons au beurre, sauce César maison", price: 11.50, available: true, badge: 'vegetarian', order: 3 },
+      { cat: 'entrees', name: 'Velouté de patate douce', description: "Patate douce rôtie, lait de coco, gingembre frais, crème fleurette", price: 9.00, available: true, badge: null, order: 4 },
+      { cat: 'entrees', name: "Foie gras de canard mi-cuit", description: "Foie gras maison, chutney de mangue, brioche toastée, fleur de sel", price: 22.00, available: true, badge: 'new', order: 5 },
 
       // Poissons
-      { cat: 'poissons', name: "Bar en croûte d'herbes", description: "Bar de ligne entier, croûte persil-citron, beurre blanc aux câpres, légumes du marché", price: 620000, available: true, badge: 'popular', order: 1 },
-      { cat: 'poissons', name: 'Crevettes royales flambées', description: "Crevettes géantes sautées au cognac, ail confit, persil plat, riz basmati au safran", price: 480000, available: true, badge: 'spicy', order: 2 },
-      { cat: 'poissons', name: 'Tilapia grillé entier', description: "Tilapia frais du lac, marinade citron-piment, attiéké maison, sauce tomate relevée", price: 350000, available: true, badge: null, order: 3 },
-      { cat: 'poissons', name: 'Langouste thermidor', description: "Langouste fraîche, sauce crème moutarde, parmesan gratiné, accompagnée de légumes vapeur", price: 1200000, available: false, badge: 'popular', order: 4 },
+      { cat: 'poissons', name: "Bar en croûte d'herbes", description: "Bar de ligne entier, croûte persil-citron, beurre blanc aux câpres, légumes du marché", price: 24.00, available: true, badge: 'popular', order: 1 },
+      { cat: 'poissons', name: 'Crevettes royales flambées', description: "Crevettes géantes sautées au cognac, ail confit, persil plat, riz basmati au safran", price: 19.50, available: true, badge: 'spicy', order: 2 },
+      { cat: 'poissons', name: 'Tilapia grillé entier', description: "Tilapia frais du lac, marinade citron-piment, attiéké maison, sauce tomate relevée", price: 15.00, available: true, badge: null, order: 3 },
+      { cat: 'poissons', name: 'Langouste thermidor', description: "Langouste fraîche, sauce crème moutarde, parmesan gratiné, accompagnée de légumes vapeur", price: 48.00, available: false, badge: 'popular', order: 4 },
 
       // Viandes
-      { cat: 'viandes', name: 'Côte de bœuf maturée (400g)', description: "Bœuf local maturé 28 jours, sauce chimichurri, frites maison, salade verte", price: 950000, available: true, badge: 'popular', order: 1 },
-      { cat: 'viandes', name: 'Poulet braisé sauce arachide', description: "Poulet fermier rôti lentement, sauce arachide onctueuse, attiéké frais, banane plantain", price: 370000, available: true, badge: null, order: 2 },
-      { cat: 'viandes', name: "Agneau en tajine d'abricots", description: "Épaule d'agneau fondante, abricots confits, amandes grillées, couscous aux herbes", price: 720000, available: true, badge: 'new', order: 3 },
-      { cat: 'viandes', name: 'Magret de canard rôti', description: "Magret cuit rosé, réduction au miel-gingembre, purée de patate douce, haricots verts", price: 680000, available: false, badge: null, order: 4 },
-      { cat: 'viandes', name: 'Côtelettes d\'agneau grillées', description: "Côtelettes marinées aux herbes de Provence, tapenade d'olives, pommes sarladaises", price: 850000, available: true, badge: 'spicy', order: 5 },
+      { cat: 'viandes', name: 'Côte de bœuf maturée (400g)', description: "Bœuf local maturé 28 jours, sauce chimichurri, frites maison, salade verte", price: 38.00, available: true, badge: 'popular', order: 1 },
+      { cat: 'viandes', name: 'Poulet braisé sauce arachide', description: "Poulet fermier rôti lentement, sauce arachide onctueuse, attiéké frais, banane plantain", price: 16.00, available: true, badge: null, order: 2 },
+      { cat: 'viandes', name: "Agneau en tajine d'abricots", description: "Épaule d'agneau fondante, abricots confits, amandes grillées, couscous aux herbes", price: 28.00, available: true, badge: 'new', order: 3 },
+      { cat: 'viandes', name: 'Magret de canard rôti', description: "Magret cuit rosé, réduction au miel-gingembre, purée de patate douce, haricots verts", price: 26.00, available: false, badge: null, order: 4 },
+      { cat: 'viandes', name: 'Côtelettes d\'agneau grillées', description: "Côtelettes marinées aux herbes de Provence, tapenade d'olives, pommes sarladaises", price: 32.00, available: true, badge: 'spicy', order: 5 },
 
       // Pizzas
-      { cat: 'pizzas', name: 'Margherita bufala', description: "Tomate San Marzano, mozzarella di bufala, basilic frais, huile d'olive sicilienne — 32 cm", price: 400000, available: true, badge: 'vegetarian', order: 1 },
-      { cat: 'pizzas', name: 'Quattro stagioni', description: "Jambon cru, champignons, artichauts, olives noires, mozzarella, tomate fraîche — 32 cm", price: 480000, available: true, badge: 'popular', order: 2 },
-      { cat: 'pizzas', name: 'Diavola épicée', description: "Salami piquant, piment calabrais, mozzarella fumée, tomate, origan — 32 cm", price: 460000, available: true, badge: 'spicy', order: 3 },
-      { cat: 'pizzas', name: 'Pizza du Chef du moment', description: "Création hebdomadaire selon les arrivages — demandez au serveur pour les détails du jour", price: 550000, available: true, badge: 'new', order: 4 },
+      { cat: 'pizzas', name: 'Margherita bufala', description: "Tomate San Marzano, mozzarella di bufala, basilic frais, huile d'olive sicilienne — 32 cm", price: 13.50, available: true, badge: 'vegetarian', order: 1 },
+      { cat: 'pizzas', name: 'Quattro stagioni', description: "Jambon cru, champignons, artichauts, olives noires, mozzarella, tomate fraîche — 32 cm", price: 15.50, available: true, badge: 'popular', order: 2 },
+      { cat: 'pizzas', name: 'Diavola épicée', description: "Salami piquant, piment calabrais, mozzarella fumée, tomate, origan — 32 cm", price: 14.50, available: true, badge: 'spicy', order: 3 },
+      { cat: 'pizzas', name: 'Pizza du Chef du moment', description: "Création hebdomadaire selon les arrivages — demandez au serveur pour les détails du jour", price: 17.00, available: true, badge: 'new', order: 4 },
 
       // Desserts
-      { cat: 'desserts', name: 'Fondant au chocolat Valrhona', description: "Cœur coulant 70%, glace vanille Bourbon, caramel beurre salé, tuile croustillante", price: 220000, available: true, badge: 'popular', order: 1 },
-      { cat: 'desserts', name: 'Tarte tropézienne aux mangues', description: "Mangues Amélie fraîches, crème légère à la vanille, pâte sablée maison", price: 190000, available: true, badge: null, order: 2 },
-      { cat: 'desserts', name: 'Crème brûlée à la citronnelle', description: "Crème onctueuse infusée à la citronnelle, caramel craquant, zestes de citron vert", price: 175000, available: true, badge: 'new', order: 3 },
-      { cat: 'desserts', name: 'Tiramisu café-Baileys', description: "Mascarpone maison, café fort, Baileys, cacao de Madagascar", price: 200000, available: true, badge: 'popular', order: 4 },
-      { cat: 'desserts', name: 'Plateau de fromages affinés', description: "Sélection de 4 fromages, confiture de figues, miel d'acacia, noix fraîches", price: 350000, available: false, badge: null, order: 5 },
+      { cat: 'desserts', name: 'Fondant au chocolat Valrhona', description: "Cœur coulant 70%, glace vanille Bourbon, caramel beurre salé, tuile croustillante", price: 9.00, available: true, badge: 'popular', order: 1 },
+      { cat: 'desserts', name: 'Tarte tropézienne aux mangues', description: "Mangues Amélie fraîches, crème légère à la vanille, pâte sablée maison", price: 7.50, available: true, badge: null, order: 2 },
+      { cat: 'desserts', name: 'Crème brûlée à la citronnelle', description: "Crème onctueuse infusée à la citronnelle, caramel craquant, zestes de citron vert", price: 7.00, available: true, badge: 'new', order: 3 },
+      { cat: 'desserts', name: 'Tiramisu café-Baileys', description: "Mascarpone maison, café fort, Baileys, cacao de Madagascar", price: 8.00, available: true, badge: 'popular', order: 4 },
+      { cat: 'desserts', name: 'Plateau de fromages affinés', description: "Sélection de 4 fromages, confiture de figues, miel d'acacia, noix fraîches", price: 14.00, available: false, badge: null, order: 5 },
 
       // Boissons
-      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Évian plate ou Perrier pétillante", price: 75000, available: true, badge: null, order: 1 },
-      { cat: 'boissons', name: 'Jus de bissap maison', description: "Hibiscus frais infusé, gingembre, menthe, sucre de canne — servi frais", price: 150000, available: true, badge: 'popular', order: 2 },
-      { cat: 'boissons', name: 'Jus de fruits frais pressés', description: "Orange, ananas, mangue, ou maracuja — au choix, pressé à la commande", price: 200000, available: true, badge: null, order: 3 },
-      { cat: 'boissons', name: 'Bière locale (33cl)', description: "Flag, Castel ou Bock fraîche — servie en bouteille ou pression", price: 150000, available: true, badge: null, order: 4 },
-      { cat: 'boissons', name: 'Vin rouge (verre 15cl)', description: "Sélection du sommelier — Bordeaux AOC ou Côtes du Rhône selon arrivage", price: 350000, available: true, badge: null, order: 5 },
-      { cat: 'boissons', name: 'Cocktail du bar', description: "Mojito, Daïquiri, Piña Colada ou Spritz — demandez la carte complète", price: 400000, available: true, badge: 'new', order: 6 },
+      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Évian plate ou Perrier pétillante", price: 3.00, available: true, badge: null, order: 1 },
+      { cat: 'boissons', name: 'Jus de bissap maison', description: "Hibiscus frais infusé, gingembre, menthe, sucre de canne — servi frais", price: 5.50, available: true, badge: 'popular', order: 2 },
+      { cat: 'boissons', name: 'Jus de fruits frais pressés', description: "Orange, ananas, mangue, ou maracuja — au choix, pressé à la commande", price: 6.50, available: true, badge: null, order: 3 },
+      { cat: 'boissons', name: 'Bière locale (33cl)', description: "Flag, Castel ou Bock fraîche — servie en bouteille ou pression", price: 4.50, available: true, badge: null, order: 4 },
+      { cat: 'boissons', name: 'Vin rouge (verre 15cl)', description: "Sélection du sommelier — Bordeaux AOC ou Côtes du Rhône selon arrivage", price: 8.00, available: true, badge: null, order: 5 },
+      { cat: 'boissons', name: 'Cocktail du bar', description: "Mojito, Daïquiri, Piña Colada ou Spritz — demandez la carte complète", price: 10.00, available: true, badge: 'new', order: 6 },
     ]
 
     for (const item of r1Items) {
@@ -282,7 +281,7 @@ export default class MainSeeder extends BaseSeeder {
         categoryId: r1Cats[item.cat].id,
         name: item.name,
         description: item.description,
-        priceInCents: item.price,
+        price: item.price,
         isAvailable: item.available,
         badge: item.badge,
         sortOrder: item.order,
@@ -355,25 +354,25 @@ export default class MainSeeder extends BaseSeeder {
     // Exactly 15 items to respect the free plan limit
     const r2Items: Array<{ cat: keyof typeof r2Cats; name: string; description: string; price: number; available: boolean; badge: MenuItemBadge; order: number }> = [
       // Entrées (4)
-      { cat: 'entrees', name: 'Salade de papaye verte', description: "Papaye verte râpée, tomates cerises, arachides grillées, vinaigrette citronnée", price: 180000, available: true, badge: 'vegetarian', order: 1 },
-      { cat: 'entrees', name: 'Accras de morue maison', description: "Beignets croustillants à la morue, sauce piquante maison, citron vert", price: 220000, available: true, badge: 'popular', order: 2 },
-      { cat: 'entrees', name: 'Brochettes de bœuf yassa', description: "Bœuf mariné à l'oseille, oignons confits, moutarde douce — 4 pièces", price: 250000, available: true, badge: 'spicy', order: 3 },
-      { cat: 'entrees', name: "Soupe légère de poisson", description: "Bouillon de poisson fumé, tomates, oignons, herbes fraîches, chili doux", price: 200000, available: true, badge: null, order: 4 },
+      { cat: 'entrees', name: 'Salade de papaye verte', description: "Papaye verte râpée, tomates cerises, arachides grillées, vinaigrette citronnée", price: 7.00, available: true, badge: 'vegetarian', order: 1 },
+      { cat: 'entrees', name: 'Accras de morue maison', description: "Beignets croustillants à la morue, sauce piquante maison, citron vert", price: 8.50, available: true, badge: 'popular', order: 2 },
+      { cat: 'entrees', name: 'Brochettes de bœuf yassa', description: "Bœuf mariné à l'oseille, oignons confits, moutarde douce — 4 pièces", price: 9.50, available: true, badge: 'spicy', order: 3 },
+      { cat: 'entrees', name: "Soupe légère de poisson", description: "Bouillon de poisson fumé, tomates, oignons, herbes fraîches, chili doux", price: 7.50, available: true, badge: null, order: 4 },
 
       // Plats africains (8)
-      { cat: 'plats', name: 'Poulet braisé DG', description: "Poulet fermier braisé, sauce tomate-banane, légumes sautés — la spécialité de la maison", price: 380000, available: true, badge: 'popular', order: 1 },
-      { cat: 'plats', name: 'Kedjenou de poulet', description: "Poulet mijoté à l'étouffée, légumes du jardin, épices douces — servi avec du riz gluant", price: 350000, available: true, badge: 'popular', order: 2 },
-      { cat: 'plats', name: 'Riz gras au mouton', description: "Riz parfumé cuit dans le bouillon de mouton, légumes, tomates, épices de Côte d'Ivoire", price: 320000, available: true, badge: null, order: 3 },
-      { cat: 'plats', name: "Alloco poisson frit", description: "Banane plantain mûre frite, poisson tilapia entier, oignons caramélisés, piment vert", price: 280000, available: true, badge: 'spicy', order: 4 },
-      { cat: 'plats', name: 'Foutou banane & sauce graine', description: "Foutou de banane pilé, sauce graine de palme au crabe, crevettes séchées", price: 300000, available: true, badge: 'vegetarian', order: 5 },
-      { cat: 'plats', name: 'Thiéboudienne sénégalais', description: "Riz au poisson à la sénégalaise, légumes, sauce tomate, poisson entier grillé", price: 420000, available: true, badge: 'new', order: 6 },
-      { cat: 'plats', name: 'Brochettes de poulet grillé', description: "Poulet mariné herbes et citron, grillé au charbon, servi avec attiéké et salade", price: 290000, available: false, badge: null, order: 7 },
-      { cat: 'plats', name: "Mafé d'agneau", description: "Épaule d'agneau fondante, sauce cacahuète crémeuse, riz blanc, légumes sautés", price: 450000, available: true, badge: 'new', order: 8 },
+      { cat: 'plats', name: 'Poulet braisé DG', description: "Poulet fermier braisé, sauce tomate-banane, légumes sautés — la spécialité de la maison", price: 14.00, available: true, badge: 'popular', order: 1 },
+      { cat: 'plats', name: 'Kedjenou de poulet', description: "Poulet mijoté à l'étouffée, légumes du jardin, épices douces — servi avec du riz gluant", price: 13.00, available: true, badge: 'popular', order: 2 },
+      { cat: 'plats', name: 'Riz gras au mouton', description: "Riz parfumé cuit dans le bouillon de mouton, légumes, tomates, épices de Côte d'Ivoire", price: 12.00, available: true, badge: null, order: 3 },
+      { cat: 'plats', name: "Alloco poisson frit", description: "Banane plantain mûre frite, poisson tilapia entier, oignons caramélisés, piment vert", price: 11.00, available: true, badge: 'spicy', order: 4 },
+      { cat: 'plats', name: 'Foutou banane & sauce graine', description: "Foutou de banane pilé, sauce graine de palme au crabe, crevettes séchées", price: 11.50, available: true, badge: 'vegetarian', order: 5 },
+      { cat: 'plats', name: 'Thiéboudienne sénégalais', description: "Riz au poisson à la sénégalaise, légumes, sauce tomate, poisson entier grillé", price: 15.50, available: true, badge: 'new', order: 6 },
+      { cat: 'plats', name: 'Brochettes de poulet grillé', description: "Poulet mariné herbes et citron, grillé au charbon, servi avec attiéké et salade", price: 12.00, available: false, badge: null, order: 7 },
+      { cat: 'plats', name: "Mafé d'agneau", description: "Épaule d'agneau fondante, sauce cacahuète crémeuse, riz blanc, légumes sautés", price: 17.00, available: true, badge: 'new', order: 8 },
 
       // Boissons (3)
-      { cat: 'boissons', name: 'Jus de gingembre frais', description: "Gingembre pressé, citron, sucre de canne, glaçons — fortifiant et rafraîchissant", price: 120000, available: true, badge: 'popular', order: 1 },
-      { cat: 'boissons', name: 'Bissap hibiscus', description: "Fleurs d'hibiscus séchées infusées, menthe fraîche, eau de fleur d'oranger", price: 100000, available: true, badge: null, order: 2 },
-      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Eau plate ou gazeuse fraîche", price: 75000, available: true, badge: null, order: 3 },
+      { cat: 'boissons', name: 'Jus de gingembre frais', description: "Gingembre pressé, citron, sucre de canne, glaçons — fortifiant et rafraîchissant", price: 4.50, available: true, badge: 'popular', order: 1 },
+      { cat: 'boissons', name: 'Bissap hibiscus', description: "Fleurs d'hibiscus séchées infusées, menthe fraîche, eau de fleur d'oranger", price: 4.00, available: true, badge: null, order: 2 },
+      { cat: 'boissons', name: 'Eau minérale (50cl)', description: "Eau plate ou gazeuse fraîche", price: 3.00, available: true, badge: null, order: 3 },
     ]
 
     for (const item of r2Items) {
@@ -381,7 +380,7 @@ export default class MainSeeder extends BaseSeeder {
         categoryId: r2Cats[item.cat].id,
         name: item.name,
         description: item.description,
-        priceInCents: item.price,
+        price: item.price,
         isAvailable: item.available,
         badge: item.badge,
         sortOrder: item.order,

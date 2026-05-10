@@ -27,7 +27,13 @@
     "hide": "Masquer",
     "noData": "Aucune donnée.",
     "page": "Page {{ current }} sur {{ total }}",
-    "deleteConfirmIrreversible": "Cette action est irréversible."
+    "deleteConfirmIrreversible": "Cette action est irréversible.",
+    "translations": "Traductions",
+    "translationsHint": "Optionnel — si vide, le contenu original sera affiché.",
+    "translationsAvailable": "Traductions disponibles",
+    "langEn": "Anglais",
+    "langDe": "Allemand",
+    "langZh": "Chinois simplifié"
   },
 
   "nav": {
@@ -400,7 +406,16 @@
       "restaurant.updated": "Restaurant modifié",
       "restaurant.logo_uploaded": "Logo mis à jour",
       "subscription.created": "Abonnement initié",
-      "subscription.canceled": "Abonnement annulé"
+      "subscription.canceled": "Abonnement annulé",
+      "subscription.granted": "Abonnement attribué (gratuit)",
+      "restaurant.blocked": "Restaurant bloqué",
+      "restaurant.unblocked": "Restaurant débloqué",
+      "category.reordered": "Catégories réordonnées",
+      "order.created": "Commande passée",
+      "order.status_updated": "Statut de commande modifié",
+      "order.gift_revoked": "QR cadeau révoqué",
+      "reservation.created": "Réservation créée",
+      "reservation.status_updated": "Statut de réservation modifié"
     }
   },
 
@@ -416,7 +431,8 @@
       "nav": {
         "dashboard": "Tableau de bord",
         "restaurants": "Restaurants",
-        "plans": "Plans"
+        "plans": "Plans",
+        "auditLogs": "Journal d'audit"
       },
       "logout": "Déconnexion"
     },
@@ -799,6 +815,18 @@
     "revokeQr": "Révoquer le QR",
     "prevPage": "Précédent",
     "nextPage": "Suivant",
+    "viewDetail": "Voir les détails",
+    "detailCustomer": "Client",
+    "detailName": "Nom",
+    "detailPhone": "Téléphone",
+    "detailEmail": "Email",
+    "detailDate": "Date",
+    "detailItems": "Articles commandés",
+    "detailTotal": "Total",
+    "detailNotes": "Notes",
+    "detailGift": "Commande cadeau",
+    "detailRedeemedBy": "Récupéré par",
+    "detailChangeStatus": "Changer le statut",
     "status": {
       "pending": "En attente",
       "confirmed": "Confirmée",
@@ -911,9 +939,24 @@
     "redeemSuccessTitle": "Cadeau récupéré !"
   },
 
+  "saAuditLogs": {
+    "title": "Journal d'audit global",
+    "subtitle": "Historique de toutes les actions sur tous les restaurants",
+    "filterOrders": "Commandes",
+    "filterReservations": "Réservations",
+    "filterAllRoles": "Tous les rôles",
+    "dateFrom": "Du",
+    "dateTo": "Au",
+    "clearDates": "Effacer les dates",
+    "firstPage": "Première page",
+    "lastPage": "Dernière page"
+  },
+
   "lang": {
     "fr": "Français",
     "en": "English",
+    "de": "Deutsch",
+    "zh": "中文",
     "switch": "Changer de langue"
   }
 }

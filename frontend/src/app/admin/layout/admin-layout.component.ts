@@ -123,14 +123,32 @@ import { AuthService } from '../../shared/services/auth.service'
               }
             </a>
 
-            <a routerLink="/admin/orders" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.orders') : ''">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z" /><path d="M6 8v4M12 8v4" /></svg>
-              @if (!collapsed()) { <span>{{ t('nav.orders') }}</span> }
+            <a
+              routerLink="/admin/orders"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasOrders()"
+              [title]="collapsed() ? t('nav.orders') : (!hasOrders() ? t('nav.ordersLocked') : '')"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z"/><path d="M6 8v4M12 8v4"/></svg>
+              @if (!collapsed()) {
+                <span>{{ t('nav.orders') }}</span>
+                @if (!hasOrders()) { <span class="sb-lock">Enterprise</span> }
+              }
             </a>
 
-            <a routerLink="/admin/reservations" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.reservations') : ''">
+            <a
+              routerLink="/admin/reservations"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasOrders()"
+              [title]="collapsed() ? t('nav.reservations') : (!hasOrders() ? t('nav.reservationsLocked') : '')"
+            >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="14" height="13" rx="1.5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="2" y1="8" x2="16" y2="8"/></svg>
-              @if (!collapsed()) { <span>{{ t('nav.reservations') }}</span> }
+              @if (!collapsed()) {
+                <span>{{ t('nav.reservations') }}</span>
+                @if (!hasOrders()) { <span class="sb-lock">Enterprise</span> }
+              }
             </a>
 
             <a
@@ -353,6 +371,10 @@ export class AdminLayoutComponent {
   readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
   readonly planSlug   = computed(() => this.authService.restaurant()?.plan?.slug ?? null)
   readonly hasStats   = computed(() => this.planSlug() === 'pro' || this.planSlug() === 'enterprise')
+  readonly hasOrders  = computed(() => {
+    const plan = this.authService.restaurant()?.plan
+    return plan?.slug === 'enterprise' || !!plan?.features?.['orders_and_reservations']
+  })
   readonly hasApi     = computed(() => this.planSlug() === 'enterprise')
 
   readonly userInitials = computed(() => {

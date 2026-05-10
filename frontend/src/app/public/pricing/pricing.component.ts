@@ -498,6 +498,6 @@ export class PricingComponent implements OnInit {
   formatPrice(plan: Plan, cycle: BillingCycle): string {
     const cents  = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
     const amount = cents / 100
-    return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA'
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount)
   }
 }

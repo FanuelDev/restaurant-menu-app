@@ -1,10 +1,11 @@
-import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy } from '@angular/core'
+import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { ReservationService } from '../../shared/services/reservation.service'
 import { AuthService } from '../../shared/services/auth.service'
+import { DesktopService } from '../../shared/services/desktop.service'
 import type { Reservation, ReservationStatus } from '../../shared/models'
 
 const STATUS_COLORS: Record<ReservationStatus, string> = {
@@ -57,6 +58,23 @@ const STATUS_BG: Record<ReservationStatus, string> = {
             </div>
           </div>
 
+          <!-- Alert banner for urgent reservations -->
+          @if (urgentCount() > 0) {
+            <div class="alert-banner" [class.alert-overdue]="overdueCount() > 0">
+              <span class="alert-icon">{{ overdueCount() > 0 ? '⚠️' : '⏰' }}</span>
+              <div class="alert-text">
+                @if (overdueCount() > 0) {
+                  <strong>{{ overdueCount() }} réservation{{ overdueCount() > 1 ? 's' : '' }} dépassée{{ overdueCount() > 1 ? 's' : '' }}</strong>
+                  @if (imminentCount() > 0) {
+                    &nbsp;· {{ imminentCount() }} imminente{{ imminentCount() > 1 ? 's' : '' }}
+                  }
+                } @else {
+                  <strong>{{ imminentCount() }} réservation{{ imminentCount() > 1 ? 's' : '' }} dans moins de 30 min</strong>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Filter bar -->
           <div class="filter-bar">
             <div class="filter-tabs">
@@ -107,13 +125,20 @@ const STATUS_BG: Record<ReservationStatus, string> = {
             } @else {
               <div class="res-list">
                 @for (res of reservations(); track res.id) {
-                  <div class="res-card">
+                  <div class="res-card"
+                    [class.card-overdue]="getUrgency(res) === 'overdue'"
+                    [class.card-imminent]="getUrgency(res) === 'imminent'">
                     <!-- Card top -->
                     <div class="res-card-top">
                       <div class="res-datetime">
                         <div class="res-date">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                           {{ res.reservedDate | date:'dd/MM/yyyy' }} · {{ res.reservedTime }}
+                          @if (getUrgency(res) === 'overdue') {
+                            <span class="urgency-pill pill-overdue">⚠️ Dépassée</span>
+                          } @else if (getUrgency(res) === 'imminent') {
+                            <span class="urgency-pill pill-imminent">⏰ Dans {{ minutesUntil(res) }} min</span>
+                          }
                         </div>
                         <div class="res-guests">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -355,6 +380,59 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
+    /* Alert banner */
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: #FFFBEB;
+      border: 1.5px solid #FCD34D;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-4);
+      font-size: .9rem;
+      color: #92400E;
+      animation: slideDown .3s ease;
+    }
+    .alert-banner.alert-overdue {
+      background: #FEF2F2;
+      border-color: #FECACA;
+      color: #991B1B;
+    }
+    .alert-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .alert-text { flex: 1; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Urgency pills */
+    .urgency-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: .6875rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+      margin-left: var(--space-2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .pill-imminent { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .pill-overdue  { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .65; }
+    }
+
+    /* Card urgency states */
+    .card-imminent {
+      border-left: 3px solid #F59E0B !important;
+      background: #FFFDF5;
+    }
+    .card-overdue {
+      border-left: 3px solid #EF4444 !important;
+      background: #FFFAFA;
+    }
+
     /* Reservations list */
     .res-list { display: flex; flex-direction: column; gap: var(--space-3); }
 
@@ -574,9 +652,10 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     .page-info { font-size: .875rem; color: var(--text-secondary); }
   `],
 })
-export class ReservationsComponent implements OnInit {
+export class ReservationsComponent implements OnInit, OnDestroy {
   private readonly reservationService = inject(ReservationService)
   private readonly authService = inject(AuthService)
+  private readonly desktop = inject(DesktopService)
 
   readonly loading = signal(true)
   readonly reservations = signal<Reservation[]>([])
@@ -588,17 +667,54 @@ export class ReservationsComponent implements OnInit {
   dateFilter = ''
   notesMap: Record<number, string> = {}
 
+  private readonly now = signal(new Date())
+  private tickInterval: ReturnType<typeof setInterval> | null = null
+  private readonly notifSentSet = new Set<string>()
+
   readonly hasAccess = computed(() => {
     const r = this.authService.restaurant()
     if (!r) return false
     return !!(r as any)?.plan?.features?.['orders_and_reservations'] || (r as any)?.plan?.slug === 'enterprise'
   })
 
+  readonly urgentCount = computed(() =>
+    this.reservations().filter(r => this.getUrgency(r) !== 'none').length
+  )
+  readonly imminentCount = computed(() =>
+    this.reservations().filter(r => this.getUrgency(r) === 'imminent').length
+  )
+  readonly overdueCount = computed(() =>
+    this.reservations().filter(r => this.getUrgency(r) === 'overdue').length
+  )
+
   statusColor(status: ReservationStatus): string { return STATUS_COLORS[status] ?? '#6B7280' }
   statusBg(status: ReservationStatus): string { return STATUS_BG[status] ?? '#F9FAFB' }
 
+  getUrgency(res: Reservation): 'overdue' | 'imminent' | 'none' {
+    if (!['pending', 'confirmed'].includes(res.status)) return 'none'
+    const dt = new Date(`${res.reservedDate}T${res.reservedTime}`)
+    const diffMin = (dt.getTime() - this.now().getTime()) / 60_000
+    if (diffMin < 0) return 'overdue'
+    if (diffMin <= 30) return 'imminent'
+    return 'none'
+  }
+
+  minutesUntil(res: Reservation): number {
+    const dt = new Date(`${res.reservedDate}T${res.reservedTime}`)
+    return Math.max(0, Math.round((dt.getTime() - this.now().getTime()) / 60_000))
+  }
+
   ngOnInit(): void {
+    this.requestNotifPermission()
     this.loadReservations()
+    this.tickInterval = setInterval(() => {
+      this.now.set(new Date())
+      this.checkNotifications()
+    }, 60_000)
+  }
+
+  ngOnDestroy(): void {
+    if (this.tickInterval) clearInterval(this.tickInterval)
   }
 
   setTab(tab: 'all' | 'pending' | 'confirmed' | 'cancelled'): void {
@@ -624,6 +740,7 @@ export class ReservationsComponent implements OnInit {
         this.reservations.set(res.data)
         this.meta.set(res.meta)
         this.loading.set(false)
+        this.checkNotifications()
       },
       error: () => this.loading.set(false),
     })
@@ -662,5 +779,32 @@ export class ReservationsComponent implements OnInit {
       },
       error: () => this.updatingId.set(null),
     })
+  }
+
+  private requestNotifPermission(): void {
+    // En mode desktop Electron, les notifications sont natives — pas besoin de permission browser
+    if (this.desktop.isDesktop) return
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }
+
+  private checkNotifications(): void {
+    for (const res of this.reservations()) {
+      const urgency = this.getUrgency(res)
+      if (urgency === 'imminent' && !this.notifSentSet.has(`${res.id}-imminent`)) {
+        this.notifSentSet.add(`${res.id}-imminent`)
+        this.desktop.notify(
+          `⏰ Réservation imminente — ${res.reservedTime}`,
+          `${res.customerName} · ${res.guestsCount} couvert(s)`
+        )
+      } else if (urgency === 'overdue' && !this.notifSentSet.has(`${res.id}-overdue`)) {
+        this.notifSentSet.add(`${res.id}-overdue`)
+        this.desktop.notify(
+          `⚠️ Réservation dépassée — ${res.reservedTime}`,
+          `${res.customerName} · ${res.guestsCount} couvert(s) — à traiter`
+        )
+      }
+    }
   }
 }

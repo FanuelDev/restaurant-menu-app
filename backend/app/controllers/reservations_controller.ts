@@ -4,6 +4,7 @@ import {
   createReservationValidator,
   updateReservationStatusValidator,
 } from '#validators/reservation_validator'
+import AuditService from '#services/audit_service'
 
 export default class ReservationsController {
   /** POST /api/public/reservations */
@@ -56,13 +57,14 @@ export default class ReservationsController {
   }
 
   /** PATCH /api/admin/reservations/:id/status */
-  async adminUpdateStatus({ params, request, response, restaurant }: HttpContext) {
+  async adminUpdateStatus({ params, request, response, restaurant, auth }: HttpContext) {
     const reservation = await Reservation.query()
       .where('id', params.id)
       .where('restaurant_id', restaurant.id)
       .firstOrFail()
 
     const data = await request.validateUsing(updateReservationStatusValidator)
+    const oldStatus = reservation.status
     reservation.status = data.status
 
     if (data.notes !== undefined) {
@@ -70,6 +72,19 @@ export default class ReservationsController {
     }
 
     await reservation.save()
+
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: restaurant.id,
+      action: 'reservation.status_updated',
+      resourceType: 'reservation',
+      resourceId: reservation.id,
+      resourceName: reservation.customerName,
+      oldValues: { status: oldStatus },
+      newValues: { status: data.status },
+    })
+
     return response.ok(reservation.serialize())
   }
 }

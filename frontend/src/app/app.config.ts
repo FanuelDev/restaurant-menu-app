@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideTransloco({
       config: {
-        availableLangs: ['fr', 'en'],
+        availableLangs: ['fr', 'en', 'de', 'zh'],
         defaultLang: savedLang,
         fallbackLang: 'fr',
         reRenderOnLangChange: true,

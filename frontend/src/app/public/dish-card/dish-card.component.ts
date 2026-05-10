@@ -32,7 +32,7 @@ const BADGE_CONFIG: Record<string, { key: string; icon: string; cssClass: string
       [class.dish-card-unavailable]="!item.isAvailable"
       @cardReveal
       tabindex="0"
-      [attr.aria-label]="item.name + ' — ' + formatPrice(item.priceInCents)"
+      [attr.aria-label]="item.name + ' — ' + formatPrice(item.price)"
     >
       <div class="dish-image-wrap">
         @if (item.imageUrl) {
@@ -58,7 +58,7 @@ const BADGE_CONFIG: Record<string, { key: string; icon: string; cssClass: string
       <div class="dish-body">
         <div class="dish-top">
           <h3 class="dish-name">{{ item.name }}</h3>
-          <span class="dish-price" aria-label="Prix">{{ formatPrice(item.priceInCents) }}</span>
+          <span class="dish-price" aria-label="Prix">{{ formatPrice(item.price) }}</span>
         </div>
         @if (item.description) {
           <p class="dish-desc">{{ item.description }}</p>
@@ -223,7 +223,7 @@ export class DishCardComponent {
     return badge ? BADGE_CONFIG[badge] ?? null : null
   }
 
-  formatPrice(cents: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+  formatPrice(euros: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
   }
 }

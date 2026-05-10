@@ -158,14 +158,15 @@ import { TranslocoModule } from '@jsverse/transloco'
       padding: var(--space-2) var(--space-5); background: transparent;
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       cursor: pointer; font-size: .9rem; color: var(--text-secondary);
-      transition: border-color var(--t-fast);
-      &:hover { border-color: var(--gray-400); }
+      transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+      &:hover { background: var(--gray-100); border-color: var(--gray-400); color: var(--text-primary); }
     }
     .btn-danger {
       padding: var(--space-2) var(--space-5); background: var(--error);
       color: white; border: none; border-radius: var(--radius-md);
       cursor: pointer; font-size: .9rem; font-weight: 600;
-      transition: opacity var(--t-fast);
+      transition: background var(--t-fast), opacity var(--t-fast);
+      &:hover:not(:disabled) { background: #b91c1c; color: white; }
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
 
@@ -264,7 +265,7 @@ export class SubscriptionComponent implements OnInit {
 
   formatPrice(plan: Plan, cycle: BillingCycle): string {
     const cents = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
-    return new Intl.NumberFormat('fr-FR').format(cents / 100) + ' FCFA'
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   }
 
   statusIcon(status: string): string {

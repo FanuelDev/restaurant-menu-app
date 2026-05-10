@@ -8,8 +8,8 @@ export const createMenuItemValidator = vine.compile(
     categoryId: vine.number().positive(),
     name: vine.string().trim().minLength(1).maxLength(255),
     description: vine.string().trim().maxLength(1000).optional(),
-    // Prix en centimes : 1500 = 15,00 €
-    priceInCents: vine.number().min(0).max(999999),
+    /** Prix en euros (ex : 12.50) */
+    price: vine.number().min(0).max(9999.99),
     isAvailable: vine.boolean().optional(),
     badge: vine.enum(VALID_BADGES).optional().nullable(),
     sortOrder: vine.number().min(0).optional(),
@@ -21,7 +21,7 @@ export const updateMenuItemValidator = vine.compile(
     categoryId: vine.number().positive().optional(),
     name: vine.string().trim().minLength(1).maxLength(255).optional(),
     description: vine.string().trim().maxLength(1000).optional().nullable(),
-    priceInCents: vine.number().min(0).max(999999).optional(),
+    price: vine.number().min(0).max(9999.99).optional(),
     isAvailable: vine.boolean().optional(),
     badge: vine.enum(VALID_BADGES).optional().nullable(),
     sortOrder: vine.number().min(0).optional(),

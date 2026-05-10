@@ -28,6 +28,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   S3_BUCKET: Env.schema.string.optional(),
   S3_ENDPOINT: Env.schema.string.optional(),
   S3_REGION: Env.schema.string.optional(),
+  // URL publique pour les images S3 (ex: https://domain.com/media) — proxy nginx vers MinIO
+  S3_CDN_URL: Env.schema.string.optional(),
 
   // CORS
   CORS_ORIGIN: Env.schema.string.optional(),

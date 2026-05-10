@@ -95,102 +95,134 @@ import QRCode from 'qrcode'
         }
       </main>
 
-      <!-- Reservation section -->
-      @if (hasOrders()) {
-        <section class="reservation-section">
-          <div class="container">
-            <div class="reservation-card">
-              <div class="reservation-header">
-                <div class="reservation-icon">📅</div>
-                <div>
-                  <h2 class="reservation-title">{{ t('publicOrder.reservationTitle') }}</h2>
-                </div>
+      <!-- Reservation drawer backdrop -->
+      @if (reservationOpen()) {
+        <div class="res-backdrop" (click)="reservationOpen.set(false)"></div>
+        <aside class="res-drawer">
+          <!-- Drawer header -->
+          <div class="res-drawer-header">
+            <div class="res-drawer-header-bg"></div>
+            <div class="res-header-content">
+              <div class="res-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+                  <path d="M16 2v4M8 2v4M3 10h18"/>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                </svg>
               </div>
-
-              @if (reservationSuccess()) {
-                <div class="reservation-success">
-                  <div class="success-icon">✅</div>
-                  <h3>{{ t('publicOrder.reservationSuccess') }}</h3>
-                  <p>{{ t('publicOrder.reservationSuccessDesc') }}</p>
-                  <button class="btn-outline" (click)="reservationSuccess.set(false)" type="button">
-                    {{ t('publicOrder.backToMenu') }}
-                  </button>
-                </div>
-              } @else {
-                <form class="reservation-form" (ngSubmit)="submitReservation()" #resForm="ngForm">
-                  <div class="form-row">
-                    <div class="form-field">
-                      <label class="form-label">{{ t('publicOrder.reservationDate') }}</label>
-                      <input
-                        type="date"
-                        class="form-input"
-                        [(ngModel)]="resDate" name="resDate"
-                        [min]="todayDate"
-                        required
-                      />
-                    </div>
-                    <div class="form-field">
-                      <label class="form-label">{{ t('publicOrder.reservationTime') }}</label>
-                      <input
-                        type="time"
-                        class="form-input"
-                        [(ngModel)]="resTime" name="resTime"
-                        required
-                      />
-                    </div>
-                    <div class="form-field form-field-sm">
-                      <label class="form-label">{{ t('publicOrder.reservationGuests') }}</label>
-                      <input
-                        type="number"
-                        class="form-input"
-                        [(ngModel)]="resGuests" name="resGuests"
-                        min="1" max="100" required
-                      />
-                    </div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-field">
-                      <label class="form-label">{{ t('publicOrder.reservationName') }}</label>
-                      <input
-                        type="text"
-                        class="form-input"
-                        [(ngModel)]="resName" name="resName"
-                        required
-                      />
-                    </div>
-                    <div class="form-field">
-                      <label class="form-label">{{ t('publicOrder.reservationPhone') }}</label>
-                      <input
-                        type="tel"
-                        class="form-input"
-                        [(ngModel)]="resPhone" name="resPhone"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label">{{ t('publicOrder.reservationRequests') }}</label>
-                    <textarea
-                      class="form-input form-textarea"
-                      [(ngModel)]="resRequests" name="resRequests"
-                      rows="2"
-                    ></textarea>
-                  </div>
-                  <button
-                    type="submit"
-                    class="btn-primary"
-                    [disabled]="reservationSubmitting() || resForm.invalid"
-                  >
-                    {{ reservationSubmitting() ? t('publicOrder.reservationSubmitting') : t('publicOrder.reservationSubmit') }}
-                  </button>
-                  @if (reservationError()) {
-                    <p class="form-error">{{ reservationError() }}</p>
-                  }
-                </form>
-              }
+              <div>
+                <h2 class="res-drawer-title">{{ t('publicOrder.reservationTitle') }}</h2>
+                <p class="res-drawer-sub">{{ restaurant()?.name }}</p>
+              </div>
             </div>
+            <button class="res-close-btn" (click)="reservationOpen.set(false)" type="button" aria-label="Fermer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-        </section>
+
+          <!-- Drawer body -->
+          <div class="res-drawer-body">
+            @if (reservationSuccess()) {
+              <!-- Success state -->
+              <div class="res-success">
+                <div class="res-success-anim">
+                  <div class="res-success-ring"></div>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </div>
+                <h3 class="res-success-title">{{ t('publicOrder.reservationSuccess') }}</h3>
+                <p class="res-success-desc">{{ t('publicOrder.reservationSuccessDesc') }}</p>
+                <button class="res-new-btn" (click)="newReservation()" type="button">
+                  + Nouvelle réservation
+                </button>
+              </div>
+            } @else {
+              <form class="res-form" (ngSubmit)="submitReservation()" #resForm="ngForm" novalidate>
+
+                <!-- Date & Heure -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    Quand ?
+                  </div>
+                  <div class="res-row">
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationDate') }}</label>
+                      <input type="date" class="res-input" [(ngModel)]="resDate" name="resDate" [min]="todayDate" required />
+                    </div>
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationTime') }}</label>
+                      <input type="time" class="res-input" [(ngModel)]="resTime" name="resTime" required />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Couverts -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    {{ t('publicOrder.reservationGuests') }}
+                  </div>
+                  <div class="res-guests-ctrl">
+                    <button type="button" class="res-guests-btn" (click)="resGuests = resGuests > 1 ? resGuests - 1 : 1">−</button>
+                    <span class="res-guests-val">{{ resGuests }}</span>
+                    <button type="button" class="res-guests-btn" (click)="resGuests = resGuests < 100 ? resGuests + 1 : 100">+</button>
+                    <span class="res-guests-unit">{{ resGuests > 1 ? 'couverts' : 'couvert' }}</span>
+                  </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Vos informations
+                  </div>
+                  <div class="res-row">
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationName') }}</label>
+                      <input type="text" class="res-input" [(ngModel)]="resName" name="resName" placeholder="Jean Dupont" required autocomplete="name" />
+                    </div>
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationPhone') }}</label>
+                      <input type="tel" class="res-input" [(ngModel)]="resPhone" name="resPhone" placeholder="+225 XX XX XX XX" required autocomplete="tel" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Demandes spéciales -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    {{ t('publicOrder.reservationRequests') }}
+                  </div>
+                  <textarea class="res-input res-textarea" [(ngModel)]="resRequests" name="resRequests"
+                    rows="3" placeholder="Allergie, occasion spéciale, table en terrasse…"></textarea>
+                </div>
+
+                @if (reservationError()) {
+                  <div class="res-error">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    {{ reservationError() }}
+                  </div>
+                }
+
+                <button type="submit" class="res-submit" [disabled]="reservationSubmitting() || resForm.invalid">
+                  @if (reservationSubmitting()) {
+                    <span class="res-spinner"></span>
+                    {{ t('publicOrder.reservationSubmitting') }}
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+                    {{ t('publicOrder.reservationSubmit') }}
+                  }
+                </button>
+
+              </form>
+            }
+          </div>
+        </aside>
       }
 
       <footer class="menu-footer">
@@ -211,6 +243,18 @@ import QRCode from 'qrcode'
         </div>
       </footer>
     </div>
+
+    <!-- Reservation FAB -->
+    @if (hasOrders() && !reservationOpen() && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
+      <button class="res-fab" (click)="reservationOpen.set(true)" type="button" aria-label="Réserver une table">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+        </svg>
+        <span class="res-fab-label">Réserver</span>
+      </button>
+    }
 
     <!-- Cart FAB -->
     @if (hasOrders() && cartCount() > 0 && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
@@ -242,7 +286,7 @@ import QRCode from 'qrcode'
               <div class="cart-item">
                 <div class="cart-item-info">
                   <span class="cart-item-name">{{ ci.menuItem.name }}</span>
-                  <span class="cart-item-price">{{ formatPrice(ci.menuItem.priceInCents * ci.quantity) }}</span>
+                  <span class="cart-item-price">{{ formatPrice(ci.menuItem.price * ci.quantity) }}</span>
                 </div>
                 <div class="cart-item-controls">
                   <button class="qty-btn-sm" (click)="removeFromCart(ci.menuItem.id)" type="button">−</button>
@@ -359,7 +403,7 @@ import QRCode from 'qrcode'
                         <span class="order-line-qty">{{ ci.quantity }}×</span>
                         {{ ci.menuItem.name }}
                       </span>
-                      <span class="order-line-price">{{ formatPrice(ci.menuItem.priceInCents * ci.quantity) }}</span>
+                      <span class="order-line-price">{{ formatPrice(ci.menuItem.price * ci.quantity) }}</span>
                     </div>
                   }
                   <div class="modal-order-total">
@@ -513,24 +557,211 @@ import QRCode from 'qrcode'
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .empty-menu { text-align: center; padding: var(--space-20) 0; color: var(--text-muted); font-size: 1.125rem; }
 
-    /* Reservation section */
-    .reservation-section { background: var(--surface-1); border-top: 1px solid var(--border); padding: var(--space-12) 0; }
-    .reservation-card {
-      max-width: 700px;
+    /* ─── Reservation FAB ─── */
+    .res-fab {
+      position: fixed;
+      bottom: var(--space-6);
+      left: var(--space-6);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,0,0,.14);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .res-fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.18);
+      border-color: var(--color-brand);
+      color: var(--color-brand);
+    }
+    .res-fab svg { color: var(--color-brand); flex-shrink: 0; }
+    .res-fab-label { font-size: 0.9rem; }
+
+    /* ─── Reservation backdrop ─── */
+    .res-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* ─── Reservation drawer ─── */
+    .res-drawer {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: min(440px, 100vw);
+      background: var(--surface-1);
+      z-index: 301;
+      display: flex; flex-direction: column;
+      box-shadow: 4px 0 32px rgba(0,0,0,.15);
+      animation: slideInLeft 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+      overflow: hidden;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+    /* Drawer header */
+    .res-drawer-header {
+      position: relative;
+      padding: var(--space-6) var(--space-6) var(--space-5);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .res-drawer-header-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--color-brand) 0%, color-mix(in srgb, var(--color-brand) 75%, #000) 100%);
+      opacity: 0.92;
+    }
+    .res-header-content {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: var(--space-4);
+    }
+    .res-header-icon {
+      width: 44px; height: 44px; border-radius: var(--radius-lg);
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+    }
+    .res-drawer-title {
+      font-size: 1.125rem; font-weight: 700;
+      color: white; margin: 0 0 2px;
+    }
+    .res-drawer-sub { font-size: 0.8125rem; color: rgba(255,255,255,.75); margin: 0; }
+    .res-close-btn {
+      position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: none; background: rgba(255,255,255,.2);
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .res-close-btn:hover { background: rgba(255,255,255,.35); }
+
+    /* Drawer body */
+    .res-drawer-body {
+      flex: 1; overflow-y: auto;
+      padding: var(--space-5) var(--space-6);
+    }
+
+    /* Form layout */
+    .res-form { display: flex; flex-direction: column; gap: var(--space-5); }
+    .res-form-group {
+      display: flex; flex-direction: column; gap: var(--space-3);
       background: white;
       border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: var(--space-8);
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-4) var(--space-5);
     }
-    .reservation-header { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
-    .reservation-icon { font-size: 2rem; }
-    .reservation-title { font-size: 1.375rem; font-weight: 700; color: var(--text-primary); margin: 0; }
-    .reservation-form { display: flex; flex-direction: column; gap: var(--space-4); }
-    .reservation-success { text-align: center; padding: var(--space-8); }
-    .reservation-success h3 { font-size: 1.25rem; color: var(--success); margin: var(--space-3) 0 var(--space-2); }
-    .reservation-success p { color: var(--text-muted); margin: 0 0 var(--space-6); }
-    .success-icon { font-size: 2.5rem; }
+    .res-group-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+    .res-group-label svg { color: var(--color-brand); flex-shrink: 0; }
+    .res-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .res-field { display: flex; flex-direction: column; gap: 5px; }
+    .res-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); }
+    .res-input {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      color: var(--text-primary);
+      font-size: 0.9rem; font-family: var(--font-body);
+      box-sizing: border-box; width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .res-input:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
+    .res-textarea { resize: vertical; min-height: 72px; }
+
+    /* Guests stepper */
+    .res-guests-ctrl {
+      display: flex; align-items: center; gap: var(--space-3);
+    }
+    .res-guests-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1.5px solid var(--border); background: var(--surface-2);
+      font-size: 1.125rem; font-weight: 700; cursor: pointer;
+      color: var(--text-primary);
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .res-guests-btn:hover { border-color: var(--color-brand); color: var(--color-brand); background: var(--color-brand-light); }
+    .res-guests-val {
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--text-primary); min-width: 32px; text-align: center;
+    }
+    .res-guests-unit { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; }
+
+    /* Error */
+    .res-error {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px;
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md);
+      color: #dc2626; font-size: 0.875rem;
+    }
+    .res-error svg { flex-shrink: 0; }
+
+    /* Submit button */
+    .res-submit {
+      width: 100%; padding: 13px 20px;
+      background: var(--color-brand); color: white; border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.9375rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .res-submit:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .res-submit:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* Submit spinner */
+    .res-spinner {
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: white;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+
+    /* Success state */
+    .res-success {
+      display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-4); padding: var(--space-8) var(--space-4);
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+    }
+    .res-success-anim {
+      position: relative;
+      width: 80px; height: 80px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .res-success-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--color-brand);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .res-success-anim svg { position: relative; z-index: 1; }
+    .res-success-title { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+    .res-success-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; max-width: 280px; }
+    .res-new-btn {
+      margin-top: var(--space-2);
+      padding: 10px 22px;
+      background: transparent; color: var(--color-brand);
+      border: 1.5px solid var(--color-brand);
+      border-radius: var(--radius-full);
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .res-new-btn:hover { background: var(--color-brand); color: white; }
 
     /* Shared form styles */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
@@ -887,8 +1118,11 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly checkoutOpen = signal(false)
   readonly orderConfirmed = signal<Order | null>(null)
 
+  // Reservation drawer
+  readonly reservationOpen = signal(false)
+
   readonly cartCount = computed(() => this.cart().reduce((s, ci) => s + ci.quantity, 0))
-  readonly cartTotal = computed(() => this.cart().reduce((s, ci) => s + ci.menuItem.priceInCents * ci.quantity, 0))
+  readonly cartTotal = computed(() => this.cart().reduce((s, ci) => s + ci.menuItem.price * ci.quantity, 0))
 
   // Checkout form fields
   ckName = ''
@@ -1067,6 +1301,11 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
     link.click()
   }
 
+  newReservation(): void {
+    this.reservationSuccess.set(false)
+    this.reservationError.set(null)
+  }
+
   submitReservation(): void {
     if (this.reservationSubmitting()) return
     this.reservationSubmitting.set(true)
@@ -1096,8 +1335,7 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   }
 
-  formatPrice(cents: number): string {
-    const currency = this.restaurant()?.currency || 'EUR'
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100)
+  formatPrice(euros: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
   }
 }

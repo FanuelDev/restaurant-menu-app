@@ -23,7 +23,13 @@ export default class SuperAdminStatsController {
 
     const recentSignups = await db
       .from('restaurants')
-      .select('id', 'name', 'slug', 'subscription_status', 'created_at')
+      .select(
+        'id',
+        'name',
+        'slug',
+        'subscription_status as subscriptionStatus',
+        'created_at as createdAt',
+      )
       .orderBy('created_at', 'desc')
       .limit(10)
 

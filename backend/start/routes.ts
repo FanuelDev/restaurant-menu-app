@@ -173,6 +173,7 @@ router
 router
   .group(() => {
     router.get('/stats', [SAStatsController, 'index'])
+    router.get('/audit-logs', [AuditLogsController, 'indexAll'])
     router.get('/restaurants', [SARestaurantsController, 'index'])
     router.get('/restaurants/:id', [SARestaurantsController, 'show'])
     router.post('/restaurants/:id/block', [SARestaurantsController, 'block'])

@@ -41,7 +41,6 @@ const BADGE_KEYS: Record<string, string> = {
         </button>
       </header>
 
-      <!-- Usage bar -->
       @if (usage()) {
         <div class="usage-section">
           <app-plan-limit-bar
@@ -79,12 +78,15 @@ const BADGE_KEYS: Record<string, string> = {
               @if (item.badge) {
                 <span class="badge badge--{{ item.badge }}">{{ t(getBadgeKey(item.badge)) }}</span>
               }
+              @if (hasTranslations(item)) {
+                <span class="tl-dot" [title]="t('common.translationsAvailable')">🌐</span>
+              }
             </div>
 
             <div class="item-card__body">
               <div class="item-card__top">
                 <span class="item-card__name">{{ item.name }}</span>
-                <span class="item-card__price">{{ formatPrice(item.priceInCents) }}</span>
+                <span class="item-card__price">{{ formatPrice(item.price) }}</span>
               </div>
               @if (item.description) {
                 <p class="item-card__desc">{{ item.description }}</p>
@@ -128,6 +130,8 @@ const BADGE_KEYS: Record<string, string> = {
           </div>
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal__body" enctype="multipart/form-data">
+
+            <!-- Image -->
             <div class="form-group">
               <label class="form-label">{{ t('menuItems.imageLabel') }}</label>
               <div class="image-upload-zone" (click)="fileInput.click()" role="button" tabindex="0" (keydown.enter)="fileInput.click()">
@@ -146,6 +150,7 @@ const BADGE_KEYS: Record<string, string> = {
               <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileChange($event)" [attr.aria-label]="t('menuItems.imageLabel')" />
             </div>
 
+            <!-- Nom + Prix -->
             <div class="form-row">
               <div class="form-group flex-2">
                 <label class="form-label" for="item-name">{{ t('menuItems.fieldName') }} *</label>
@@ -154,7 +159,6 @@ const BADGE_KEYS: Record<string, string> = {
                   <span class="form-error" role="alert">{{ t('menuItems.fieldNameRequired') }}</span>
                 }
               </div>
-
               <div class="form-group flex-1">
                 <label class="form-label" for="item-price">{{ t('menuItems.fieldPrice') }} *</label>
                 <input id="item-price" type="number" step="0.01" min="0" class="form-control" formControlName="priceEuros" [placeholder]="t('menuItems.fieldPricePlaceholder')" />
@@ -164,11 +168,13 @@ const BADGE_KEYS: Record<string, string> = {
               </div>
             </div>
 
+            <!-- Description -->
             <div class="form-group">
               <label class="form-label" for="item-desc">{{ t('menuItems.fieldDescription') }}</label>
               <textarea id="item-desc" class="form-control" formControlName="description" rows="3" [placeholder]="t('menuItems.fieldDescriptionPlaceholder')"></textarea>
             </div>
 
+            <!-- Catégorie + Badge -->
             <div class="form-row">
               <div class="form-group flex-1">
                 <label class="form-label" for="item-cat">{{ t('menuItems.fieldCategory') }} *</label>
@@ -182,7 +188,6 @@ const BADGE_KEYS: Record<string, string> = {
                   <span class="form-error" role="alert">{{ t('menuItems.fieldCategoryRequired') }}</span>
                 }
               </div>
-
               <div class="form-group flex-1">
                 <label class="form-label" for="item-badge">{{ t('menuItems.fieldBadge') }}</label>
                 <select id="item-badge" class="form-control" formControlName="badge">
@@ -195,6 +200,7 @@ const BADGE_KEYS: Record<string, string> = {
               </div>
             </div>
 
+            <!-- Disponibilité -->
             <div class="form-group">
               <label class="form-label toggle-label">
                 {{ t('menuItems.fieldAvailable') }}
@@ -203,6 +209,51 @@ const BADGE_KEYS: Record<string, string> = {
                   <span class="toggle-slider"></span>
                 </label>
               </label>
+            </div>
+
+            <!-- Section traductions -->
+            <div class="tl-section">
+              <button type="button" class="tl-toggle" (click)="showTranslations.set(!showTranslations())">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                {{ t('common.translations') }}
+                @if (translationCount() > 0) {
+                  <span class="tl-badge">{{ translationCount() }}</span>
+                }
+                <svg class="tl-chevron" [class.tl-chevron-open]="showTranslations()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+
+              @if (showTranslations()) {
+                <div class="tl-body">
+                  <p class="tl-hint">{{ t('common.translationsHint') }}</p>
+
+                  <!-- Anglais -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇬🇧</span> {{ t('common.langEn') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameEn" placeholder="Name in English" />
+                      <textarea class="form-control" formControlName="descEn" rows="2" placeholder="Description in English"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Allemand -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇩🇪</span> {{ t('common.langDe') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameDe" placeholder="Name auf Deutsch" />
+                      <textarea class="form-control" formControlName="descDe" rows="2" placeholder="Beschreibung auf Deutsch"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Chinois -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇨🇳</span> {{ t('common.langZh') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameZh" placeholder="中文名称" />
+                      <textarea class="form-control" formControlName="descZh" rows="2" placeholder="中文描述"></textarea>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
 
             @if (formError()) {
@@ -230,48 +281,27 @@ const BADGE_KEYS: Record<string, string> = {
 
     .filter-bar { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
     .filter-tab {
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-full);
-      border: 1px solid var(--border);
-      background: var(--surface-1);
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transition: all 0.2s;
+      padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
+      border: 1px solid var(--border); background: var(--surface-1);
+      cursor: pointer; font-size: 0.875rem; font-weight: 500;
+      color: var(--text-secondary); transition: all 0.2s;
     }
     .filter-tab:hover, .filter-tab.active { background: var(--color-brand); color: white; border-color: var(--color-brand); }
 
-    .items-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--space-4);
-    }
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
 
     .item-card {
-      background: var(--surface-1);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      transition: box-shadow 0.2s;
+      background: var(--surface-1); border-radius: var(--radius-lg);
+      border: 1px solid var(--border); overflow: hidden; transition: box-shadow 0.2s;
     }
     .item-card:hover { box-shadow: var(--shadow-md); }
     .item-card--unavailable { opacity: 0.65; }
 
-    .item-card__image-wrap {
-      position: relative;
-      height: 160px;
-      background: var(--surface-2);
-      overflow: hidden;
-    }
+    .item-card__image-wrap { position: relative; height: 160px; background: var(--surface-2); overflow: hidden; }
     .item-card__image { width: 100%; height: 100%; object-fit: cover; }
     .item-card__image-placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      font-size: 3rem;
-      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; font-size: 3rem; color: var(--text-muted);
     }
     .item-card__body { padding: var(--space-4); }
     .item-card__top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-1); }
@@ -280,30 +310,23 @@ const BADGE_KEYS: Record<string, string> = {
     .item-card__desc { font-size: 0.8125rem; color: var(--text-muted); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .item-card__cat { font-size: 0.75rem; color: var(--text-muted); margin-top: var(--space-2); }
     .item-card__footer {
-      padding: var(--space-3) var(--space-4);
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4); border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: var(--space-3);
     }
     .item-card__status { font-size: 0.8125rem; color: var(--text-muted); flex: 1; }
     .item-card__actions { display: flex; gap: var(--space-2); }
 
     .badge {
-      position: absolute;
-      top: var(--space-2);
-      left: var(--space-2);
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      position: absolute; top: var(--space-2); left: var(--space-2);
+      padding: 2px 8px; border-radius: var(--radius-full);
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
     }
     .badge--new        { background: #3b82f6; color: white; }
     .badge--popular    { background: #f59e0b; color: white; }
     .badge--vegetarian { background: #22c55e; color: white; }
     .badge--spicy      { background: #ef4444; color: white; }
+
+    .tl-dot { position: absolute; top: var(--space-2); right: var(--space-2); font-size: .85rem; opacity: .8; }
 
     .toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
@@ -312,11 +335,8 @@ const BADGE_KEYS: Record<string, string> = {
       background: var(--border); border-radius: 24px; transition: 0.2s;
     }
     .toggle-slider::before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      left: 3px; bottom: 3px;
-      background: white; border-radius: 50%; transition: 0.2s;
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s;
     }
     input:checked + .toggle-slider { background: var(--color-brand); }
     input:checked + .toggle-slider::before { transform: translateX(20px); }
@@ -333,11 +353,8 @@ const BADGE_KEYS: Record<string, string> = {
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: var(--space-4); overflow-y: auto; }
     .modal {
-      background: var(--surface-1);
-      border-radius: var(--radius-xl);
-      width: 100%; max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: var(--surface-1); border-radius: var(--radius-xl);
+      width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
       box-shadow: var(--shadow-xl);
     }
     .modal__header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface-1); z-index: 1; }
@@ -363,18 +380,12 @@ const BADGE_KEYS: Record<string, string> = {
     }
     .form-control:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
     .form-error { color: var(--color-error); font-size: 0.8125rem; display: block; margin-top: var(--space-1); }
-    .alert-error { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error); padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; }
+    .alert-error { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error); padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
     .toggle-label { display: flex; justify-content: space-between; align-items: center; }
 
     .image-upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      cursor: pointer;
-      min-height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border: 2px dashed var(--border); border-radius: var(--radius-lg); overflow: hidden;
+      cursor: pointer; min-height: 140px; display: flex; align-items: center; justify-content: center;
       transition: border-color 0.2s;
     }
     .image-upload-zone:hover { border-color: var(--color-brand); }
@@ -393,6 +404,31 @@ const BADGE_KEYS: Record<string, string> = {
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-outline { border-color: var(--border); color: var(--text-secondary); background: var(--surface-1); }
     .btn-outline:hover { border-color: var(--color-brand); color: var(--color-brand); }
+
+    /* ── Section traductions ── */
+    .tl-section { margin-bottom: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .tl-toggle {
+      width: 100%; display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background: var(--gray-50); border: none; cursor: pointer;
+      font-size: .875rem; font-weight: 500; color: var(--text-secondary);
+      text-align: left; transition: background var(--t-fast);
+      &:hover { background: var(--gray-100); }
+    }
+    .tl-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: var(--color-brand); color: white;
+      border-radius: var(--radius-full); font-size: .7rem; font-weight: 700;
+    }
+    .tl-chevron { margin-left: auto; transition: transform .2s; }
+    .tl-chevron-open { transform: rotate(180deg); }
+    .tl-body { padding: var(--space-4); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space-4); }
+    .tl-hint { margin: 0 0 var(--space-2); font-size: .8125rem; color: var(--text-muted); font-style: italic; }
+    .tl-lang-block { display: flex; flex-direction: column; gap: var(--space-2); }
+    .tl-lang-label { display: flex; align-items: center; gap: var(--space-2); font-size: .8125rem; font-weight: 600; color: var(--text-secondary); }
+    .tl-flag { font-size: 1rem; }
+    .tl-fields { display: flex; flex-direction: column; gap: var(--space-2); }
   `],
 })
 export class MenuItemsComponent implements OnInit {
@@ -404,6 +440,7 @@ export class MenuItemsComponent implements OnInit {
   readonly categories = this.menuService.categories
   readonly menuItems = this.menuService.menuItems
   readonly showForm = signal(false)
+  readonly showTranslations = signal(false)
   readonly editTarget = signal<MenuItem | null>(null)
   readonly saving = signal(false)
   readonly formError = signal<string | null>(null)
@@ -424,6 +461,14 @@ export class MenuItemsComponent implements OnInit {
     return catId ? items.filter((i) => i.categoryId === catId) : items
   })
 
+  /** Nombre de champs de traduction remplis. */
+  readonly translationCount = computed(() => {
+    const v = this.form.value
+    return [v.nameEn, v.descEn, v.nameDe, v.descDe, v.nameZh, v.descZh].filter(
+      (s) => s && s.trim()
+    ).length
+  })
+
   form = this.fb.group({
     name: ['', [Validators.required]],
     description: [''],
@@ -431,6 +476,13 @@ export class MenuItemsComponent implements OnInit {
     categoryId: ['', [Validators.required]],
     badge: [''],
     isAvailable: [true],
+    // Traductions
+    nameEn: [''],
+    descEn: [''],
+    nameDe: [''],
+    descDe: [''],
+    nameZh: [''],
+    descZh: [''],
   })
 
   ngOnInit(): void {
@@ -453,8 +505,15 @@ export class MenuItemsComponent implements OnInit {
     return this.categories().find((c) => c.id === catId)?.name ?? ''
   }
 
-  formatPrice(cents: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+  formatPrice(euros: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  }
+
+  hasTranslations(item: MenuItem): boolean {
+    return (
+      Object.keys(item.nameTranslations ?? {}).length > 0 ||
+      Object.keys(item.descriptionTranslations ?? {}).length > 0
+    )
   }
 
   openForm(item?: MenuItem): void {
@@ -463,23 +522,32 @@ export class MenuItemsComponent implements OnInit {
     this.imagePreview.set(null)
     this.selectedFile = null
 
-    if (item) {
-      this.form.patchValue({
-        name: item.name,
-        description: item.description ?? '',
-        priceEuros: item.priceInCents / 100,
-        categoryId: String(item.categoryId),
-        badge: item.badge ?? '',
-        isAvailable: item.isAvailable,
-      })
-    } else {
-      this.form.reset({ name: '', description: '', priceEuros: 0, categoryId: '', badge: '', isAvailable: true })
-    }
+    const nt = item?.nameTranslations ?? {}
+    const dt = item?.descriptionTranslations ?? {}
+
+    this.form.patchValue({
+      name: item?.name ?? '',
+      description: item?.description ?? '',
+      priceEuros: item ? item.price : 0,
+      categoryId: item ? String(item.categoryId) : '',
+      badge: item?.badge ?? '',
+      isAvailable: item?.isAvailable ?? true,
+      nameEn: nt['en'] ?? '',
+      descEn: dt['en'] ?? '',
+      nameDe: nt['de'] ?? '',
+      descDe: dt['de'] ?? '',
+      nameZh: nt['zh'] ?? '',
+      descZh: dt['zh'] ?? '',
+    })
+
+    // Auto-ouvrir si des traductions existent déjà
+    this.showTranslations.set(item ? this.hasTranslations(item) : false)
     this.showForm.set(true)
   }
 
   closeForm(): void {
     this.showForm.set(false)
+    this.showTranslations.set(false)
     this.editTarget.set(null)
     this.imagePreview.set(null)
     this.selectedFile = null
@@ -489,7 +557,6 @@ export class MenuItemsComponent implements OnInit {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
-
     this.selectedFile = file
     const reader = new FileReader()
     reader.onload = (e) => this.imagePreview.set(e.target?.result as string)
@@ -497,22 +564,33 @@ export class MenuItemsComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched()
-      return
-    }
-
+    if (this.form.invalid) { this.form.markAllAsTouched(); return }
     this.saving.set(true)
     this.formError.set(null)
 
     const v = this.form.value
+
+    // Assembler les traductions
+    const nameTranslations: Record<string, string> = {}
+    if (v.nameEn?.trim()) nameTranslations['en'] = v.nameEn.trim()
+    if (v.nameDe?.trim()) nameTranslations['de'] = v.nameDe.trim()
+    if (v.nameZh?.trim()) nameTranslations['zh'] = v.nameZh.trim()
+
+    const descriptionTranslations: Record<string, string> = {}
+    if (v.descEn?.trim()) descriptionTranslations['en'] = v.descEn.trim()
+    if (v.descDe?.trim()) descriptionTranslations['de'] = v.descDe.trim()
+    if (v.descZh?.trim()) descriptionTranslations['zh'] = v.descZh.trim()
+
     const formData = new FormData()
     formData.append('name', v.name ?? '')
     formData.append('description', v.description ?? '')
-    formData.append('priceInCents', String(Math.round((v.priceEuros ?? 0) * 100)))
+    formData.append('price', String(v.priceEuros ?? 0))
     formData.append('categoryId', String(v.categoryId))
     formData.append('badge', v.badge ?? '')
     formData.append('isAvailable', String(v.isAvailable))
+    // Traductions sérialisées en JSON pour le FormData
+    formData.append('nameTranslations', JSON.stringify(nameTranslations))
+    formData.append('descriptionTranslations', JSON.stringify(descriptionTranslations))
     if (this.selectedFile) {
       formData.append('image', this.selectedFile)
     }
@@ -523,11 +601,7 @@ export class MenuItemsComponent implements OnInit {
       : this.menuService.createMenuItem(formData)
 
     req$.subscribe({
-      next: () => {
-        this.saving.set(false)
-        this.closeForm()
-        this.loadUsage()
-      },
+      next: () => { this.saving.set(false); this.closeForm(); this.loadUsage() },
       error: (err) => {
         this.saving.set(false)
         if (err?.status === 402) {

@@ -6,6 +6,15 @@ import Restaurant from '#models/restaurant'
 
 export type MenuItemBadge = 'new' | 'popular' | 'vegetarian' | 'spicy' | null
 
+/** Transforme une valeur DB (string JSON ou objet) en Record. */
+function consumeJson(v: unknown): Record<string, string> {
+  if (!v) return {}
+  if (typeof v === 'string') {
+    try { return JSON.parse(v) } catch { return {} }
+  }
+  return v as Record<string, string>
+}
+
 export default class MenuItem extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
@@ -22,8 +31,21 @@ export default class MenuItem extends BaseModel {
   @column()
   declare description: string | null
 
+  @column({
+    prepare: (v: Record<string, string> | null) => JSON.stringify(v ?? {}),
+    consume: consumeJson,
+  })
+  declare nameTranslations: Record<string, string>
+
+  @column({
+    prepare: (v: Record<string, string> | null) => JSON.stringify(v ?? {}),
+    consume: consumeJson,
+  })
+  declare descriptionTranslations: Record<string, string>
+
+  /** Prix en euros (DECIMAL 10,2) — ex : 12.50 */
   @column()
-  declare priceInCents: number
+  declare price: number
 
   @column()
   declare imageKey: string | null

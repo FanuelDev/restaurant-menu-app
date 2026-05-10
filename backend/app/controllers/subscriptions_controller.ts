@@ -84,11 +84,11 @@ export default class SubscriptionsController {
   }
 
   /** DELETE /api/admin/subscription — annule l'abonnement */
-  async cancel({ response, auth, restaurant }: HttpContext) {
+  async cancel({ request, response, auth, restaurant }: HttpContext) {
     await this.#subscriptionService.cancelSubscription(restaurant.id)
 
     await this.#auditService.log({
-      ctx: {} as never,
+      ctx: { request } as never,
       user: auth.user!,
       restaurantId: restaurant.id,
       action: 'subscription.canceled',

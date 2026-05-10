@@ -18,6 +18,12 @@ async function serializeItem(item: MenuItem) {
   return serialized
 }
 
+/** Parse une chaîne JSON venant du FormData en objet de traductions. */
+function parseTranslations(raw: string | null | undefined): Record<string, string> {
+  if (!raw) return {}
+  try { return JSON.parse(raw) } catch { return {} }
+}
+
 export default class MenuItemsController {
   /** GET /api/public/menu-items */
   async indexPublic({ restaurant, response }: HttpContext) {
@@ -79,7 +85,7 @@ export default class MenuItemsController {
       categoryId,
       name: request.input('name'),
       description: request.input('description'),
-      priceInCents: Number(request.input('priceInCents')),
+      price: Number(request.input('price')),
       isAvailable: request.input('isAvailable') !== 'false',
       badge: request.input('badge') || null,
       sortOrder: request.input('sortOrder') ? Number(request.input('sortOrder')) : undefined,
@@ -96,7 +102,16 @@ export default class MenuItemsController {
       data.sortOrder = ((last?.$extras.max as number) ?? 0) + 1
     }
 
-    const item = await MenuItem.create({ ...data, restaurantId: restaurant.id })
+    // Traductions (envoyées en JSON via FormData)
+    const nameTranslations = parseTranslations(request.input('nameTranslations'))
+    const descriptionTranslations = parseTranslations(request.input('descriptionTranslations'))
+
+    const item = await MenuItem.create({
+      ...data,
+      restaurantId: restaurant.id,
+      nameTranslations,
+      descriptionTranslations,
+    })
 
     const imageFile = request.file('image')
     if (imageFile) {
@@ -123,7 +138,7 @@ export default class MenuItemsController {
       resourceType: 'menu_item',
       resourceId: item.id,
       resourceName: item.name,
-      newValues: AuditService.serialize(item as never, ['name', 'priceInCents', 'categoryId', 'isAvailable']),
+      newValues: AuditService.serialize(item as never, ['name', 'price', 'categoryId', 'isAvailable']),
     })
 
     return response.created(await serializeItem(item))
@@ -136,7 +151,7 @@ export default class MenuItemsController {
       .where('restaurant_id', restaurant.id)
       .firstOrFail()
 
-    const old = AuditService.serialize(item as never, ['name', 'priceInCents', 'categoryId', 'isAvailable'])
+    const old = AuditService.serialize(item as never, ['name', 'price', 'categoryId', 'isAvailable'])
 
     // Validate category ownership if changed
     const categoryIdRaw = request.input('categoryId')
@@ -151,7 +166,7 @@ export default class MenuItemsController {
       categoryId: categoryIdRaw ? Number(categoryIdRaw) : undefined,
       name: request.input('name'),
       description: request.input('description'),
-      priceInCents: request.input('priceInCents') ? Number(request.input('priceInCents')) : undefined,
+      price: request.input('price') ? Number(request.input('price')) : undefined,
       isAvailable:
         request.input('isAvailable') !== undefined
           ? request.input('isAvailable') !== 'false'
@@ -166,6 +181,12 @@ export default class MenuItemsController {
 
     const data = await updateMenuItemValidator.validate(cleanData)
     item.merge(data)
+
+    // Traductions (optionnel — préservées si non envoyées)
+    const ntRaw = request.input('nameTranslations')
+    const dtRaw = request.input('descriptionTranslations')
+    if (ntRaw !== undefined && ntRaw !== null) item.nameTranslations = parseTranslations(ntRaw)
+    if (dtRaw !== undefined && dtRaw !== null) item.descriptionTranslations = parseTranslations(dtRaw)
 
     const imageFile = request.file('image')
     if (imageFile) {
@@ -193,7 +214,7 @@ export default class MenuItemsController {
       resourceId: item.id,
       resourceName: item.name,
       oldValues: old,
-      newValues: AuditService.serialize(item as never, ['name', 'priceInCents', 'categoryId', 'isAvailable']),
+      newValues: AuditService.serialize(item as never, ['name', 'price', 'categoryId', 'isAvailable']),
     })
 
     return response.ok(await serializeItem(item))
@@ -214,7 +235,7 @@ export default class MenuItemsController {
       resourceType: 'menu_item',
       resourceId: item.id,
       resourceName: item.name,
-      oldValues: AuditService.serialize(item as never, ['name', 'priceInCents']),
+      oldValues: AuditService.serialize(item as never, ['name', 'price']),
     })
 
     await imageService.delete(item.imageKey)

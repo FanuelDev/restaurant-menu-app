@@ -31,8 +31,9 @@ export default class Order extends BaseModel {
   @column()
   declare notes: string | null
 
+  /** Total de la commande en euros */
   @column()
-  declare totalInCents: number
+  declare total: number
 
   @column()
   declare isGift: boolean

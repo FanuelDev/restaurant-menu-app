@@ -8,8 +8,10 @@ export type AuditAction =
   | 'category.created' | 'category.updated' | 'category.deleted' | 'category.reordered'
   | 'menu_item.created' | 'menu_item.updated' | 'menu_item.deleted' | 'menu_item.toggled'
   | 'restaurant.updated' | 'restaurant.logo_uploaded'
+  | 'order.created' | 'order.status_updated' | 'order.gift_revoked'
+  | 'reservation.created' | 'reservation.status_updated'
   | 'user.created' | 'user.updated' | 'user.deleted'
-  | 'subscription.created' | 'subscription.canceled'
+  | 'subscription.created' | 'subscription.canceled' | 'subscription.granted'
   | 'restaurant.blocked' | 'restaurant.unblocked'
 
 export default class AuditLog extends BaseModel {

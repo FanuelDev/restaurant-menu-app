@@ -6,6 +6,7 @@ import Order from '#models/order'
 import OrderItem from '#models/order_item'
 import MenuItem from '#models/menu_item'
 import { createOrderValidator, updateOrderStatusValidator } from '#validators/order_validator'
+import AuditService from '#services/audit_service'
 import vine from '@vinejs/vine'
 
 const redeemValidator = vine.compile(
@@ -48,18 +49,18 @@ export default class OrdersController {
     }
 
     // Calculate subtotals and total
-    let totalInCents = 0
+    let total = 0
     const itemsData = data.items.map((item, index) => {
       const menuItem = menuItems[index]
-      const subtotalInCents = menuItem.priceInCents * item.quantity
-      totalInCents += subtotalInCents
+      const subtotal = Math.round(menuItem.price * item.quantity * 100) / 100
+      total = Math.round((total + subtotal) * 100) / 100
       return {
         menuItemId: menuItem.id,
         menuItemName: menuItem.name,
-        menuItemPriceInCents: menuItem.priceInCents,
+        menuItemPrice: menuItem.price,
         quantity: item.quantity,
         specialInstructions: item.specialInstructions ?? null,
-        subtotalInCents,
+        subtotal,
       }
     })
 
@@ -75,7 +76,7 @@ export default class OrdersController {
           customerPhone: data.customerPhone ?? null,
           customerEmail: data.customerEmail ?? null,
           notes: data.notes ?? null,
-          totalInCents,
+          total,
           isGift: data.isGift ?? false,
           giftMessage: data.giftMessage ?? null,
           giftToken,
@@ -198,21 +199,34 @@ export default class OrdersController {
   }
 
   /** PATCH /api/admin/orders/:id/status */
-  async adminUpdateStatus({ params, request, response, restaurant }: HttpContext) {
+  async adminUpdateStatus({ params, request, response, restaurant, auth }: HttpContext) {
     const order = await Order.query()
       .where('id', params.id)
       .where('restaurant_id', restaurant.id)
       .firstOrFail()
 
     const { status } = await request.validateUsing(updateOrderStatusValidator)
+    const oldStatus = order.status
     order.status = status
     await order.save()
+
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: restaurant.id,
+      action: 'order.status_updated',
+      resourceType: 'order',
+      resourceId: order.id,
+      resourceName: order.orderNumber,
+      oldValues: { status: oldStatus },
+      newValues: { status },
+    })
 
     return response.ok(order.serialize())
   }
 
   /** POST /api/admin/orders/:id/revoke-gift */
-  async adminRevokeGift({ params, response, restaurant }: HttpContext) {
+  async adminRevokeGift({ params, request, response, restaurant, auth }: HttpContext) {
     const order = await Order.query()
       .where('id', params.id)
       .where('restaurant_id', restaurant.id)
@@ -228,6 +242,16 @@ export default class OrdersController {
 
     order.giftRevokedAt = DateTime.now()
     await order.save()
+
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: restaurant.id,
+      action: 'order.gift_revoked',
+      resourceType: 'order',
+      resourceId: order.id,
+      resourceName: order.orderNumber,
+    })
 
     return response.ok(order.serialize())
   }

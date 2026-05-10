@@ -158,7 +158,7 @@ import type { StatsData } from '../../shared/models'
                     @if (item.badge) {
                       <span class="item-badge badge-{{ item.badge }}">{{ badgeLabel(item.badge, t) }}</span>
                     }
-                    <span class="item-price">{{ formatPrice(item.priceInCents) }}</span>
+                    <span class="item-price">{{ formatPrice(item.price) }}</span>
                   </li>
                 }
               </ul>
@@ -369,8 +369,8 @@ export class StatsComponent implements OnInit {
     return Math.round((count / this.catBarMax()) * 100)
   }
 
-  formatPrice(cents: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(cents / 100)
+  formatPrice(euros: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
   }
 
   badgeLabel(badge: string, t: (key: string) => string): string {

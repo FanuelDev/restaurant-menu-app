@@ -9,7 +9,7 @@ export default defineConfig({
     generateRequestId: true,
     allowMethodSpoofing: false,
     useAsyncLocalStorage: false,
-    trustProxy: () => false,
+    trustProxy: () => env.get('NODE_ENV') === 'production',
     qs: {
       parse: {
         depth: 5,

@@ -79,7 +79,7 @@ export default class StatsController {
       .select(
         'menu_items.id',
         'menu_items.name',
-        'menu_items.price_in_cents',
+        'menu_items.price',
         'menu_items.badge',
         'menu_items.image_key',
         'categories.name as categoryName',
@@ -112,7 +112,7 @@ export default class StatsController {
       topItems: await Promise.all(topItems.map(async (i: any) => ({
         id: i.id,
         name: i.name,
-        priceInCents: i.price_in_cents,
+        price: i.price,
         badge: i.badge,
         imageUrl: await imageService.getUrl(i.image_key ?? null),
         categoryName: i.categoryName,

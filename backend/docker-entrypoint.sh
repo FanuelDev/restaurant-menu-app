@@ -13,12 +13,6 @@ done
 
 echo "✅ Migrations appliquées."
 
-# Seed uniquement si la table users est vide (premier démarrage)
-USER_COUNT=$(node -e "
-  const db = require('@adonisjs/lucid/database');
-  // Approche simplifiée via la CLI
-")
-
 echo "🌱 Seeding initial si nécessaire..."
 node ace db:seed --files=database/seeders/main_seeder.js 2>/dev/null || echo "ℹ️  Seed ignoré (données déjà présentes)."
 

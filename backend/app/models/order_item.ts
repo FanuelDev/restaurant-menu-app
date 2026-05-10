@@ -16,8 +16,9 @@ export default class OrderItem extends BaseModel {
   @column()
   declare menuItemName: string
 
+  /** Prix unitaire en euros au moment de la commande */
   @column()
-  declare menuItemPriceInCents: number
+  declare menuItemPrice: number
 
   @column()
   declare quantity: number
@@ -25,8 +26,9 @@ export default class OrderItem extends BaseModel {
   @column()
   declare specialInstructions: string | null
 
+  /** Sous-total en euros (price × quantity) */
   @column()
-  declare subtotalInCents: number
+  declare subtotal: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

@@ -305,7 +305,7 @@ export class SaPlansComponent implements OnInit {
 
   formatCents(cents: number): string {
     if (cents === 0) return 'Gratuit'
-    return new Intl.NumberFormat('fr-FR').format(cents / 100) + ' FCFA'
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   }
 
   openCreate(): void {

@@ -165,6 +165,12 @@ export const routes: Routes = [
           import('./super-admin/plans/sa-plans.component').then((m) => m.SaPlansComponent),
         title: 'Super Admin — Plans',
       },
+      {
+        path: 'audit-logs',
+        loadComponent: () =>
+          import('./super-admin/audit-logs/sa-audit-logs.component').then((m) => m.SaAuditLogsComponent),
+        title: 'Super Admin — Journal d\'audit',
+      },
     ],
   },
 

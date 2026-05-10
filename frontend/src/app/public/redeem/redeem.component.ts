@@ -6,8 +6,8 @@ import { TranslocoModule } from '@jsverse/transloco'
 import { OrderService } from '../../shared/services/order.service'
 import type { Order } from '../../shared/models'
 
-function formatPrice(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR') + ' FCFA'
+function formatPrice(euros: number): string {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
 }
 
 @Component({
@@ -86,13 +86,13 @@ function formatPrice(cents: number): string {
                         <div class="item-note">{{ item.specialInstructions }}</div>
                       }
                     </div>
-                    <div class="item-price">{{ formatPrice(item.subtotalInCents) }}</div>
+                    <div class="item-price">{{ formatPrice(item.subtotal) }}</div>
                   </div>
                 }
               </div>
               <div class="order-total">
                 <span>{{ t('publicOrder.redeemTotal') }}</span>
-                <span class="total-amount">{{ formatPrice(order()!.totalInCents) }}</span>
+                <span class="total-amount">{{ formatPrice(order()!.total) }}</span>
               </div>
             </div>
 

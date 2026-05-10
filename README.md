@@ -135,27 +135,71 @@ npm start
 
 ---
 
-### Option B — Tout via Docker (production)
+### Option B — Déploiement production (Docker)
+
+#### 1. Préparer les variables d'environnement
 
 ```bash
-# Depuis la racine du projet
+# Copier le template de production
+cp .env.production.example .env.production
 
-# 1. Générer une APP_KEY sécurisée
-openssl rand -base64 32
-# Copier la valeur et l'insérer dans docker-compose.yml (variable APP_KEY du service backend)
+# Générer une APP_KEY sécurisée et la coller dans .env.production
+cd backend && node ace generate:key && cd ..
 
-# 2. Lancer la stack complète
-docker compose up --build -d
-
-# 3. Vérifier les logs
-docker compose logs -f backend
-
-# 4. Accéder à l'application
-# Vitrine   : http://localhost:4200
-# Admin     : http://localhost:4200/admin
-# API       : http://localhost:3333
-# MinIO UI  : http://localhost:9001
+# Éditer .env.production : remplir APP_KEY, mots de passe, domaine, clés CinetPay
+nano .env.production
 ```
+
+#### 2. Adapter le frontend à votre domaine
+
+Éditer `frontend/src/environments/environment.prod.ts` et remplacer `votredomaine.com` par votre vrai domaine.
+
+#### 3. Lancer la stack production
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.prod.yml \
+  --env-file .env.production \
+  up --build -d
+
+# Vérifier le démarrage
+docker compose logs -f backend
+```
+
+#### 4. Accéder à l'application
+
+```
+Vitrine  : http://votreserveur.com
+Admin    : http://votreserveur.com/admin
+API docs : http://votreserveur.com/api/docs
+```
+
+#### 5. Sécurité réseau (important)
+
+Bloquer via pare-feu (ufw / iptables / security group cloud) les ports suivants :
+
+| Port | Service | Action |
+|------|---------|---------|
+| 3306 | MySQL | Bloquer (interne Docker) |
+| 3333 | Backend | Bloquer (proxié par nginx) |
+| 9000 | MinIO API | Bloquer (proxié par nginx /media/) |
+| 9001 | MinIO Console | Bloquer |
+| 4200 | Frontend dev | Bloquer |
+
+Autoriser uniquement **80** (HTTP) et **443** (HTTPS).
+
+```bash
+# Exemple ufw
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 22/tcp   # SSH
+ufw enable
+```
+
+#### 6. HTTPS (recommandé)
+
+Placer un reverse proxy TLS devant le conteneur nginx (Caddy, Traefik, ou Certbot + nginx hôte). Le conteneur frontend écoute sur le port 80 en interne.
 
 ---
 

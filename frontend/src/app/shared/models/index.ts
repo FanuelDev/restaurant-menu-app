@@ -12,6 +12,10 @@ export interface Category {
   restaurantId?: number
   name: string
   description: string | null
+  /** Traductions du nom par code langue : { en: '...', de: '...', zh: '...' } */
+  nameTranslations?: Record<string, string>
+  /** Traductions de la description par code langue */
+  descriptionTranslations?: Record<string, string>
   sortOrder: number
   isVisible: boolean
   menuItemsCount?: number
@@ -25,7 +29,11 @@ export interface MenuItem {
   category?: Category
   name: string
   description: string | null
-  priceInCents: number
+  /** Traductions du nom par code langue : { en: '...', de: '...', zh: '...' } */
+  nameTranslations?: Record<string, string>
+  /** Traductions de la description par code langue */
+  descriptionTranslations?: Record<string, string>
+  price: number
   priceFormatted?: string
   imageUrl: string | null
   isAvailable: boolean
@@ -132,6 +140,7 @@ export interface AuditLog {
   newValues: Record<string, unknown> | null
   ipAddress: string | null
   createdAt: string
+  restaurant?: { id: number; name: string; slug: string }
 }
 
 // ─── Auth models ────────────────────────────────────────────────────────────
@@ -219,7 +228,7 @@ export interface StatsTopCategory {
 export interface StatsTopItem {
   id: number
   name: string
-  priceInCents: number
+  price: number
   badge: MenuItemBadge
   imageUrl: string | null
   categoryName: string
@@ -247,10 +256,10 @@ export interface OrderItem {
   orderId: number
   menuItemId: number | null
   menuItemName: string
-  menuItemPriceInCents: number
+  menuItemPrice: number
   quantity: number
   specialInstructions: string | null
-  subtotalInCents: number
+  subtotal: number
 }
 
 export interface Order {
@@ -262,7 +271,7 @@ export interface Order {
   customerEmail: string | null
   status: OrderStatus
   notes: string | null
-  totalInCents: number
+  total: number
   isGift: boolean
   giftMessage: string | null
   giftToken: string | null
