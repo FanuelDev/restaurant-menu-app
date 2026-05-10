@@ -82,6 +82,11 @@ services:
       CINETPAY_NOTIFY_URL: ${CINETPAY_NOTIFY_URL}
       CINETPAY_RETURN_URL: ${CINETPAY_RETURN_URL}
 
+  # ── phpMyAdmin ───────────────────────────────────────────────────────────────
+  phpmyadmin:
+    environment:
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+
   # ── Frontend Angular (nginx) ─────────────────────────────────────────────────
   # Note : docker compose merge les ports — le port 4200 de la config de base
   # reste actif. Bloquer ce port via le pare-feu du serveur.

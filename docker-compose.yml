@@ -116,6 +116,24 @@ services:
     networks:
       - restaurant_net
 
+  # ── phpMyAdmin (accès web à MySQL) ────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: restaurant_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PMA_HOST:     db
+      PMA_PORT:     3306
+      PMA_USER:     root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "8081:80"
+    networks:
+      - restaurant_net
+
   # ── Frontend Angular (servi par Nginx en prod) ─────────────────────────────
   frontend:
     build:
