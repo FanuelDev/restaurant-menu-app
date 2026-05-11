@@ -80,6 +80,7 @@ export interface Restaurant {
   name: string
   slogan: string | null
   brandColor: string
+  templateId?: number
   logoUrl: string | null
   coverImageUrl?: string | null
   address: string | null

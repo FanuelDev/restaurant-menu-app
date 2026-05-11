@@ -134,6 +134,102 @@ const DAYS: { key: string }[] = [
               {{ saving() ? t('common.saving') : t('restaurant.submitSave') }}
             </button>
           </form>
+
+          <!-- Template selector -->
+          <div class="card tpl-card">
+            <h2 class="card-title">🎨 Apparence du menu client</h2>
+            <p class="tpl-subtitle">Choisissez la mise en page de votre page menu publique.</p>
+            @if (templateSuccess()) {
+              <div class="alert-success" role="status" style="margin-bottom:1rem">✅ Template mis à jour.</div>
+            }
+            <div class="tpl-grid">
+
+              <!-- Template 1 : Classique -->
+              <button class="tpl-option" [class.tpl-active]="selectedTemplate() === 1" (click)="selectTemplate(1)" type="button">
+                <div class="tpl-preview tpl-preview-classic">
+                  <div class="tp-header">
+                    <div class="tp-bar"></div>
+                    <div class="tp-bar tp-bar-short"></div>
+                  </div>
+                  <div class="tp-tabs">
+                    <div class="tp-tab tp-tab-active"></div>
+                    <div class="tp-tab"></div>
+                    <div class="tp-tab"></div>
+                  </div>
+                  <div class="tp-grid">
+                    @for (i of [1,2,3,4,5,6]; track i) {
+                      <div class="tp-card">
+                        <div class="tp-card-img"></div>
+                        <div class="tp-card-line"></div>
+                        <div class="tp-card-line tp-card-line-short"></div>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="tpl-label">
+                  <strong>Classique</strong>
+                  <span>Grille élégante avec recherche et filtres</span>
+                </div>
+                @if (selectedTemplate() === 1) { <div class="tpl-check">✓</div> }
+              </button>
+
+              <!-- Template 2 : Magazine -->
+              <button class="tpl-option" [class.tpl-active]="selectedTemplate() === 2" (click)="selectTemplate(2)" type="button">
+                <div class="tpl-preview tpl-preview-magazine">
+                  <div class="tp-mag-header">
+                    <div class="tp-mag-title"></div>
+                    <div class="tp-mag-cover"></div>
+                  </div>
+                  <div class="tp-mag-body">
+                    <div class="tp-mag-sidebar">
+                      <div class="tp-mag-idx"></div>
+                      <div class="tp-mag-idx"></div>
+                      <div class="tp-mag-idx"></div>
+                    </div>
+                    <div class="tp-mag-main">
+                      <div class="tp-mag-hero"></div>
+                      <div class="tp-mag-mini-row">
+                        <div class="tp-mag-mini"></div>
+                        <div class="tp-mag-mini"></div>
+                        <div class="tp-mag-mini"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tpl-label">
+                  <strong>Magazine</strong>
+                  <span>Éditorial chic avec index latéral</span>
+                </div>
+                @if (selectedTemplate() === 2) { <div class="tpl-check">✓</div> }
+              </button>
+
+              <!-- Template 3 : Immersif -->
+              <button class="tpl-option" [class.tpl-active]="selectedTemplate() === 3" (click)="selectTemplate(3)" type="button">
+                <div class="tpl-preview tpl-preview-immersive">
+                  <div class="tp-imm-screen">
+                    <div class="tp-imm-photo"></div>
+                    <div class="tp-imm-gradient"></div>
+                    <div class="tp-imm-progress"></div>
+                    <div class="tp-imm-overlay">
+                      <div class="tp-imm-chip"></div>
+                      <div class="tp-imm-title"></div>
+                      <div class="tp-imm-desc"></div>
+                      <div class="tp-imm-foot">
+                        <div class="tp-imm-price"></div>
+                        <div class="tp-imm-btn"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tpl-label">
+                  <strong>Immersif</strong>
+                  <span>Plein écran par swipe, style app luxe</span>
+                </div>
+                @if (selectedTemplate() === 3) { <div class="tpl-check">✓</div> }
+              </button>
+
+            </div>
+          </div>
         </div>
 
         <div class="side-col">
@@ -282,6 +378,90 @@ const DAYS: { key: string }[] = [
     .hours-day { font-weight: 500; flex: 1; font-size: 0.9375rem; }
     .hours-time { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
     .hours-closed { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+
+    /* ── Template selector ─────────────────────────── */
+    .tpl-card { margin-top: var(--space-5); }
+    .tpl-subtitle { font-size: .875rem; color: var(--text-muted); margin: -.75rem 0 1.25rem; }
+    .tpl-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);
+    }
+    @media (max-width: 900px) { .tpl-grid { grid-template-columns: 1fr; } }
+
+    .tpl-option {
+      position: relative;
+      background: var(--surface-1); border: 2px solid var(--border);
+      border-radius: var(--radius-lg); padding: 0;
+      cursor: pointer; text-align: left;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    .tpl-option:hover { border-color: var(--color-brand); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+    .tpl-active { border-color: var(--color-brand) !important; box-shadow: 0 0 0 3px var(--color-brand-light) !important; }
+
+    .tpl-preview {
+      width: 100%; aspect-ratio: 16/10; overflow: hidden; position: relative;
+    }
+    .tpl-label {
+      padding: .875rem 1rem;
+      display: flex; flex-direction: column; gap: 2px;
+      strong { font-size: .9375rem; color: var(--text-primary); font-weight: 700; }
+      span { font-size: .8125rem; color: var(--text-muted); }
+    }
+    .tpl-check {
+      position: absolute; top: .625rem; right: .625rem;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--color-brand); color: white;
+      font-size: .75rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+
+    /* Template 1 preview */
+    .tpl-preview-classic { background: #f8f7f5; padding: 8px 8px 4px; display: flex; flex-direction: column; gap: 5px; }
+    .tp-header { display: flex; flex-direction: column; gap: 3px; }
+    .tp-bar { height: 5px; background: #d1cfc9; border-radius: 3px; width: 55%; }
+    .tp-bar-short { width: 35%; height: 3px; }
+    .tp-tabs { display: flex; gap: 4px; margin-top: 2px; }
+    .tp-tab { height: 8px; width: 28px; background: #d1cfc9; border-radius: 4px; }
+    .tp-tab-active { background: var(--color-brand); }
+    .tp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; flex: 1; }
+    .tp-card { background: white; border-radius: 5px; overflow: hidden; padding-bottom: 5px; }
+    .tp-card-img { height: 30px; background: #e8e5e0; }
+    .tp-card-line { height: 3px; background: #d1cfc9; border-radius: 2px; margin: 4px 5px 2px; }
+    .tp-card-line-short { width: 50%; }
+
+    /* Template 2 preview */
+    .tpl-preview-magazine { background: #faf9f7; display: flex; flex-direction: column; gap: 0; }
+    .tp-mag-header { display: grid; grid-template-columns: 45% 1fr; }
+    .tp-mag-title { background: white; padding: 6px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+    .tp-mag-title::before { content: ''; display: block; height: 3px; width: 16px; background: var(--color-brand); border-radius: 2px; }
+    .tp-mag-title::after  { content: ''; display: block; height: 6px; width: 40px; background: #d1cfc9; border-radius: 2px; }
+    .tp-mag-cover { background: linear-gradient(135deg, #c9c5be, #a8a39a); height: 40px; }
+    .tp-mag-body { display: grid; grid-template-columns: 28px 1fr; flex: 1; }
+    .tp-mag-sidebar { background: white; padding: 4px 3px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid #e5e2de; }
+    .tp-mag-idx { height: 4px; background: #d1cfc9; border-radius: 2px; }
+    .tp-mag-idx:first-child { background: var(--color-brand); }
+    .tp-mag-main { padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+    .tp-mag-hero { background: white; border-radius: 4px; height: 32px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .tp-mag-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+    .tp-mag-mini { background: white; border-radius: 3px; height: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+
+    /* Template 3 preview */
+    .tpl-preview-immersive { background: #0a0a0a; }
+    .tp-imm-screen { position: relative; width: 100%; height: 100%; }
+    .tp-imm-photo { position: absolute; inset: 0; background: linear-gradient(135deg, #2c3e50, #4a1942, #1a1a2e); opacity: .9; }
+    .tp-imm-gradient { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.8) 100%); }
+    .tp-imm-progress { position: absolute; top: 0; left: 0; height: 3px; width: 60%; background: var(--color-brand); }
+    .tp-imm-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 8px; display: flex; flex-direction: column; gap: 3px;
+    }
+    .tp-imm-chip { height: 7px; width: 36px; background: var(--color-brand); border-radius: 999px; }
+    .tp-imm-title { height: 9px; width: 70%; background: white; border-radius: 3px; opacity: .9; }
+    .tp-imm-desc { height: 5px; width: 85%; background: rgba(255,255,255,.5); border-radius: 2px; }
+    .tp-imm-foot { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .tp-imm-price { height: 8px; width: 30px; background: var(--color-brand); border-radius: 2px; }
+    .tp-imm-btn { height: 12px; width: 40px; background: var(--color-brand); border-radius: 999px; }
   `],
 })
 export class RestaurantComponent implements OnInit {
@@ -297,6 +477,8 @@ export class RestaurantComponent implements OnInit {
   readonly saveSuccess = signal(false)
   readonly logoPreview  = signal<string | null>(null)
   readonly coverPreview = signal<string | null>(null)
+  readonly selectedTemplate = signal(1)
+  readonly templateSuccess  = signal(false)
 
   readonly days = DAYS
 
@@ -319,6 +501,17 @@ export class RestaurantComponent implements OnInit {
         phone: r.phone ?? '',
         email: r.email ?? '',
       })
+      this.selectedTemplate.set(r.templateId ?? 1)
+    })
+  }
+
+  selectTemplate(id: 1 | 2 | 3): void {
+    this.selectedTemplate.set(id)
+    this.restaurantService.update({ templateId: id } as never).subscribe({
+      next: () => {
+        this.templateSuccess.set(true)
+        setTimeout(() => this.templateSuccess.set(false), 2500)
+      },
     })
   }
 

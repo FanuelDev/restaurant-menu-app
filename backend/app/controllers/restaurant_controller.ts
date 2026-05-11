@@ -12,6 +12,7 @@ async function serializeRestaurant(restaurant: Restaurant) {
     name: restaurant.name,
     slogan: restaurant.slogan,
     brandColor: restaurant.brandColor,
+    templateId: restaurant.templateId ?? 1,
     logoUrl: await imageService.getUrl(restaurant.logoKey),
     coverImageUrl: await imageService.getUrl(restaurant.coverKey),
     openingHours: restaurant.openingHours,

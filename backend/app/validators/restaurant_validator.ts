@@ -10,6 +10,7 @@ const daySchedule = vine.object({
 export const updateRestaurantValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(1).maxLength(255).optional(),
+    templateId: vine.number().min(1).max(3).optional(),
     slogan: vine.string().trim().maxLength(512).optional().nullable(),
     brandColor: vine
       .string()

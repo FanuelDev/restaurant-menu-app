@@ -23,6 +23,9 @@ export default class Restaurant extends BaseModel {
   declare brandColor: string
 
   @column()
+  declare templateId: number
+
+  @column()
   declare logoKey: string | null
 
   @column()
