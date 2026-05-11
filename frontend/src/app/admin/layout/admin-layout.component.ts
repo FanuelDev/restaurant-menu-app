@@ -25,7 +25,7 @@ import { AuthService } from '../../shared/services/auth.service'
                 <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
               </svg>
             </div>
-            <span class="sb-brand-name">MenuApp</span>
+            <span class="sb-brand-name">SaeMenus</span>
           }
           <button class="sb-toggle" [class.sb-toggle-center]="collapsed()" (click)="toggleCollapsed()" [attr.aria-label]="collapsed() ? t('nav.openMenu') : t('nav.collapseMenu')">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">

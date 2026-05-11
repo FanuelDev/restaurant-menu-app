@@ -46,7 +46,7 @@ const COUNTRIES = [
               <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </div>
-          <h2 class="rv-title">MenuApp</h2>
+          <h2 class="rv-title">SaeMenus</h2>
           <p class="rv-sub">{{ t('public.register.rvSub') }}</p>
 
           <div class="rv-steps">
@@ -278,7 +278,7 @@ const COUNTRIES = [
                 </div>
                 <div class="summary-row">
                   <span class="sr-label">{{ t('public.register.summarySubdomain') }}</span>
-                  <span class="sr-value">{{ s1.restaurantSlug }}.menuapp.com</span>
+                  <span class="sr-value">{{ s1.restaurantSlug }}.saemenus.com</span>
                 </div>
                 <div class="summary-row">
                   <span class="sr-label">{{ t('public.register.summaryCountryCurrency') }}</span>

@@ -128,7 +128,7 @@ export default class MainSeeder extends BaseSeeder {
     // ══════════════════════════════════════════════════════════════════════════
     const [superAdmin] = await User.updateOrCreateMany('email', [
       {
-        email: 'superadmin@menuapp.com',
+        email: 'superadmin@saemenus.com',
         password: 'SuperAdmin1234!',
         fullName: 'Super Administrateur',
         role: 'super_admin',
@@ -442,7 +442,7 @@ export default class MainSeeder extends BaseSeeder {
     console.log('📋  ACCÈS DE DÉMONSTRATION')
     console.log('═'.repeat(60))
     console.log('  🔑 Super Admin')
-    console.log(`     Email    : superadmin@menuapp.com`)
+    console.log(`     Email    : superadmin@saemenus.com`)
     console.log(`     Mot passe: SuperAdmin1234!\n`)
     console.log('  🍽️  Le Comptoir des Saveurs  (Plan Pro — Actif)')
     console.log(`     Admin    : admin@demo.ci        / Admin1234!`)

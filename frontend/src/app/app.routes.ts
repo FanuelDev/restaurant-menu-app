@@ -7,7 +7,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () =>
       import('./public/landing/landing.component').then((m) => m.LandingComponent),
-    title: 'MenuApp — Menu digital QR pour restaurants',
+    title: 'SaeMenus — Menu digital QR pour restaurants',
   },
   {
     path: 'menu',

@@ -9,10 +9,10 @@ export default class StatsController {
   /** GET /api/admin/stats */
   async index({ restaurant, response }: HttpContext) {
     const now = DateTime.now()
-    const todayStart   = now.startOf('day').toSQL()!
-    const weekStart    = now.minus({ days: 6 }).startOf('day').toSQL()!
-    const monthStart   = now.minus({ days: 29 }).startOf('day').toSQL()!
-    const prevMonthStart = now.minus({ days: 59 }).startOf('day').toSQL()!
+    const todayStart   = now.startOf('day').toSQL({ includeOffset: false })!
+    const weekStart    = now.minus({ days: 6 }).startOf('day').toSQL({ includeOffset: false })!
+    const monthStart   = now.minus({ days: 29 }).startOf('day').toSQL({ includeOffset: false })!
+    const prevMonthStart = now.minus({ days: 59 }).startOf('day').toSQL({ includeOffset: false })!
 
     const rid = restaurant.id
 

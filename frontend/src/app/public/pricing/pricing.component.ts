@@ -23,7 +23,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
               <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </div>
-          MenuApp
+          SaeMenus
         </a>
         <div class="nav-actions">
           <a routerLink="/login" class="btn btn-ghost btn-sm">{{ t('public.pricing.navLogin') }}</a>

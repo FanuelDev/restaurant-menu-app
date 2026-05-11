@@ -104,7 +104,7 @@ export default class AuthController {
     // Hash the incoming token to compare against the stored hash
     const user = await User.query()
       .where('password_reset_token', hashResetToken(token))
-      .where('password_reset_token_expires_at', '>', DateTime.now().toSQL()!)
+      .where('password_reset_token_expires_at', '>', DateTime.now().toSQL({ includeOffset: false })!)
       .first()
 
     if (!user) {

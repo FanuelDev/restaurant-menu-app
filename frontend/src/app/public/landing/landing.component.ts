@@ -46,7 +46,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
               <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </div>
-          <span class="lp-logo-name">MenuApp</span>
+          <span class="lp-logo-name">SaeMenus</span>
         </a>
 
         <div class="lp-nav-links">
@@ -144,7 +144,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
                 <span class="mock-dot" style="background:#FEBC2E"></span>
                 <span class="mock-dot" style="background:#28C840"></span>
               </div>
-              <div class="mock-url">menuapp.co/admin/dashboard</div>
+              <div class="mock-url">saemenus.com/admin/dashboard</div>
             </div>
             <div class="mock-body">
               <div class="mock-sidebar">
@@ -300,7 +300,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
                 <span class="mock-dot" style="background:#FEBC2E"></span>
                 <span class="mock-dot" style="background:#28C840"></span>
               </div>
-              <div class="mock-url">menuapp.co/admin/menu-items</div>
+              <div class="mock-url">saemenus.com/admin/menu-items</div>
             </div>
             <div class="sc-content">
               <div class="sc-filter-row">
@@ -484,9 +484,9 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <div class="section-tag">{{ t('public.landing.faqTag') }}</div>
           <h2 class="section-h2" style="font-size:2rem">{{ t('public.landing.faqH2') }}</h2>
           <p class="section-sub" style="max-width:280px">{{ t('public.landing.faqSub') }}</p>
-          <a href="mailto:hello@menuapp.co" class="faq-contact">
+          <a href="mailto:hello@saemenus.com" class="faq-contact">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            hello&#64;menuapp.co
+            hello&#64;saemenus.com
           </a>
         </div>
         <div class="faq-list reveal" data-delay="1">
@@ -542,7 +542,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
                 <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
               </svg>
             </div>
-            <span>MenuApp</span>
+            <span>SaeMenus</span>
           </div>
           <p class="footer-tagline">{{ t('public.landing.footerTagline') }}</p>
           <div class="footer-countries">CI · SN · ML · CM · BF · TG · BJ · GH</div>
@@ -565,8 +565,8 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
 
         <div class="footer-col">
           <div class="footer-col-title">{{ t('public.landing.footerColContact') }}</div>
-          <a href="mailto:hello@menuapp.co" class="footer-link">hello&#64;menuapp.co</a>
-          <a href="mailto:support@menuapp.co" class="footer-link">support&#64;menuapp.co</a>
+          <a href="mailto:hello@saemenus.com" class="footer-link">hello&#64;saemenus.com</a>
+          <a href="mailto:support@saemenus.com" class="footer-link">support&#64;saemenus.com</a>
           <div class="footer-col-title" style="margin-top:var(--space-4)">{{ t('public.landing.footerLinkLegal') }}</div>
           <a href="#" class="footer-link">{{ t('public.landing.footerLinkTos') }}</a>
           <a href="#" class="footer-link">{{ t('public.landing.footerLinkPrivacy') }}</a>

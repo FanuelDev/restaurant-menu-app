@@ -139,7 +139,7 @@ export default class SuperAdminRestaurantsController {
     await Subscription.query()
       .where('restaurant_id', restaurant.id)
       .whereIn('status', ['active', 'pending', 'trialing'])
-      .update({ status: 'canceled', canceled_at: now.toSQL() })
+      .update({ status: 'canceled', canceled_at: now.toSQL({ includeOffset: false }) })
 
     // Crée la nouvelle subscription offerte (montant 0)
     await Subscription.create({

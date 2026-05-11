@@ -30,6 +30,11 @@
                 "input": "public"
               },
               {
+                "glob": "favicon.svg",
+                "input": "src",
+                "output": "/"
+              },
+              {
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
