@@ -604,6 +604,9 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     .reveal[data-delay="3"] { transition-delay: .24s; }
     .reveal[data-delay="4"] { transition-delay: .32s; }
     .reveal[data-delay="5"] { transition-delay: .40s; }
+    @media (max-width: 768px) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
 
     /* Section headers */
     .section-head { text-align: center; margin-bottom: 72px; }
