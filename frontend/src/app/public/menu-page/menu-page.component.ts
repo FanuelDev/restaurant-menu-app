@@ -14,12 +14,14 @@ import { DishCardComponent } from '../dish-card/dish-card.component'
 import type { MenuItemBadge, CartItem, MenuItem, Order, CreateReservationPayload } from '../../shared/models'
 import { TemplateMagazineComponent } from '../templates/template-magazine.component'
 import { TemplateImmersiveComponent } from '../templates/template-immersive.component'
+import { TemplateZenComponent } from '../templates/template-zen.component'
+import { TemplateBentoComponent } from '../templates/template-bento.component'
 import QRCode from 'qrcode'
 
 @Component({
   selector: 'app-menu-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslocoModule, HeroComponent, CategoryTabsComponent, DishCardComponent, TemplateMagazineComponent, TemplateImmersiveComponent],
+  imports: [CommonModule, FormsModule, TranslocoModule, HeroComponent, CategoryTabsComponent, DishCardComponent, TemplateMagazineComponent, TemplateImmersiveComponent, TemplateZenComponent, TemplateBentoComponent],
   template: `
     <ng-container *transloco="let t">
 
@@ -46,6 +48,30 @@ import QRCode from 'qrcode'
         (removeFromCart)="removeFromCart($event)"
         (openCart)="cartOpen.set(true)"
         (openReservation)="reservationOpen.set(true)"
+      />
+    } @else if ((restaurant()?.templateId ?? 1) === 4) {
+      <app-template-zen
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [cartCount]="cartCount()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
+      />
+    } @else if ((restaurant()?.templateId ?? 1) === 5) {
+      <app-template-bento
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [cartCount]="cartCount()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
       />
     } @else {
     <div class="menu-page">
@@ -113,6 +139,7 @@ import QRCode from 'qrcode'
                     [item]="item"
                     [cartEnabled]="hasOrders()"
                     [qty]="getCartQty(item.id)"
+                    [currency]="restaurant()?.currency ?? 'XOF'"
                     (add)="addToCart(item)"
                     (remove)="removeFromCart(item.id)"
                   />
@@ -274,8 +301,8 @@ import QRCode from 'qrcode'
 
     } <!-- end @else template 1 -->
 
-    <!-- Reservation FAB (templates 1 & 2 uniquement) -->
-    @if (hasOrders() && (restaurant()?.templateId ?? 1) !== 3 && !reservationOpen() && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
+    <!-- Reservation FAB (templates 1 & 2 uniquement — 3/4/5 ont leur propre UI) -->
+    @if (hasOrders() && (restaurant()?.templateId ?? 1) !== 3 && (restaurant()?.templateId ?? 1) !== 4 && (restaurant()?.templateId ?? 1) !== 5 && !reservationOpen() && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
       <button class="res-fab" (click)="reservationOpen.set(true)" type="button" aria-label="Réserver une table">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <rect x="3" y="4" width="18" height="18" rx="2.5"/>
@@ -286,8 +313,8 @@ import QRCode from 'qrcode'
       </button>
     }
 
-    <!-- Cart FAB (templates 1 & 2 uniquement) -->
-    @if (hasOrders() && cartCount() > 0 && (restaurant()?.templateId ?? 1) !== 3 && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
+    <!-- Cart FAB (templates 1 & 2 — 3/4/5 ont leur propre panier intégré) -->
+    @if (hasOrders() && cartCount() > 0 && (restaurant()?.templateId ?? 1) !== 3 && (restaurant()?.templateId ?? 1) !== 4 && (restaurant()?.templateId ?? 1) !== 5 && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
       <button class="cart-fab" (click)="cartOpen.set(true)" type="button" aria-label="Open cart">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>

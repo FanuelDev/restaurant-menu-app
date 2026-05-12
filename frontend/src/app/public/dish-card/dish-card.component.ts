@@ -216,6 +216,7 @@ export class DishCardComponent {
   @Input({ required: true }) item!: MenuItem
   @Input() cartEnabled = false
   @Input() qty = 0
+  @Input() currency = 'XOF'
   @Output() add = new EventEmitter<void>()
   @Output() remove = new EventEmitter<void>()
 
@@ -223,7 +224,12 @@ export class DishCardComponent {
     return badge ? BADGE_CONFIG[badge] ?? null : null
   }
 
-  formatPrice(euros: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  formatPrice(amount: number): string {
+    if (this.item.priceFormatted) return this.item.priceFormatted
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: this.currency, minimumFractionDigits: 0 }).format(amount)
+    } catch {
+      return `${amount} ${this.currency}`
+    }
   }
 }

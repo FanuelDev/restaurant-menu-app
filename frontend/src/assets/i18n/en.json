@@ -249,6 +249,8 @@
     "fieldAddress": "Address",
     "fieldPhone": "Phone",
     "fieldEmail": "Email",
+    "fieldCurrency": "Currency",
+    "fieldCurrencyHint": "Affects how prices are displayed on the public menu and in the admin.",
     "saveSuccess": "Changes saved.",
     "saveError": "Error saving changes.",
     "logoError": "Error uploading logo.",

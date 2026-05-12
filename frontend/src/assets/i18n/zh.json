@@ -243,6 +243,8 @@
     "fieldAddress": "地址",
     "fieldPhone": "电话",
     "fieldEmail": "电子邮箱",
+    "fieldCurrency": "货币",
+    "fieldCurrencyHint": "影响公开菜单和后台管理中的价格显示方式。",
     "saveSuccess": "修改已保存。",
     "saveError": "保存时发生错误。",
     "logoError": "上传Logo时发生错误。",

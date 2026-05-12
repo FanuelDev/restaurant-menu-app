@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { OrderService } from '../../shared/services/order.service'
 import { AuthService } from '../../shared/services/auth.service'
+import { RestaurantService } from '../../shared/services/restaurant.service'
 import type { Order, OrderStatus } from '../../shared/models'
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
@@ -918,6 +919,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
 export class OrdersComponent implements OnInit {
   private readonly orderService = inject(OrderService)
   private readonly authService = inject(AuthService)
+  private readonly restaurantService = inject(RestaurantService)
 
   readonly loading = signal(true)
   readonly orders = signal<Order[]>([])
@@ -946,8 +948,13 @@ export class OrdersComponent implements OnInit {
   statusColor(status: OrderStatus): string { return STATUS_COLORS[status] ?? '#6B7280' }
   statusBg(status: OrderStatus): string { return STATUS_BG[status] ?? '#F9FAFB' }
 
-  formatPrice(euros: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  formatPrice(amount: number): string {
+    const currency = this.restaurantService.restaurant()?.currency ?? 'XOF'
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 0 }).format(amount)
+    } catch {
+      return `${amount} ${currency}`
+    }
   }
 
   quickStatuses(current: OrderStatus): OrderStatus[] {

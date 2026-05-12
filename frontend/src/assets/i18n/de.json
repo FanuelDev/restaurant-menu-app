@@ -243,6 +243,8 @@
     "fieldAddress": "Adresse",
     "fieldPhone": "Telefon",
     "fieldEmail": "E-Mail",
+    "fieldCurrency": "Währung",
+    "fieldCurrencyHint": "Beeinflusst die Preisanzeige im öffentlichen Menü und im Adminbereich.",
     "saveSuccess": "Änderungen gespeichert.",
     "saveError": "Fehler beim Speichern.",
     "logoError": "Fehler beim Hochladen des Logos.",

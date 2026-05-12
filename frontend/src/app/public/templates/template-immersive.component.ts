@@ -162,6 +162,18 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
             </button>
           }
         </nav>
+
+        @if (hoursEntries().length) {
+          <div class="imm-drawer-hours">
+            <div class="imm-dh-title">HORAIRES</div>
+            @for (e of hoursEntries(); track e.day) {
+              <div class="imm-dh-row" [class.imm-dh-today]="e.isToday" [class.imm-dh-closed]="e.closed">
+                <span class="imm-dh-day">{{ e.label }}</span>
+                <span class="imm-dh-time">{{ e.closed ? 'Fermé' : e.open + '–' + e.close }}</span>
+              </div>
+            }
+          </div>
+        }
       </aside>
     }
 
@@ -182,10 +194,11 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
     .imm-progress-bar {
       position: absolute;
       top: 0; left: 0;
-      height: 3px;
-      background: var(--color-brand);
+      height: 2px;
+      background: linear-gradient(to right, var(--color-brand-dark, var(--color-brand)), var(--color-brand));
       z-index: 30;
-      transition: width .4s cubic-bezier(0.22,1,0.36,1);
+      transition: width .45s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 0 10px var(--color-brand);
     }
 
     /* ─── Top bar ───────────────────────────────────── */
@@ -295,10 +308,11 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
       position: absolute; inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(0,0,0,.3) 0%,
-        transparent 35%,
-        rgba(0,0,0,.2) 55%,
-        rgba(0,0,0,.85) 100%
+        rgba(0,0,0,.35) 0%,
+        transparent 30%,
+        rgba(0,0,0,.1) 50%,
+        rgba(0,0,0,.75) 75%,
+        rgba(0,0,0,.92) 100%
       );
     }
 
@@ -345,18 +359,19 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
 
     .imm-dish-name {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: clamp(1.75rem, 5vw, 2.5rem);
+      font-size: clamp(1.875rem, 5.5vw, 2.75rem);
       font-weight: 400;
       color: white;
       margin: 0;
-      line-height: 1.15;
-      text-shadow: 0 2px 12px rgba(0,0,0,.3);
+      line-height: 1.12;
+      letter-spacing: -.02em;
+      text-shadow: 0 2px 20px rgba(0,0,0,.4);
     }
     .imm-dish-desc {
       font-size: .9375rem;
-      color: rgba(255,255,255,.75);
+      color: rgba(255,255,255,.68);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.55;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -370,36 +385,39 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
     }
     .imm-price {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: 1.625rem; font-weight: 400;
-      color: var(--color-brand);
-      text-shadow: 0 2px 8px rgba(0,0,0,.4);
+      font-size: 1.75rem; font-weight: 400;
+      color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,.5);
     }
     .imm-qty-row { display: flex; align-items: center; gap: .5rem; }
     .imm-qty-btn {
-      width: 34px; height: 34px; border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,.5);
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.4);
       background: rgba(255,255,255,.1);
       color: white; font-size: 1.125rem; font-weight: 700;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       transition: background .15s;
     }
-    .imm-qty-btn:hover { background: rgba(255,255,255,.2); }
-    .imm-qty-val { font-size: 1rem; font-weight: 700; color: white; min-width: 20px; text-align: center; }
+    .imm-qty-btn:hover { background: rgba(255,255,255,.22); }
+    .imm-qty-val { font-size: 1rem; font-weight: 700; color: white; min-width: 22px; text-align: center; }
     .imm-add-btn {
-      padding: .625rem 1.5rem;
-      border-radius: 999px;
-      border: none;
+      padding: .6875rem 1.625rem;
+      border-radius: 999px; border: none;
       background: var(--color-brand);
-      color: white;
-      font-size: .9375rem; font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s, transform .15s, background .25s;
+      color: white; font-size: .9375rem; font-weight: 700;
+      cursor: pointer; letter-spacing: -.01em;
+      transition: opacity .15s, transform .2s cubic-bezier(0.34,1.56,0.64,1), background .25s;
       white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,.35);
     }
-    .imm-add-btn:hover { opacity: .88; transform: translateY(-1px); }
-    .imm-add-success { background: #27ae60 !important; animation: imm-pop .3s cubic-bezier(0.34,1.56,0.64,1); }
-    @keyframes imm-pop { from { transform: scale(.9); } to { transform: scale(1); } }
+    .imm-add-btn:hover { opacity: .9; transform: translateY(-2px) scale(1.02); }
+    .imm-add-success {
+      background: #27ae60 !important;
+      animation: imm-pop .35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes imm-pop { from { transform: scale(.85); } to { transform: scale(1); } }
 
     /* ─── Swipe hint ────────────────────────────────── */
     .imm-swipe-hint {
@@ -513,6 +531,31 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
     .imm-drawer-cat-name { font-size: .9375rem; font-weight: 600; color: rgba(255,255,255,.85); }
     .imm-drawer-cat-count { font-size: .8125rem; color: rgba(255,255,255,.4); }
     .imm-drawer-item svg { color: rgba(255,255,255,.3); flex-shrink: 0; }
+
+    /* ── Drawer hours ────────────────────────────────── */
+    .imm-drawer-hours {
+      padding: .875rem 1.25rem 1.75rem;
+      border-top: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+    }
+    .imm-dh-title {
+      font-size: .5rem; font-weight: 800; color: rgba(255,255,255,.28);
+      letter-spacing: .15em; text-transform: uppercase; margin-bottom: .625rem;
+    }
+    .imm-dh-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .28rem .5rem; border-radius: 6px;
+      transition: background .15s;
+    }
+    .imm-dh-day {
+      font-size: .6875rem; font-weight: 700; color: rgba(255,255,255,.38);
+      letter-spacing: .05em;
+    }
+    .imm-dh-time { font-size: .6875rem; color: rgba(255,255,255,.52); }
+    .imm-dh-today { background: rgba(255,255,255,.05); }
+    .imm-dh-today .imm-dh-day { color: var(--color-brand); }
+    .imm-dh-today .imm-dh-time { color: white; font-weight: 700; }
+    .imm-dh-closed .imm-dh-time { color: rgba(255,255,255,.2); font-style: italic; }
   `],
 })
 export class TemplateImmersiveComponent implements AfterViewInit, OnDestroy {
@@ -630,5 +673,21 @@ export class TemplateImmersiveComponent implements AfterViewInit, OnDestroy {
     } catch {
       return `${item.price} ${currency}`
     }
+  }
+
+  private readonly _dayOrder = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
+  private readonly _dayShort: Record<string,string> = {
+    monday:'LUN', tuesday:'MAR', wednesday:'MER', thursday:'JEU',
+    friday:'VEN', saturday:'SAM', sunday:'DIM',
+  }
+
+  hoursEntries(): { day: string; label: string; open: string; close: string; closed: boolean; isToday: boolean }[] {
+    const hours = this.restaurant?.openingHours
+    if (!hours) return []
+    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
+    return this._dayOrder.map((day, i) => {
+      const h = hours[day]
+      return { day, label: this._dayShort[day], open: h?.open ?? '', close: h?.close ?? '', closed: h?.closed ?? !h, isToday: i === todayIdx }
+    })
   }
 }

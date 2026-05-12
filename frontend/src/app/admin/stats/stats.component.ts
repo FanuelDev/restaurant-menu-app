@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
 import { StatsService } from '../../shared/services/stats.service'
+import { RestaurantService } from '../../shared/services/restaurant.service'
 import type { StatsData } from '../../shared/models'
 
 @Component({
@@ -327,6 +328,7 @@ import type { StatsData } from '../../shared/models'
 export class StatsComponent implements OnInit {
   private readonly authService = inject(AuthService)
   private readonly statsService = inject(StatsService)
+  private readonly restaurantService = inject(RestaurantService)
 
   readonly hasAccess = computed(() => {
     const slug = this.authService.restaurant()?.plan?.slug
@@ -369,8 +371,13 @@ export class StatsComponent implements OnInit {
     return Math.round((count / this.catBarMax()) * 100)
   }
 
-  formatPrice(euros: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  formatPrice(amount: number): string {
+    const currency = this.restaurantService.restaurant()?.currency ?? 'XOF'
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 0 }).format(amount)
+    } catch {
+      return `${amount} ${currency}`
+    }
   }
 
   badgeLabel(badge: string, t: (key: string) => string): string {

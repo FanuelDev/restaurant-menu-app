@@ -26,6 +26,20 @@ const COUNTRIES = [
   { code: 'GA', name: 'Gabon',         currency: 'XAF' },
   { code: 'GH', name: 'Ghana',         currency: 'USD' },
   { code: 'NG', name: 'Nigeria',       currency: 'USD' },
+  { code: 'FR', name: 'France',        currency: 'EUR' },
+  { code: 'BE', name: 'Belgique',      currency: 'EUR' },
+  { code: 'CH', name: 'Suisse',        currency: 'EUR' },
+  { code: 'LU', name: 'Luxembourg',    currency: 'EUR' },
+  { code: 'US', name: 'États-Unis',    currency: 'USD' },
+]
+
+const CURRENCIES = [
+  { code: 'XOF', label: 'XOF — Franc CFA (UEMOA)' },
+  { code: 'XAF', label: 'XAF — Franc CFA (CEMAC)' },
+  { code: 'EUR', label: 'EUR — Euro (€)' },
+  { code: 'USD', label: 'USD — Dollar américain ($)' },
+  { code: 'GNF', label: 'GNF — Franc guinéen' },
+  { code: 'CDF', label: 'CDF — Franc congolais' },
 ]
 
 @Component({
@@ -157,7 +171,11 @@ const COUNTRIES = [
                 </div>
                 <div class="form-group">
                   <label class="form-label">{{ t('public.register.fieldCurrency') }}</label>
-                  <input class="form-control" [value]="s1.currency" readonly />
+                  <select class="form-control" [(ngModel)]="s1.currency">
+                    @for (c of currencies; track c.code) {
+                      <option [value]="c.code">{{ c.label }}</option>
+                    }
+                  </select>
                 </div>
               </div>
 
@@ -474,6 +492,7 @@ export class RegisterComponent {
   private readonly router          = inject(Router)
 
   readonly countries     = COUNTRIES
+  readonly currencies    = CURRENCIES
   readonly step          = signal(1)
   readonly slugStatus    = signal<'idle'|'checking'|'available'|'taken'>('idle')
   readonly loading       = signal(false)

@@ -249,6 +249,8 @@
     "fieldAddress": "Adresse",
     "fieldPhone": "Téléphone",
     "fieldEmail": "E-mail",
+    "fieldCurrency": "Devise",
+    "fieldCurrencyHint": "Affecte l'affichage des prix sur le menu public et dans l'administration.",
     "saveSuccess": "Modifications enregistrées.",
     "saveError": "Erreur lors de l'enregistrement.",
     "logoError": "Erreur lors de l'upload du logo.",

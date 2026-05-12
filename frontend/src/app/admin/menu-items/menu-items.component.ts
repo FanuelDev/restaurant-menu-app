@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
 import { SubscriptionService } from '../../shared/services/subscription.service'
+import { RestaurantService } from '../../shared/services/restaurant.service'
 import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
 import type { Category, MenuItem, MenuItemBadge, ResourceUsage } from '../../shared/models'
 
@@ -434,6 +435,7 @@ const BADGE_KEYS: Record<string, string> = {
 export class MenuItemsComponent implements OnInit {
   private readonly menuService = inject(MenuService)
   private readonly subscriptionService = inject(SubscriptionService)
+  private readonly restaurantService = inject(RestaurantService)
   private readonly fb = inject(FormBuilder)
   private readonly transloco = inject(TranslocoService)
 
@@ -505,8 +507,13 @@ export class MenuItemsComponent implements OnInit {
     return this.categories().find((c) => c.id === catId)?.name ?? ''
   }
 
-  formatPrice(euros: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  formatPrice(amount: number): string {
+    const currency = this.restaurantService.restaurant()?.currency ?? 'XOF'
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 0 }).format(amount)
+    } catch {
+      return `${amount} ${currency}`
+    }
   }
 
   hasTranslations(item: MenuItem): boolean {

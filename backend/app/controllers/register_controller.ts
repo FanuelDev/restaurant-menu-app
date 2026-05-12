@@ -12,7 +12,7 @@ const registerValidator = vine.compile(
     restaurantName: vine.string().trim().minLength(2).maxLength(100),
     restaurantSlug: vine.string().trim().regex(/^[a-z0-9-]+$/).minLength(2).maxLength(50),
     country: vine.string().fixedLength(2).toUpperCase(),
-    currency: vine.enum(['XOF', 'XAF', 'CDF', 'GNF', 'USD']),
+    currency: vine.enum(['XOF', 'XAF', 'CDF', 'GNF', 'USD', 'EUR']),
     address: vine.string().trim().optional(),
     phone: vine.string().trim().optional(),
     website: vine.string().trim().url().optional(),

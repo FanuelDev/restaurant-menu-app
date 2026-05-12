@@ -5,6 +5,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 
+const CURRENCIES = [
+  { code: 'XOF', label: 'XOF — Franc CFA (UEMOA)' },
+  { code: 'XAF', label: 'XAF — Franc CFA (CEMAC)' },
+  { code: 'EUR', label: 'EUR — Euro (€)' },
+  { code: 'USD', label: 'USD — Dollar ($)' },
+  { code: 'GNF', label: 'GNF — Franc guinéen' },
+  { code: 'CDF', label: 'CDF — Franc congolais' },
+]
+
 const DAYS: { key: string }[] = [
   { key: 'monday' },
   { key: 'tuesday' },
@@ -121,6 +130,16 @@ const DAYS: { key: string }[] = [
                   <input id="r-email" type="email" class="form-control" formControlName="email" />
                 </div>
               </div>
+
+              <div class="form-group">
+                <label class="form-label" for="r-currency">{{ t('restaurant.fieldCurrency') }}</label>
+                <select id="r-currency" class="form-control" formControlName="currency">
+                  @for (c of currencyOptions; track c.code) {
+                    <option [value]="c.code">{{ c.label }}</option>
+                  }
+                </select>
+                <small class="form-hint">{{ t('restaurant.fieldCurrencyHint') }}</small>
+              </div>
             </div>
 
             @if (saveError()) {
@@ -226,6 +245,80 @@ const DAYS: { key: string }[] = [
                   <span>Plein écran par swipe, style app luxe</span>
                 </div>
                 @if (selectedTemplate() === 3) { <div class="tpl-check">✓</div> }
+              </button>
+
+              <!-- Template 4 : Obsidian -->
+              <button class="tpl-option" [class.tpl-active]="selectedTemplate() === 4" (click)="selectTemplate(4)" type="button">
+                <div class="tpl-preview tpl-preview-obsidian">
+                  <div class="tp-obs-header">
+                    <div class="tp-obs-dot"></div>
+                    <div class="tp-obs-tabs">
+                      <div class="tp-obs-tab tp-obs-tab-active"></div>
+                      <div class="tp-obs-tab"></div>
+                      <div class="tp-obs-tab"></div>
+                    </div>
+                  </div>
+                  <div class="tp-obs-hero">
+                    <div class="tp-obs-hero-photo"></div>
+                    <div class="tp-obs-hero-text">
+                      <div class="tp-obs-label"></div>
+                      <div class="tp-obs-title"></div>
+                      <div class="tp-obs-desc"></div>
+                    </div>
+                  </div>
+                  <div class="tp-obs-grid">
+                    <div class="tp-obs-featured">
+                      <div class="tp-obs-feat-img"></div>
+                      <div class="tp-obs-feat-info">
+                        <div class="tp-obs-feat-title"></div>
+                        <div class="tp-obs-feat-price"></div>
+                      </div>
+                    </div>
+                    <div class="tp-obs-mini-row">
+                      <div class="tp-obs-card"><div class="tp-obs-card-img"></div><div class="tp-obs-card-line"></div></div>
+                      <div class="tp-obs-card"><div class="tp-obs-card-img"></div><div class="tp-obs-card-line"></div></div>
+                      <div class="tp-obs-card"><div class="tp-obs-card-img"></div><div class="tp-obs-card-line"></div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tpl-label">
+                  <strong>Obsidian</strong>
+                  <span>Dark luxe, fond noir, lignes pures</span>
+                </div>
+                @if (selectedTemplate() === 4) { <div class="tpl-check">✓</div> }
+              </button>
+
+              <!-- Template 5 : Lumière -->
+              <button class="tpl-option" [class.tpl-active]="selectedTemplate() === 5" (click)="selectTemplate(5)" type="button">
+                <div class="tpl-preview tpl-preview-lumiere">
+                  <div class="tp-lum-hero">
+                    <div class="tp-lum-hero-label"></div>
+                    <div class="tp-lum-hero-title"></div>
+                    <div class="tp-lum-hero-sub"></div>
+                  </div>
+                  <div class="tp-lum-nav">
+                    <div class="tp-lum-pill tp-lum-pill-active"></div>
+                    <div class="tp-lum-pill"></div>
+                    <div class="tp-lum-pill"></div>
+                  </div>
+                  <div class="tp-lum-bento">
+                    <div class="tp-lum-featured">
+                      <div class="tp-lum-feat-img"></div>
+                      <div class="tp-lum-feat-info">
+                        <div class="tp-lum-feat-title"></div>
+                        <div class="tp-lum-feat-price"></div>
+                      </div>
+                    </div>
+                    <div class="tp-lum-cell"><div class="tp-lum-cell-img"></div><div class="tp-lum-cell-line"></div></div>
+                    <div class="tp-lum-cell"><div class="tp-lum-cell-img"></div><div class="tp-lum-cell-line"></div></div>
+                    <div class="tp-lum-cell"><div class="tp-lum-cell-img"></div><div class="tp-lum-cell-line"></div></div>
+                  </div>
+                </div>
+                <div class="tpl-label">
+                  <strong>Lumière</strong>
+                  <span>Bento grid épuré, clair et moderne</span>
+                </div>
+                @if (selectedTemplate() === 5) { <div class="tpl-check">✓</div> }
               </button>
 
             </div>
@@ -383,9 +476,10 @@ const DAYS: { key: string }[] = [
     .tpl-card { margin-top: var(--space-5); }
     .tpl-subtitle { font-size: .875rem; color: var(--text-muted); margin: -.75rem 0 1.25rem; }
     .tpl-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-4);
     }
-    @media (max-width: 900px) { .tpl-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .tpl-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .tpl-grid { grid-template-columns: 1fr; } }
 
     .tpl-option {
       position: relative;
@@ -462,6 +556,137 @@ const DAYS: { key: string }[] = [
     .tp-imm-foot { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
     .tp-imm-price { height: 8px; width: 30px; background: var(--color-brand); border-radius: 2px; }
     .tp-imm-btn { height: 12px; width: 40px; background: var(--color-brand); border-radius: 999px; }
+
+    /* Template 4 preview – Obsidian */
+    .tpl-preview-obsidian {
+      background: #080808; display: flex; flex-direction: column; gap: 0; overflow: hidden;
+    }
+    .tp-obs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 6px; background: rgba(255,255,255,.04);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .tp-obs-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--color-brand); opacity: .8;
+    }
+    .tp-obs-tabs { display: flex; gap: 3px; }
+    .tp-obs-tab {
+      height: 6px; width: 22px; background: rgba(255,255,255,.12); border-radius: 3px;
+    }
+    .tp-obs-tab-active { background: var(--color-brand); opacity: .85; }
+    .tp-obs-hero {
+      position: relative; height: 38px; overflow: hidden;
+      background: linear-gradient(135deg, #1a0a0a, #0a0a1a, #0d1a12);
+    }
+    .tp-obs-hero-photo {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #2a1020 0%, #0d1825 50%, #101a10 100%); opacity: .8;
+    }
+    .tp-obs-hero-text {
+      position: absolute; bottom: 5px; left: 6px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .tp-obs-label {
+      height: 4px; width: 28px; background: var(--color-brand); border-radius: 2px; opacity: .7;
+    }
+    .tp-obs-title {
+      height: 8px; width: 55px; background: rgba(255,255,255,.85); border-radius: 2px;
+    }
+    .tp-obs-desc {
+      height: 4px; width: 70px; background: rgba(255,255,255,.3); border-radius: 2px;
+    }
+    .tp-obs-grid { flex: 1; display: flex; flex-direction: column; gap: 3px; padding: 4px 5px; }
+    .tp-obs-featured {
+      display: grid; grid-template-columns: 40% 1fr; gap: 3px;
+      background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .tp-obs-feat-img {
+      background: linear-gradient(135deg, #2a1020, #1a0818); height: 22px;
+    }
+    .tp-obs-feat-info {
+      padding: 3px 4px; display: flex; flex-direction: column; gap: 2px; justify-content: center;
+    }
+    .tp-obs-feat-title {
+      height: 4px; width: 80%; background: rgba(255,255,255,.7); border-radius: 2px;
+    }
+    .tp-obs-feat-price {
+      height: 4px; width: 40%; background: var(--color-brand); border-radius: 2px; opacity: .8;
+    }
+    .tp-obs-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+    .tp-obs-card {
+      background: rgba(255,255,255,.04); border-radius: 4px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06); height: 26px;
+    }
+    .tp-obs-card-img {
+      height: 16px;
+      background: linear-gradient(135deg, #1a1a2a, #1a2a1a);
+    }
+    .tp-obs-card-line {
+      height: 3px; margin: 2px 4px; background: rgba(255,255,255,.2); border-radius: 2px;
+    }
+
+    /* Template 5 preview – Lumière */
+    .tpl-preview-lumiere {
+      background: #faf9f5; display: flex; flex-direction: column; gap: 0; overflow: hidden;
+    }
+    .tp-lum-hero {
+      height: 36px; background: linear-gradient(135deg, #1a1814, #2a2420); position: relative;
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 5px 6px;
+      gap: 2px;
+    }
+    .tp-lum-hero-label {
+      height: 4px; width: 30px; background: var(--color-brand); border-radius: 2px; opacity: .75;
+    }
+    .tp-lum-hero-title {
+      height: 7px; width: 60px; background: rgba(255,255,255,.85); border-radius: 2px;
+    }
+    .tp-lum-hero-sub {
+      height: 4px; width: 45px; background: rgba(255,255,255,.35); border-radius: 2px;
+    }
+    .tp-lum-nav {
+      display: flex; gap: 3px; padding: 4px 5px;
+      background: white; border-bottom: 1px solid #ece9e3;
+    }
+    .tp-lum-pill {
+      height: 8px; width: 24px; background: #e8e5df; border-radius: 999px;
+    }
+    .tp-lum-pill-active {
+      background: var(--color-brand); opacity: .85;
+    }
+    .tp-lum-bento {
+      flex: 1; display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto auto;
+      gap: 3px; padding: 4px 5px;
+    }
+    .tp-lum-featured {
+      grid-column: span 2;
+      background: white; border-radius: 5px; overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      display: grid; grid-template-columns: 50% 1fr;
+    }
+    .tp-lum-feat-img {
+      background: linear-gradient(135deg, #d4c8be, #c4b8a8); height: 30px;
+    }
+    .tp-lum-feat-info {
+      padding: 4px; display: flex; flex-direction: column; gap: 2px; justify-content: center;
+    }
+    .tp-lum-feat-title {
+      height: 4px; width: 80%; background: #1a1814; border-radius: 2px; opacity: .7;
+    }
+    .tp-lum-feat-price {
+      height: 4px; width: 40%; background: var(--color-brand); border-radius: 2px; opacity: .75;
+    }
+    .tp-lum-cell {
+      background: white; border-radius: 5px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); height: 30px;
+    }
+    .tp-lum-cell-img {
+      height: 18px; background: linear-gradient(135deg, #e0dbd4, #cec8c0);
+    }
+    .tp-lum-cell-line {
+      height: 3px; margin: 2px 4px; background: #d8d4ce; border-radius: 2px;
+    }
   `],
 })
 export class RestaurantComponent implements OnInit {
@@ -481,6 +706,7 @@ export class RestaurantComponent implements OnInit {
   readonly templateSuccess  = signal(false)
 
   readonly days = DAYS
+  readonly currencyOptions = CURRENCIES
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -489,6 +715,7 @@ export class RestaurantComponent implements OnInit {
     address: [''],
     phone: [''],
     email: [''],
+    currency: ['XOF'],
   })
 
   ngOnInit(): void {
@@ -500,12 +727,13 @@ export class RestaurantComponent implements OnInit {
         address: r.address ?? '',
         phone: r.phone ?? '',
         email: r.email ?? '',
+        currency: r.currency ?? 'XOF',
       })
       this.selectedTemplate.set(r.templateId ?? 1)
     })
   }
 
-  selectTemplate(id: 1 | 2 | 3): void {
+  selectTemplate(id: 1 | 2 | 3 | 4 | 5): void {
     this.selectedTemplate.set(id)
     this.restaurantService.update({ templateId: id } as never).subscribe({
       next: () => {

@@ -1,0 +1,51 @@
+name: saemenus_client
+description: Application client SaeMenus — Scan, Commander & Réserver
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.4.10
+
+  # Navigation
+  go_router: ^13.2.4
+
+  # HTTP
+  dio: ^5.4.3
+
+  # QR Scanner
+  mobile_scanner: ^5.1.1
+
+  # Local storage
+  shared_preferences: ^2.2.3
+
+  # Images
+  cached_network_image: ^3.3.1
+
+  # UI / Animations
+  shimmer: ^3.0.0
+  google_fonts: ^6.2.1
+
+  # Utils
+  intl: ^0.19.0
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

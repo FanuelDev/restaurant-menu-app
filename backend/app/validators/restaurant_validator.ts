@@ -10,13 +10,14 @@ const daySchedule = vine.object({
 export const updateRestaurantValidator = vine.compile(
   vine.object({
     name: vine.string().trim().minLength(1).maxLength(255).optional(),
-    templateId: vine.number().min(1).max(3).optional(),
+    templateId: vine.number().min(1).max(5).optional(),
     slogan: vine.string().trim().maxLength(512).optional().nullable(),
     brandColor: vine
       .string()
       .trim()
       .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/)
       .optional(),
+    currency: vine.enum(['XOF', 'XAF', 'CDF', 'GNF', 'USD', 'EUR']).optional(),
     address: vine.string().trim().maxLength(512).optional().nullable(),
     phone: vine.string().trim().maxLength(20).optional().nullable(),
     email: vine.string().trim().email().optional().nullable(),

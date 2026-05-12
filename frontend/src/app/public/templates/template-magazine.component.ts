@@ -52,6 +52,18 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
             <span class="mag-idx-name">{{ cat.name }}</span>
           </button>
         }
+
+        @if (hoursEntries().length) {
+          <div class="mag-sidebar-hours">
+            <div class="mag-sh-header">HORAIRES</div>
+            @for (e of hoursEntries(); track e.day) {
+              <div class="mag-sh-row" [class.mag-sh-today]="e.isToday" [class.mag-sh-closed]="e.closed">
+                <span class="mag-sh-day">{{ e.label }}</span>
+                <span class="mag-sh-time">{{ e.closed ? 'Fermé' : e.open + '–' + e.close }}</span>
+              </div>
+            }
+          </div>
+        }
       </nav>
 
       <!-- Main content -->
@@ -215,18 +227,20 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     /* ─── Wrap ─────────────────────────────────────── */
     .mag-wrap {
       min-height: 100vh;
-      background: #faf9f7;
+      background: #f8f6f2;
       font-family: var(--font-body, 'Inter', sans-serif);
+      -webkit-font-smoothing: antialiased;
+      color: #1a1612;
     }
 
     /* ─── Header ────────────────────────────────────── */
     .mag-header {
       display: grid;
       grid-template-columns: 42% 1fr;
-      min-height: 340px;
+      min-height: 380px;
       overflow: hidden;
       background: white;
-      border-bottom: 3px solid var(--color-brand);
+      box-shadow: 0 1px 0 rgba(26,22,18,.08);
     }
     @media (max-width: 700px) {
       .mag-header { grid-template-columns: 1fr; min-height: auto; }
@@ -236,34 +250,43 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 3rem 2.5rem;
+      padding: 3.5rem 3rem;
       gap: 1rem;
       background: white;
+      position: relative;
     }
+    .mag-header-info::after {
+      content: '';
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, transparent, var(--color-brand) 30%, var(--color-brand) 70%, transparent);
+    }
+    @media (max-width: 700px) { .mag-header-info::after { display: none; } }
     .mag-logo {
-      width: 64px; height: 64px;
+      width: 58px; height: 58px;
       object-fit: cover;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.1);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.12);
     }
     .mag-issue {
-      font-size: .6875rem;
-      font-weight: 700;
-      letter-spacing: .12em;
+      font-size: .5875rem;
+      font-weight: 800;
+      letter-spacing: .2em;
       text-transform: uppercase;
       color: var(--color-brand);
     }
     .mag-restaurant-name {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: clamp(2rem, 4vw, 3.25rem);
+      font-size: clamp(2rem, 4vw, 3.5rem);
       font-weight: 400;
-      line-height: 1.1;
-      color: var(--text-primary, #111);
+      line-height: 1.06;
+      color: #1a1612;
       margin: 0;
+      letter-spacing: -.02em;
     }
     .mag-slogan {
       font-size: .9375rem;
-      color: var(--text-muted, #888);
+      color: rgba(26,22,18,.45);
       font-style: italic;
       margin: 0;
     }
@@ -275,16 +298,15 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     .mag-cover-img {
       width: 100%; height: 100%;
       object-fit: cover;
-      animation: mag-ken-static 12s ease-in-out infinite alternate;
+      animation: mag-ken-static 16s ease-in-out infinite alternate;
+      will-change: transform;
     }
-    @keyframes mag-ken-static { from { transform: scale(1); } to { transform: scale(1.06); } }
+    @keyframes mag-ken-static { from { transform: scale(1); } to { transform: scale(1.07); } }
     .mag-cover-overlay {
       position: absolute; inset: 0;
-      background: linear-gradient(to right, white 0%, transparent 30%);
+      background: linear-gradient(to right, white 0%, rgba(255,255,255,.15) 35%, transparent 60%);
     }
-    .mag-cover-placeholder {
-      background: var(--color-brand-subtle, #fef2f0);
-    }
+    .mag-cover-placeholder { background: var(--color-brand-subtle, #fef2f0); }
     .mag-cover-pattern {
       width: 100%; height: 100%;
       background-image: repeating-linear-gradient(
@@ -292,17 +314,17 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
         var(--color-brand) 0, var(--color-brand) 1px,
         transparent 0, transparent 50%
       );
-      background-size: 12px 12px;
-      opacity: .08;
+      background-size: 14px 14px;
+      opacity: .06;
     }
 
     /* ─── Body layout ───────────────────────────────── */
     .mag-body {
       display: grid;
-      grid-template-columns: 150px 1fr;
-      max-width: 1280px;
+      grid-template-columns: 160px 1fr;
+      max-width: 1340px;
       margin: 0 auto;
-      min-height: calc(100vh - 340px);
+      min-height: calc(100vh - 380px);
     }
     @media (max-width: 900px) {
       .mag-body { grid-template-columns: 1fr; }
@@ -314,22 +336,24 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       top: 0;
       height: 100vh;
       overflow-y: auto;
-      padding: 2.5rem 0 2.5rem 1.5rem;
-      border-right: 1px solid var(--border, #e5e7eb);
-      background: #faf9f7;
+      padding: 3rem 0 3rem 1.75rem;
+      border-right: 1px solid rgba(26,22,18,.07);
+      background: #f8f6f2;
       display: flex;
       flex-direction: column;
-      gap: .25rem;
+      gap: .125rem;
+      scrollbar-width: none;
     }
+    .mag-sidebar::-webkit-scrollbar { display: none; }
     @media (max-width: 900px) { .mag-sidebar { display: none; } }
 
     .mag-sidebar-label {
-      font-size: .6rem;
-      font-weight: 700;
-      letter-spacing: .14em;
+      font-size: .5375rem;
+      font-weight: 800;
+      letter-spacing: .22em;
       text-transform: uppercase;
-      color: var(--text-muted, #aaa);
-      margin-bottom: 1rem;
+      color: rgba(26,22,18,.3);
+      margin-bottom: 1.25rem;
       padding-left: .25rem;
     }
     .mag-idx-btn {
@@ -337,92 +361,98 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       flex-direction: column;
       align-items: flex-start;
       gap: 2px;
-      padding: .5rem .5rem .5rem .25rem;
+      padding: .5625rem .5rem .5625rem .375rem;
       background: none;
       border: none;
       border-left: 2px solid transparent;
       cursor: pointer;
       text-align: left;
-      transition: border-color .2s, background .2s;
-      border-radius: 0 6px 6px 0;
+      transition: border-color .25s, background .25s;
+      border-radius: 0 8px 8px 0;
     }
     .mag-idx-btn:hover { background: white; }
     .mag-idx-active { border-left-color: var(--color-brand) !important; background: white !important; }
     .mag-idx-num {
-      font-size: .625rem;
-      font-weight: 700;
-      letter-spacing: .08em;
+      font-size: .5625rem;
+      font-weight: 800;
+      letter-spacing: .12em;
       color: var(--color-brand);
     }
     .mag-idx-name {
       font-size: .75rem;
       font-weight: 500;
-      color: var(--text-secondary, #555);
-      line-height: 1.3;
+      color: rgba(26,22,18,.5);
+      line-height: 1.35;
     }
-    .mag-idx-active .mag-idx-name { color: var(--text-primary, #111); font-weight: 600; }
+    .mag-idx-active .mag-idx-name { color: #1a1612; font-weight: 700; }
 
     /* ─── Main content ──────────────────────────────── */
-    .mag-main { padding: 3rem 2.5rem; }
-    @media (max-width: 700px) { .mag-main { padding: 2rem 1rem; } }
+    .mag-main { padding: 3.5rem 3rem; }
+    @media (max-width: 700px) { .mag-main { padding: 2rem 1.25rem; } }
 
     /* ─── Skeleton ──────────────────────────────────── */
-    .mag-skeleton-wrap { display: flex; flex-direction: column; gap: 2rem; }
+    .mag-skeleton-wrap { display: flex; flex-direction: column; gap: 2.5rem; }
     .mag-skeleton-hero {
-      height: 260px;
-      border-radius: 16px;
-      background: linear-gradient(90deg, #f0eeec 25%, #e8e6e3 50%, #f0eeec 75%);
+      height: 280px; border-radius: 20px;
+      background: linear-gradient(90deg, #ede9e3 25%, #e3dfd8 50%, #ede9e3 75%);
       background-size: 400% 100%;
       animation: mag-shimmer 1.4s infinite;
     }
-    .mag-skeleton-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+    .mag-skeleton-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.125rem; }
     .mag-skeleton-card {
-      height: 200px;
-      border-radius: 12px;
-      background: linear-gradient(90deg, #f0eeec 25%, #e8e6e3 50%, #f0eeec 75%);
+      height: 210px; border-radius: 16px;
+      background: linear-gradient(90deg, #ede9e3 25%, #e3dfd8 50%, #ede9e3 75%);
       background-size: 400% 100%;
       animation: mag-shimmer 1.4s infinite;
     }
     @keyframes mag-shimmer { to { background-position: -400% 0; } }
 
     /* ─── Section ───────────────────────────────────── */
-    .mag-section { margin-bottom: 5rem; }
+    .mag-section { margin-bottom: 6rem; }
 
-    .mag-section-head { margin-bottom: 2rem; }
+    .mag-section-head {
+      margin-bottom: 2.25rem;
+      padding-bottom: 1.5rem;
+      position: relative;
+    }
+    .mag-section-head::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      height: 1px;
+      background: linear-gradient(to right, var(--color-brand) 48px, rgba(26,22,18,.08) 48px);
+      width: 100%;
+    }
     .mag-chapter {
-      font-size: .6875rem;
-      font-weight: 700;
-      letter-spacing: .12em;
+      font-size: .5625rem;
+      font-weight: 800;
+      letter-spacing: .22em;
       text-transform: uppercase;
       color: var(--color-brand);
       display: block;
-      margin-bottom: .5rem;
+      margin-bottom: .625rem;
     }
     .mag-section-title {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-size: clamp(1.875rem, 3.5vw, 2.75rem);
       font-weight: 400;
-      color: var(--text-primary, #111);
+      color: #1a1612;
       margin: 0 0 .5rem;
-      line-height: 1.15;
+      line-height: 1.1;
+      letter-spacing: -.02em;
     }
     .mag-section-quote {
       font-style: italic;
       font-size: .9375rem;
-      color: var(--text-muted, #888);
-      margin: .25rem 0 0;
+      color: rgba(26,22,18,.42);
+      margin: .375rem 0 0;
     }
-    .mag-section-rule {
-      height: 2px;
-      background: linear-gradient(to right, var(--color-brand) 60px, transparent);
-      margin-top: 1.25rem;
-    }
+    .mag-section-rule { display: none; }
 
     /* ─── Reveal animation ──────────────────────────── */
     .mag-reveal {
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity .6s cubic-bezier(0.22,1,0.36,1), transform .6s cubic-bezier(0.22,1,0.36,1);
+      transform: translateY(22px);
+      transition: opacity .7s cubic-bezier(0.16,1,0.3,1), transform .7s cubic-bezier(0.16,1,0.3,1);
     }
     .mag-reveal.mag-visible { opacity: 1; transform: translateY(0); }
     .mag-reveal[data-delay="1"] { transition-delay: .08s; }
@@ -432,17 +462,24 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     /* ─── Hero card ─────────────────────────────────── */
     .mag-hero-card {
       display: grid;
-      grid-template-columns: 42% 1fr;
-      min-height: 280px;
-      border-radius: 20px;
+      grid-template-columns: 44% 1fr;
+      min-height: 300px;
+      border-radius: 22px;
       overflow: hidden;
       background: white;
-      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      border: 1px solid rgba(26,22,18,.07);
+      box-shadow: 0 2px 16px rgba(26,22,18,.06);
       cursor: pointer;
-      transition: box-shadow .3s, transform .3s;
-      margin-bottom: 2rem;
+      transition: box-shadow .35s cubic-bezier(0.16,1,0.3,1),
+                  transform .35s cubic-bezier(0.16,1,0.3,1),
+                  border-color .35s;
+      margin-bottom: 1.5rem;
     }
-    .mag-hero-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,.12); transform: translateY(-3px); }
+    .mag-hero-card:hover {
+      box-shadow: 0 16px 48px rgba(26,22,18,.13);
+      transform: translateY(-4px);
+      border-color: rgba(26,22,18,.12);
+    }
     @media (max-width: 700px) { .mag-hero-card { grid-template-columns: 1fr; } }
 
     .mag-hero-photo-wrap {
@@ -452,92 +489,72 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     }
     .mag-hero-photo {
       width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
+      object-fit: cover; display: block;
     }
-    .mag-ken-burns { animation: mag-ken-burns 10s ease-in-out infinite alternate; }
+    .mag-ken-burns { animation: mag-ken-burns 12s ease-in-out infinite alternate; }
     @keyframes mag-ken-burns {
-      from { transform: scale(1) translateX(0); }
-      to   { transform: scale(1.08) translateX(-2%); }
+      from { transform: scale(1); }
+      to   { transform: scale(1.07) translateX(-1.5%); }
     }
     .mag-hero-photo-blank {
       display: flex; align-items: center; justify-content: center;
       height: 100%; min-height: 200px;
-      font-size: 3rem;
-      background: var(--color-brand-subtle, #fef2f0);
+      font-size: 3rem; background: var(--color-brand-subtle, #fef2f0);
     }
 
     .mag-hero-body {
       position: relative;
-      padding: 2.5rem;
-      display: flex;
-      flex-direction: column;
+      padding: 2.5rem 2.25rem;
+      display: flex; flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
     }
     .mag-dish-num-bg {
       position: absolute;
-      top: -10px; right: -10px;
+      top: -16px; right: -8px;
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: 8rem;
-      font-weight: 700;
-      color: var(--text-primary, #111);
-      opacity: .04;
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
+      font-size: 9rem; font-weight: 700;
+      color: #1a1612; opacity: .03;
+      line-height: 1; pointer-events: none; user-select: none;
     }
     .mag-hero-title {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: 1.625rem;
+      font-size: clamp(1.375rem, 2.5vw, 1.875rem);
       font-weight: 400;
-      color: var(--text-primary, #111);
+      color: #1a1612;
       margin: 0 0 .75rem;
-      line-height: 1.2;
-      position: relative;
+      line-height: 1.18;
+      position: relative; letter-spacing: -.01em;
     }
     .mag-hero-desc {
       font-size: .9375rem;
-      color: var(--text-secondary, #555);
-      line-height: 1.65;
-      margin: 0 0 1.5rem;
-      flex: 1;
+      color: rgba(26,22,18,.5);
+      line-height: 1.68; margin: 0 0 1.5rem; flex: 1;
     }
     .mag-hero-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 1rem; flex-wrap: wrap;
     }
     .mag-price {
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: 1.5rem;
-      font-weight: 400;
+      font-size: 1.5rem; font-weight: 400;
       color: var(--color-brand);
     }
 
     /* ─── Badge ─────────────────────────────────────── */
     .mag-badge {
-      position: absolute;
-      top: 12px; left: 12px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: .6875rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: white;
+      position: absolute; top: 10px; left: 10px;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: .5625rem; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase; color: white;
     }
-    .mag-badge-popular  { background: #e67e22; }
-    .mag-badge-new      { background: #2980b9; }
+    .mag-badge-popular    { background: #e67e22; }
+    .mag-badge-new        { background: var(--color-brand); }
     .mag-badge-vegetarian { background: #27ae60; }
-    .mag-badge-spicy    { background: #c0392b; }
+    .mag-badge-spicy      { background: #c0392b; }
 
     /* ─── Cart controls ─────────────────────────────── */
-    .mag-qty {
-      display: flex; align-items: center; gap: .5rem;
-    }
+    .mag-qty { display: flex; align-items: center; gap: .5rem; }
     .mag-qty-btn {
       width: 30px; height: 30px; border-radius: 50%;
       border: 1.5px solid var(--color-brand);
@@ -547,18 +564,14 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       transition: background .15s, color .15s;
     }
     .mag-qty-btn:hover { background: var(--color-brand); color: white; }
-    .mag-qty-val { font-weight: 700; font-size: 1rem; min-width: 20px; text-align: center; color: var(--text-primary); }
+    .mag-qty-val { font-weight: 700; font-size: 1rem; min-width: 20px; text-align: center; color: #1a1612; }
     .mag-add-btn {
-      padding: .5rem 1.25rem;
-      background: var(--color-brand);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      font-size: .875rem;
-      font-weight: 600;
-      cursor: pointer;
+      padding: .4375rem 1.125rem;
+      background: var(--color-brand); color: white;
+      border: none; border-radius: 999px;
+      font-size: .8125rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
       transition: opacity .15s, transform .15s;
-      white-space: nowrap;
     }
     .mag-add-btn:hover { opacity: .88; transform: translateY(-1px); }
 
@@ -566,84 +579,69 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     .mag-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.25rem;
+      gap: 1.125rem;
     }
     @media (max-width: 900px) { .mag-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 480px) { .mag-grid { grid-template-columns: 1fr; } }
 
     .mag-card {
-      background: white;
-      border-radius: 16px;
+      background: white; border-radius: 18px;
+      border: 1px solid rgba(26,22,18,.07);
       overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      box-shadow: 0 1px 8px rgba(26,22,18,.05);
       cursor: pointer;
-      transition: box-shadow .25s, transform .25s;
+      transition: box-shadow .3s cubic-bezier(0.16,1,0.3,1),
+                  transform .3s cubic-bezier(0.16,1,0.3,1),
+                  border-color .3s;
       display: flex; flex-direction: column;
     }
-    .mag-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.12); transform: translateY(-4px); }
+    .mag-card:hover {
+      box-shadow: 0 12px 36px rgba(26,22,18,.12);
+      transform: translateY(-4px);
+      border-color: rgba(26,22,18,.12);
+    }
 
     .mag-card-photo-wrap {
-      position: relative;
-      height: 170px;
+      position: relative; height: 178px;
       overflow: hidden;
       background: var(--color-brand-subtle, #fef2f0);
     }
     .mag-card-num-bg {
-      position: absolute;
-      bottom: 4px; right: 8px;
+      position: absolute; bottom: 4px; right: 8px;
       font-family: var(--font-display, 'DM Serif Display', serif);
-      font-size: 3.5rem;
-      font-weight: 700;
-      color: white;
-      opacity: .2;
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
+      font-size: 3.5rem; font-weight: 700;
+      color: white; opacity: .18; line-height: 1;
+      pointer-events: none; user-select: none;
     }
     .mag-card-photo {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform .6s ease;
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .6s cubic-bezier(0.16,1,0.3,1);
     }
-    .mag-card:hover .mag-card-photo { transform: scale(1.05); }
+    .mag-card:hover .mag-card-photo { transform: scale(1.06); }
     .mag-card-photo-blank {
       display: flex; align-items: center; justify-content: center;
-      height: 100%; font-size: 2.5rem;
+      height: 100%; font-size: 2.5rem; opacity: .35;
     }
     .mag-card-badge {
       position: absolute; top: 8px; left: 8px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: .625rem; font-weight: 700;
-      letter-spacing: .06em; text-transform: uppercase;
-      color: white;
+      padding: 2px 7px; border-radius: 999px;
+      font-size: .5625rem; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; color: white;
     }
 
     .mag-card-body {
-      padding: 1rem 1.125rem;
-      flex: 1;
+      padding: 1.125rem 1.25rem; flex: 1;
       display: flex; flex-direction: column; justify-content: space-between;
       gap: .5rem;
     }
     .mag-card-name {
-      font-size: .9375rem;
-      font-weight: 600;
-      color: var(--text-primary, #111);
-      margin: 0;
-      line-height: 1.35;
+      font-size: .9375rem; font-weight: 700;
+      color: #1a1612; margin: 0; line-height: 1.35;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .mag-card-foot {
-      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-    }
-    .mag-card-price {
-      font-weight: 700;
-      font-size: .9375rem;
-      color: var(--color-brand);
-    }
+    .mag-card-foot { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .mag-card-price { font-weight: 700; font-size: .9375rem; color: var(--color-brand); }
     .mag-qty-sm { display: flex; align-items: center; gap: 4px; }
     .mag-qty-btn-sm {
       width: 24px; height: 24px; border-radius: 50%;
@@ -653,7 +651,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       transition: background .15s, color .15s;
     }
     .mag-qty-btn-sm:hover { background: var(--color-brand); color: white; }
-    .mag-qty-val-sm { font-size: .875rem; font-weight: 700; min-width: 16px; text-align: center; color: var(--text-primary); }
+    .mag-qty-val-sm { font-size: .875rem; font-weight: 700; min-width: 16px; text-align: center; color: #1a1612; }
     .mag-add-btn-sm {
       width: 28px; height: 28px; border-radius: 50%;
       background: var(--color-brand); color: white;
@@ -665,76 +663,99 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
 
     /* ─── Footer ────────────────────────────────────── */
     .mag-footer {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      display: flex; align-items: center; gap: 1rem;
       padding: 2.5rem 0;
-      border-top: 1px solid var(--border, #e5e7eb);
-      margin-top: 2rem;
-      flex-wrap: wrap;
+      border-top: 1px solid rgba(26,22,18,.08);
+      margin-top: 2rem; flex-wrap: wrap;
     }
-    .mag-foot-logo { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-    .mag-foot-name { font-weight: 700; font-size: .9375rem; color: var(--text-primary); }
-    .mag-foot-info { font-size: .875rem; color: var(--text-muted); text-decoration: none; }
+    .mag-foot-logo { width: 38px; height: 38px; border-radius: 9px; object-fit: cover; }
+    .mag-foot-name { font-weight: 700; font-size: .9375rem; color: #1a1612; }
+    .mag-foot-info { font-size: .875rem; color: rgba(26,22,18,.45); text-decoration: none; }
     a.mag-foot-info:hover { color: var(--color-brand); }
 
     /* ─── Modal ─────────────────────────────────────── */
     .mag-modal-backdrop {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.55);
+      background: rgba(26,22,18,.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 500;
       display: flex; align-items: flex-end; justify-content: center;
-      animation: mag-fade-in .2s ease;
+      animation: mag-fade-in .22s ease;
     }
     @keyframes mag-fade-in { from { opacity: 0; } to { opacity: 1; } }
-    @media (min-width: 600px) {
-      .mag-modal-backdrop { align-items: center; }
-    }
+    @media (min-width: 600px) { .mag-modal-backdrop { align-items: center; } }
     .mag-modal {
-      background: white;
-      border-radius: 24px 24px 0 0;
-      width: 100%;
-      max-width: 540px;
-      max-height: 85vh;
-      overflow-y: auto;
-      position: relative;
-      animation: mag-slide-up .3s cubic-bezier(0.22,1,0.36,1);
+      background: white; border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 520px;
+      max-height: 86vh; overflow-y: auto;
+      position: relative; scrollbar-width: none;
+      animation: mag-slide-up .32s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 -4px 48px rgba(26,22,18,.15);
     }
-    @keyframes mag-slide-up { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .mag-modal::-webkit-scrollbar { display: none; }
+    @keyframes mag-slide-up {
+      from { transform: translateY(50px) scale(.98); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
     @media (min-width: 600px) {
-      .mag-modal { border-radius: 24px; }
+      .mag-modal { border-radius: 24px; box-shadow: 0 24px 80px rgba(26,22,18,.2); }
     }
     .mag-modal-close {
-      position: absolute; top: 1rem; right: 1rem;
+      position: absolute; top: 1rem; right: 1rem; z-index: 1;
       width: 32px; height: 32px; border-radius: 50%;
-      border: none; background: rgba(0,0,0,.07);
+      border: none; background: rgba(26,22,18,.07);
       cursor: pointer; font-size: .875rem;
       display: flex; align-items: center; justify-content: center;
-      z-index: 1;
+      transition: background .15s;
     }
+    .mag-modal-close:hover { background: rgba(26,22,18,.13); }
     .mag-modal-photo {
-      width: 100%; height: 220px;
-      object-fit: cover;
-      display: block;
-      border-radius: 24px 24px 0 0;
+      width: 100%; height: 230px; object-fit: cover;
+      display: block; border-radius: 24px 24px 0 0;
     }
-    .mag-modal-body { padding: 1.5rem; }
-    .mag-modal-badge { position: static; display: inline-flex; margin-bottom: .75rem; }
+    .mag-modal-body { padding: 1.625rem; }
+    .mag-modal-badge { position: static; display: inline-flex; margin-bottom: .875rem; }
     .mag-modal-title {
       font-family: var(--font-display, 'DM Serif Display', serif);
       font-size: 1.5rem; font-weight: 400;
-      color: var(--text-primary); margin: 0 0 .75rem;
+      color: #1a1612; margin: 0 0 .75rem; letter-spacing: -.015em;
     }
-    .mag-modal-desc { font-size: .9375rem; color: var(--text-secondary); line-height: 1.65; margin: 0 0 1.5rem; }
+    .mag-modal-desc { font-size: .9375rem; color: rgba(26,22,18,.5); line-height: 1.68; margin: 0 0 1.5rem; }
     .mag-modal-foot {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 1rem; padding-top: 1rem;
-      border-top: 1px solid var(--border, #e5e7eb);
+      gap: 1rem; padding-top: 1.125rem;
+      border-top: 1px solid rgba(26,22,18,.08);
     }
     .mag-modal-price {
       font-family: var(--font-display, 'DM Serif Display', serif);
       font-size: 1.5rem; color: var(--color-brand);
     }
+
+    /* ── Sidebar hours ─────────────────────────────────── */
+    .mag-sidebar-hours {
+      margin-top: auto; padding: .875rem .5rem 1.25rem;
+      border-top: 1px solid rgba(26,22,18,.08);
+    }
+    .mag-sh-header {
+      font-size: .5rem; font-weight: 800; color: rgba(26,22,18,.3);
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: 0 .25rem; margin-bottom: .5rem;
+    }
+    .mag-sh-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .225rem .3rem; border-radius: 4px;
+      transition: background .15s;
+    }
+    .mag-sh-day {
+      font-size: .5625rem; font-weight: 700; color: rgba(26,22,18,.38);
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .mag-sh-time { font-size: .5625rem; color: rgba(26,22,18,.48); }
+    .mag-sh-today { background: color-mix(in srgb, var(--color-brand) 8%, transparent); }
+    .mag-sh-today .mag-sh-day { color: var(--color-brand); }
+    .mag-sh-today .mag-sh-time { color: var(--color-brand); font-weight: 700; }
+    .mag-sh-closed .mag-sh-time { color: rgba(26,22,18,.22); font-style: italic; }
   `],
 })
 export class TemplateMagazineComponent implements AfterViewInit, OnDestroy {
@@ -815,5 +836,21 @@ export class TemplateMagazineComponent implements AfterViewInit, OnDestroy {
     } catch {
       return `${item.price} ${currency}`
     }
+  }
+
+  private readonly _dayOrder = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
+  private readonly _dayShort: Record<string,string> = {
+    monday:'LUN', tuesday:'MAR', wednesday:'MER', thursday:'JEU',
+    friday:'VEN', saturday:'SAM', sunday:'DIM',
+  }
+
+  hoursEntries(): { day: string; label: string; open: string; close: string; closed: boolean; isToday: boolean }[] {
+    const hours = this.restaurant?.openingHours
+    if (!hours) return []
+    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
+    return this._dayOrder.map((day, i) => {
+      const h = hours[day]
+      return { day, label: this._dayShort[day], open: h?.open ?? '', close: h?.close ?? '', closed: h?.closed ?? !h, isToday: i === todayIdx }
+    })
   }
 }
