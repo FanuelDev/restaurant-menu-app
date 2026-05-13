@@ -1,0 +1,175 @@
+# .github/workflows/deploy.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# Déploiement intelligent sur VPS via SSH
+#
+# Déclencheurs :
+#   • Push sur main → déploie uniquement ce qui a changé
+#   • workflow_dispatch → déploiement manuel avec choix des cibles
+#
+# Secrets GitHub à configurer (Settings → Secrets → Actions) :
+#   VPS_HOST       — IP ou nom de domaine du VPS
+#   VPS_USER       — Utilisateur SSH (ex: root)
+#   VPS_PASSWORD   — Mot de passe SSH
+#   VPS_PORT       — Port SSH (optionnel, défaut: 22)
+#
+# Prérequis sur le VPS :
+#   • Git cloné dans /opt/restaurant-menu-app
+#   • .env.production présent dans ce dossier
+#   • Docker + Docker Compose installés
+#   • L'utilisateur SSH doit pouvoir exécuter docker sans sudo
+#     (ajouter au groupe docker : usermod -aG docker <user>)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+
+  # Déploiement manuel depuis l'onglet Actions de GitHub
+  workflow_dispatch:
+    inputs:
+      force_frontend:
+        description: 'Forcer le déploiement du frontend'
+        type: boolean
+        default: false
+      force_backend:
+        description: 'Forcer le déploiement du backend'
+        type: boolean
+        default: false
+
+# Empêche deux déploiements simultanés sur la même branche
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false  # ne pas annuler un déploiement en cours
+
+jobs:
+
+  # ── Job 1 : Détection des changements ───────────────────────────────────────
+  detect:
+    name: Détecter les changements
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.resolve.outputs.frontend }}
+      backend:  ${{ steps.resolve.outputs.backend }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # nécessaire pour comparer avec le commit précédent
+
+      # dorny/paths-filter compare HEAD vs HEAD~1
+      - name: Analyser les fichiers modifiés
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+
+      # Fusionne les résultats du filtre avec les overrides manuels
+      - name: Résoudre les cibles de déploiement
+        id: resolve
+        run: |
+          FRONTEND="${{ steps.filter.outputs.frontend }}"
+          BACKEND="${{ steps.filter.outputs.backend }}"
+
+          # workflow_dispatch : les inputs peuvent forcer le déploiement
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            [ "${{ inputs.force_frontend }}" = "true" ] && FRONTEND="true"
+            [ "${{ inputs.force_backend }}"  = "true" ] && BACKEND="true"
+          fi
+
+          echo "frontend=$FRONTEND" >> $GITHUB_OUTPUT
+          echo "backend=$BACKEND"   >> $GITHUB_OUTPUT
+
+          # Résumé visible dans le log GitHub
+          echo "### Cibles de déploiement" >> $GITHUB_STEP_SUMMARY
+          echo "| Service  | Déployer ? |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | $( [ '$FRONTEND' = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend  | $( [ '$BACKEND'  = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Job 2 : Déploiement ──────────────────────────────────────────────────────
+  deploy:
+    name: Déployer sur le VPS
+    needs: detect
+    # Ne s'exécute que si au moins un service a changé
+    if: needs.detect.outputs.frontend == 'true' || needs.detect.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    environment: production  # active les protections de déploiement GitHub si configurées
+
+    steps:
+      - name: Connexion SSH et déploiement
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port:     ${{ secrets.VPS_PORT || 22 }}
+          # Timeout généreux pour les builds Docker
+          command_timeout: 15m
+          script: |
+            set -e
+
+            # ── Variables injectées depuis GitHub Actions ──────────────────
+            DEPLOY_FRONTEND="${{ needs.detect.outputs.frontend }}"
+            DEPLOY_BACKEND="${{ needs.detect.outputs.backend }}"
+
+            APP_DIR="/root/restaurant-menu-app"
+            COMPOSE="docker compose \
+              -f $APP_DIR/docker-compose.yml \
+              -f $APP_DIR/docker-compose.prod.yml \
+              --env-file $APP_DIR/.env.production"
+
+            echo "──────────────────────────────────────────────"
+            echo " Déploiement — $(date '+%Y-%m-%d %H:%M:%S')"
+            echo " Frontend : $DEPLOY_FRONTEND"
+            echo " Backend  : $DEPLOY_BACKEND"
+            echo "──────────────────────────────────────────────"
+
+            # ── Mise à jour du code ────────────────────────────────────────
+            cd "$APP_DIR"
+            echo ""
+            echo "→ git pull..."
+            git pull origin main
+
+            # ── Build et redémarrage des services concernés ────────────────
+            SERVICES_TO_UP=""
+
+            if [ "$DEPLOY_BACKEND" = "true" ]; then
+              echo ""
+              echo "→ Build backend..."
+              $COMPOSE build --no-cache backend
+
+              SERVICES_TO_UP="$SERVICES_TO_UP backend"
+            fi
+
+            if [ "$DEPLOY_FRONTEND" = "true" ]; then
+              echo ""
+              echo "→ Build frontend..."
+              $COMPOSE build --no-cache frontend
+
+              SERVICES_TO_UP="$SERVICES_TO_UP frontend"
+            fi
+
+            # ── Démarrage des nouveaux conteneurs ──────────────────────────
+            echo ""
+            echo "→ Démarrage :$SERVICES_TO_UP"
+            $COMPOSE up -d --remove-orphans $SERVICES_TO_UP
+
+            # ── Vérification post-déploiement ──────────────────────────────
+            echo ""
+            echo "→ État des conteneurs :"
+            $COMPOSE ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+
+            # ── Nettoyage des anciennes images ─────────────────────────────
+            echo ""
+            echo "→ Nettoyage des images inutilisées..."
+            docker image prune -f
+
+            echo ""
+            echo "✅ Déploiement terminé avec succès"

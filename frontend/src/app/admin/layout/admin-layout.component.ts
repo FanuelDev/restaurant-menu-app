@@ -373,7 +373,7 @@ export class AdminLayoutComponent {
   readonly hasStats   = computed(() => this.planSlug() === 'pro' || this.planSlug() === 'enterprise')
   readonly hasOrders  = computed(() => {
     const plan = this.authService.restaurant()?.plan
-    return plan?.slug === 'enterprise' || !!plan?.features?.['orders_and_reservations']
+    return plan?.slug === 'pro' || plan?.slug === 'enterprise' || !!plan?.features?.['orders_and_reservations']
   })
   readonly hasApi     = computed(() => this.planSlug() === 'enterprise')
 

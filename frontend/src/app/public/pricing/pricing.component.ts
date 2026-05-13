@@ -483,7 +483,8 @@ export class PricingComponent implements OnInit {
     return this.ALL_FEATURES.map((k) => ({
       key: k,
       label: this.featureLabels[k] ?? k,
-      value: !!feats[k],
+      // fallback: Pro et Enterprise ont toujours orders_and_reservations
+      value: !!feats[k] || (k === 'orders_and_reservations' && (plan.slug === 'pro' || plan.slug === 'enterprise')),
     }))
   }
 

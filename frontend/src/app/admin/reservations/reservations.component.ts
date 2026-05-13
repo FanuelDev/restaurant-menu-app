@@ -674,7 +674,8 @@ export class ReservationsComponent implements OnInit, OnDestroy {
   readonly hasAccess = computed(() => {
     const r = this.authService.restaurant()
     if (!r) return false
-    return !!(r as any)?.plan?.features?.['orders_and_reservations'] || (r as any)?.plan?.slug === 'enterprise'
+    const plan = (r as any)?.plan
+    return !!(plan?.features?.['orders_and_reservations']) || plan?.slug === 'pro' || plan?.slug === 'enterprise'
   })
 
   readonly urgentCount = computed(() =>

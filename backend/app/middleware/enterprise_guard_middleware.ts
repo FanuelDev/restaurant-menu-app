@@ -6,9 +6,11 @@ export default class EnterpriseGuardMiddleware {
     await restaurant.load('plan')
     const plan = restaurant.plan
     const hasFeature =
-      plan?.features?.['orders_and_reservations'] === true || plan?.slug === 'enterprise'
+      plan?.features?.['orders_and_reservations'] === true ||
+      plan?.slug === 'pro' ||
+      plan?.slug === 'enterprise'
     if (!hasFeature) {
-      return response.forbidden({ error: 'Enterprise plan required', upgradeUrl: '/pricing' })
+      return response.forbidden({ error: 'Pro plan required', upgradeUrl: '/pricing' })
     }
     return next()
   }

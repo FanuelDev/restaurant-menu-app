@@ -23,7 +23,9 @@ export default class OrdersController {
     const plan = restaurant.plan
     return response.ok({
       ordersAndReservations:
-        plan?.features?.['orders_and_reservations'] === true || plan?.slug === 'enterprise',
+        plan?.features?.['orders_and_reservations'] === true ||
+        plan?.slug === 'pro' ||
+        plan?.slug === 'enterprise',
     })
   }
 
