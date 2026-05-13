@@ -182,8 +182,8 @@ export default class FinanceController {
        WHERE restaurant_id = ? AND status != 'cancelled'
          AND (is_gift = 0 OR gift_redeemed_at IS NOT NULL)
          AND created_at BETWEEN ? AND ?
-       GROUP BY label`,
-      [fmt, restaurantId, start.toSQL(), end.toSQL()]
+       GROUP BY DATE_FORMAT(created_at, ?)`,
+      [fmt, restaurantId, start.toSQL(), end.toSQL(), fmt]
     )
 
     // Manual incomes grouped
@@ -191,8 +191,8 @@ export default class FinanceController {
       `SELECT DATE_FORMAT(date, ?) as label, COALESCE(SUM(amount), 0) as total
        FROM finance_incomes
        WHERE restaurant_id = ? AND date BETWEEN ? AND ?
-       GROUP BY label`,
-      [fmt, restaurantId, start.toISODate(), end.toISODate()]
+       GROUP BY DATE_FORMAT(date, ?)`,
+      [fmt, restaurantId, start.toISODate(), end.toISODate(), fmt]
     )
 
     // Expenses grouped
@@ -200,8 +200,8 @@ export default class FinanceController {
       `SELECT DATE_FORMAT(date, ?) as label, COALESCE(SUM(amount), 0) as total
        FROM finance_expenses
        WHERE restaurant_id = ? AND date BETWEEN ? AND ?
-       GROUP BY label`,
-      [fmt, restaurantId, start.toISODate(), end.toISODate()]
+       GROUP BY DATE_FORMAT(date, ?)`,
+      [fmt, restaurantId, start.toISODate(), end.toISODate(), fmt]
     )
 
     const ordersMap:  Record<string, number> = {}
