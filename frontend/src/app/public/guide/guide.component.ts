@@ -1,32 +1,33 @@
 import { Component, signal, ChangeDetectionStrategy, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core'
 import { isPlatformBrowser, CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 
 interface GuideSection {
   id: string
   icon: string
-  label: string
   title: string
 }
 
 const SECTIONS: GuideSection[] = [
-  { id: 'start',        icon: '🚀', label: 'Démarrage',      title: 'Créer son compte et configurer son restaurant' },
-  { id: 'menu',         icon: '📋', label: 'Menu',            title: 'Gérer catégories et plats' },
-  { id: 'appearance',   icon: '🎨', label: 'Apparence',       title: 'Personnaliser le design et les templates' },
-  { id: 'qrcode',       icon: '📱', label: 'QR Code',         title: 'Générer et partager votre QR code' },
-  { id: 'orders',       icon: '🛒', label: 'Commandes',       title: 'Recevoir et gérer les commandes (Enterprise)' },
-  { id: 'reservations', icon: '📅', label: 'Réservations',    title: 'Gérer les réservations en ligne' },
-  { id: 'team',         icon: '👥', label: 'Équipe',          title: 'Inviter et gérer des collaborateurs' },
-  { id: 'stats',        icon: '📊', label: 'Statistiques',    title: 'Analyser la performance de votre menu' },
-  { id: 'finance',      icon: '💰', label: 'Finance',         title: 'Gérer les finances de votre restaurant (Enterprise)' },
+  { id: 'start',        icon: '🚀', title: 'Créer son compte et configurer son restaurant' },
+  { id: 'menu',         icon: '📋', title: 'Gérer catégories et plats' },
+  { id: 'appearance',   icon: '🎨', title: 'Personnaliser le design et les templates' },
+  { id: 'qrcode',       icon: '📱', title: 'Générer et partager votre QR code' },
+  { id: 'orders',       icon: '🛒', title: 'Recevoir et gérer les commandes (Enterprise)' },
+  { id: 'reservations', icon: '📅', title: 'Gérer les réservations en ligne' },
+  { id: 'team',         icon: '👥', title: 'Inviter et gérer des collaborateurs' },
+  { id: 'stats',        icon: '📊', title: 'Analyser la performance de votre menu' },
+  { id: 'finance',      icon: '💰', title: 'Gérer les finances de votre restaurant (Enterprise)' },
 ]
 
 @Component({
   selector: 'app-guide',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-container *transloco="let t">
     <!-- Nav -->
     <nav class="gd-nav">
       <div class="gd-nav-inner">
@@ -41,8 +42,8 @@ const SECTIONS: GuideSection[] = [
           <span class="gd-logo-name">SaeMenus</span>
         </a>
         <div class="gd-nav-right">
-          <a routerLink="/faq" class="gd-nav-login">FAQ</a>
-          <a routerLink="/register" class="gd-nav-cta">Commencer gratuitement</a>
+          <a routerLink="/faq" class="gd-nav-login">{{ t('public.guide.navFaq') }}</a>
+          <a routerLink="/register" class="gd-nav-cta">{{ t('public.guide.navCta') }}</a>
         </div>
       </div>
     </nav>
@@ -57,15 +58,15 @@ const SECTIONS: GuideSection[] = [
         <div class="gd-back">
           <a routerLink="/" class="gd-back-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Retour
+            {{ t('public.guide.back') }}
           </a>
         </div>
-        <div class="gd-hero-tag">Documentation</div>
-        <h1 class="gd-hero-h1">Guide d'utilisation SaeMenus</h1>
-        <p class="gd-hero-sub">Tout ce qu'il faut savoir pour créer, configurer et gérer votre restaurant digital en quelques minutes.</p>
+        <div class="gd-hero-tag">{{ t('public.guide.heroTag') }}</div>
+        <h1 class="gd-hero-h1">{{ t('public.guide.heroH1') }}</h1>
+        <p class="gd-hero-sub">{{ t('public.guide.heroSub') }}</p>
         <div class="gd-hero-pills">
           @for (s of sections; track s.id) {
-            <a href="javascript:void(0)" class="gd-pill" (click)="scrollTo(s.id)">{{ s.icon }} {{ s.label }}</a>
+            <a href="javascript:void(0)" class="gd-pill" (click)="scrollTo(s.id)">{{ s.icon }} {{ t('public.guide.' + s.id + 'Label') }}</a>
           }
         </div>
       </div>
@@ -82,16 +83,16 @@ const SECTIONS: GuideSection[] = [
 
         <!-- Sidebar TOC -->
         <aside class="gd-sidebar">
-          <div class="gd-toc-title">Dans ce guide</div>
+          <div class="gd-toc-title">{{ t('public.guide.tocTitle') }}</div>
           @for (s of sections; track s.id) {
             <a href="javascript:void(0)" class="gd-toc-item" [class.gd-toc-active]="activeSection() === s.id" (click)="scrollTo(s.id)">
               <span class="gd-toc-icon">{{ s.icon }}</span>
-              <span>{{ s.label }}</span>
+              <span>{{ t('public.guide.' + s.id + 'Label') }}</span>
             </a>
           }
           <div class="gd-sidebar-cta">
-            <div class="gd-sidebar-cta-title">Prêt à démarrer ?</div>
-            <a routerLink="/register" class="gd-sidebar-cta-btn">Créer mon compte</a>
+            <div class="gd-sidebar-cta-title">{{ t('public.guide.sidebarCtaTitle') }}</div>
+            <a routerLink="/register" class="gd-sidebar-cta-btn">{{ t('public.guide.sidebarCtaBtn') }}</a>
           </div>
         </aside>
 
@@ -101,31 +102,31 @@ const SECTIONS: GuideSection[] = [
           <!-- ── Section 1 : Démarrage ─────────────────────────── -->
           <section id="start" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Étape 1</div>
+              <div class="gd-section-badge">{{ t('public.guide.startBadge') }}</div>
               <h2 class="gd-h2">🚀 {{ sections[0].title }}</h2>
-              <p class="gd-section-intro">En moins de 5 minutes, votre menu est en ligne. Voici comment.</p>
+              <p class="gd-section-intro">{{ t('public.guide.startIntro') }}</p>
             </div>
 
             <div class="gd-steps">
               <div class="gd-step">
                 <div class="gd-step-num">1</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Créer votre compte</div>
-                  <p>Rendez-vous sur <strong>saemenus.com/register</strong>. Renseignez les informations de votre restaurant : nom, adresse, téléphone, et créez votre identifiant avec votre e-mail et un mot de passe sécurisé.</p>
+                  <div class="gd-step-title">{{ t('public.guide.startStep1Title') }}</div>
+                  <p>{{ t('public.guide.startStep1P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">2</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Configurer votre profil restaurant</div>
-                  <p>Dans <strong>Administration → Infos restaurant</strong>, ajoutez votre logo, une description, vos horaires d'ouverture et la devise de votre pays. Ces informations apparaissent en haut de votre menu public.</p>
+                  <div class="gd-step-title">{{ t('public.guide.startStep2Title') }}</div>
+                  <p>{{ t('public.guide.startStep2P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">3</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Choisir votre abonnement</div>
-                  <p>Commencez avec le plan Gratuit pour tester la plateforme. Upgradez vers Pro lorsque vous souhaitez activer les commandes en ligne et les statistiques avancées.</p>
+                  <div class="gd-step-title">{{ t('public.guide.startStep3Title') }}</div>
+                  <p>{{ t('public.guide.startStep3P') }}</p>
                 </div>
               </div>
             </div>
@@ -155,15 +156,15 @@ const SECTIONS: GuideSection[] = [
                 <div style="height:40px;background:var(--brand);border-radius:999px;opacity:.9"></div>
               </div>
             </div>
-            <p class="gd-mock-caption">Formulaire d'inscription — étape 1 sur 2</p>
+            <p class="gd-mock-caption">{{ t('public.guide.startCaption') }}</p>
           </section>
 
           <!-- ── Section 2 : Menu ──────────────────────────────── -->
           <section id="menu" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Étape 2</div>
+              <div class="gd-section-badge">{{ t('public.guide.menuBadge') }}</div>
               <h2 class="gd-h2">📋 {{ sections[1].title }}</h2>
-              <p class="gd-section-intro">Construisez votre menu en quelques clics. Catégories, plats, prix, images — tout est gérable depuis le tableau de bord.</p>
+              <p class="gd-section-intro">{{ t('public.guide.menuIntro') }}</p>
             </div>
 
             <div class="gd-feature-grid">
@@ -171,29 +172,29 @@ const SECTIONS: GuideSection[] = [
                 <div class="gd-feature-icon" style="background:#FFF5F5; color:var(--brand)">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </div>
-                <div class="gd-feature-title">Créer une catégorie</div>
-                <p>Organisez votre menu en sections : Entrées, Plats, Desserts, Boissons… Réorganisez-les par glisser-déposer.</p>
+                <div class="gd-feature-title">{{ t('public.guide.menuCard1Title') }}</div>
+                <p>{{ t('public.guide.menuCard1P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#EFF6FF; color:#2563EB">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
                 </div>
-                <div class="gd-feature-title">Ajouter un plat</div>
-                <p>Nom, description, prix, photo, badges (Nouveau, Populaire, Végétarien…) et statut de disponibilité.</p>
+                <div class="gd-feature-title">{{ t('public.guide.menuCard2Title') }}</div>
+                <p>{{ t('public.guide.menuCard2P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#F0FDF4; color:#16A34A">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
-                <div class="gd-feature-title">Modifier en direct</div>
-                <p>Toute modification est visible instantanément par vos clients. Pas de publication manuelle.</p>
+                <div class="gd-feature-title">{{ t('public.guide.menuCard3Title') }}</div>
+                <p>{{ t('public.guide.menuCard3P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#FDF4FF; color:#7C3AED">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                 </div>
-                <div class="gd-feature-title">Désactiver un plat</div>
-                <p>Rupture de stock ? Désactivez un plat en un clic. Il disparaît du menu mais ses données sont conservées.</p>
+                <div class="gd-feature-title">{{ t('public.guide.menuCard4Title') }}</div>
+                <p>{{ t('public.guide.menuCard4P') }}</p>
               </div>
             </div>
 
@@ -212,9 +213,9 @@ const SECTIONS: GuideSection[] = [
                   <div style="height:36px;width:120px;background:var(--brand);border-radius:999px;opacity:.9"></div>
                 </div>
                 <div style="display:flex;gap:8px;margin-bottom:16px">
-                  @for (t of [1,2,3,4]; track t) {
+                  @for (n of [1,2,3,4]; track n) {
                     <div style="height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--border);display:flex;align-items:center;">
-                      <div class="gd-mock-line" [style.width.px]="50 + t*10" style="height:8px;background:var(--gray-150)"></div>
+                      <div class="gd-mock-line" [style.width.px]="50 + n*10" style="height:8px;background:var(--gray-150)"></div>
                     </div>
                   }
                 </div>
@@ -233,25 +234,25 @@ const SECTIONS: GuideSection[] = [
                 }
               </div>
             </div>
-            <p class="gd-mock-caption">Vue de gestion des plats — liste avec statut actif/inactif</p>
+            <p class="gd-mock-caption">{{ t('public.guide.menuCaption') }}</p>
           </section>
 
           <!-- ── Section 3 : Apparence ─────────────────────────── -->
           <section id="appearance" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Étape 3</div>
+              <div class="gd-section-badge">{{ t('public.guide.appearanceBadge') }}</div>
               <h2 class="gd-h2">🎨 {{ sections[2].title }}</h2>
-              <p class="gd-section-intro">Choisissez parmi 5 templates visuels et adaptez les couleurs à votre identité.</p>
+              <p class="gd-section-intro">{{ t('public.guide.appearanceIntro') }}</p>
             </div>
 
             <div class="gd-templates-grid">
-              @for (tpl of templates; track tpl.name) {
+              @for (tpl of templates; track tpl.nameKey) {
                 <div class="gd-tpl-card" [style.--tc]="tpl.color">
                   <div class="gd-tpl-preview" [style.background]="tpl.bg">
                     <div class="gd-tpl-preview-inner" [innerHTML]="tpl.preview"></div>
                   </div>
-                  <div class="gd-tpl-name">{{ tpl.name }}</div>
-                  <div class="gd-tpl-desc">{{ tpl.desc }}</div>
+                  <div class="gd-tpl-name">{{ t('public.guide.' + tpl.nameKey) }}</div>
+                  <div class="gd-tpl-desc">{{ t('public.guide.' + tpl.descKey) }}</div>
                 </div>
               }
             </div>
@@ -260,16 +261,16 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-tip-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               </div>
-              <p><strong>Astuce :</strong> La couleur de marque est utilisée pour les boutons, badges et éléments d'accentuation de votre menu. Choisissez-la en accord avec votre logo. Changeable à tout moment depuis <em>Infos restaurant → Couleur de marque</em>.</p>
+              <p>{{ t('public.guide.appearanceTip') }}</p>
             </div>
           </section>
 
           <!-- ── Section 4 : QR Code ──────────────────────────── -->
           <section id="qrcode" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Étape 4</div>
+              <div class="gd-section-badge">{{ t('public.guide.qrcodeBadge') }}</div>
               <h2 class="gd-h2">📱 {{ sections[3].title }}</h2>
-              <p class="gd-section-intro">Votre QR code est généré automatiquement. Imprimez-le et placez-le sur vos tables.</p>
+              <p class="gd-section-intro">{{ t('public.guide.qrcodeIntro') }}</p>
             </div>
 
             <div class="gd-qr-layout">
@@ -279,8 +280,8 @@ const SECTIONS: GuideSection[] = [
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                   </div>
                   <div>
-                    <div class="gd-qr-step-title">Accéder au tableau de bord</div>
-                    <p>Dans <strong>Administration → Infos restaurant</strong>, vous trouverez votre QR code dans la section dédiée.</p>
+                    <div class="gd-qr-step-title">{{ t('public.guide.qrcodeStep1Title') }}</div>
+                    <p>{{ t('public.guide.qrcodeStep1P') }}</p>
                   </div>
                 </div>
                 <div class="gd-qr-step">
@@ -288,8 +289,8 @@ const SECTIONS: GuideSection[] = [
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </div>
                   <div>
-                    <div class="gd-qr-step-title">Télécharger en haute résolution</div>
-                    <p>Le QR code est disponible en format PNG (haute résolution) adapté à l'impression sur supports physiques.</p>
+                    <div class="gd-qr-step-title">{{ t('public.guide.qrcodeStep2Title') }}</div>
+                    <p>{{ t('public.guide.qrcodeStep2P') }}</p>
                   </div>
                 </div>
                 <div class="gd-qr-step">
@@ -297,8 +298,8 @@ const SECTIONS: GuideSection[] = [
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                   </div>
                   <div>
-                    <div class="gd-qr-step-title">Partager le lien direct</div>
-                    <p>Copiez l'URL unique de votre menu pour la partager sur vos réseaux sociaux, Google My Business ou WhatsApp.</p>
+                    <div class="gd-qr-step-title">{{ t('public.guide.qrcodeStep3Title') }}</div>
+                    <p>{{ t('public.guide.qrcodeStep3P') }}</p>
                   </div>
                 </div>
               </div>
@@ -326,31 +327,31 @@ const SECTIONS: GuideSection[] = [
           <!-- ── Section 5 : Commandes ────────────────────────── -->
           <section id="orders" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge gd-badge-pro">Pro</div>
+              <div class="gd-section-badge gd-badge-pro">{{ t('public.guide.ordersBadge') }}</div>
               <h2 class="gd-h2">🛒 {{ sections[4].title }}</h2>
-              <p class="gd-section-intro">Avec le plan Pro, vos clients commandent directement depuis leur smartphone. Les commandes arrivent en temps réel dans votre dashboard.</p>
+              <p class="gd-section-intro">{{ t('public.guide.ordersIntro') }}</p>
             </div>
 
             <div class="gd-flow">
               <div class="gd-flow-step">
                 <div class="gd-flow-num">1</div>
                 <div class="gd-flow-icon">📱</div>
-                <div class="gd-flow-title">Client scanne</div>
-                <div class="gd-flow-desc">Il consulte le menu, ajoute des plats au panier et valide sa commande avec son nom et numéro de table.</div>
+                <div class="gd-flow-title">{{ t('public.guide.ordersFlow1Title') }}</div>
+                <div class="gd-flow-desc">{{ t('public.guide.ordersFlow1Desc') }}</div>
               </div>
               <div class="gd-flow-arrow">→</div>
               <div class="gd-flow-step">
                 <div class="gd-flow-num">2</div>
                 <div class="gd-flow-icon">🔔</div>
-                <div class="gd-flow-title">Vous recevez</div>
-                <div class="gd-flow-desc">La commande apparaît immédiatement dans <em>Administration → Commandes</em> avec tous les détails.</div>
+                <div class="gd-flow-title">{{ t('public.guide.ordersFlow2Title') }}</div>
+                <div class="gd-flow-desc">{{ t('public.guide.ordersFlow2Desc') }}</div>
               </div>
               <div class="gd-flow-arrow">→</div>
               <div class="gd-flow-step">
                 <div class="gd-flow-num">3</div>
                 <div class="gd-flow-icon">✅</div>
-                <div class="gd-flow-title">Vous traitez</div>
-                <div class="gd-flow-desc">Changez le statut : En attente → En préparation → Prêt → Livré. Le suivi est complet.</div>
+                <div class="gd-flow-title">{{ t('public.guide.ordersFlow3Title') }}</div>
+                <div class="gd-flow-desc">{{ t('public.guide.ordersFlow3Desc') }}</div>
               </div>
             </div>
 
@@ -362,10 +363,10 @@ const SECTIONS: GuideSection[] = [
               </div>
               <div class="gd-mock-body" style="padding:20px">
                 <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-                  @for (badge of orderBadges; track badge.label) {
+                  @for (badge of orderBadges; track badge.labelKey) {
                     <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:.75rem;font-weight:700;" [style.background]="badge.bg" [style.color]="badge.color">
                       <div style="width:8px;height:8px;border-radius:50%;" [style.background]="badge.color"></div>
-                      {{ badge.label }}
+                      {{ t('public.guide.' + badge.labelKey) }}
                     </div>
                   }
                 </div>
@@ -378,32 +379,32 @@ const SECTIONS: GuideSection[] = [
                       <div class="gd-mock-line" style="height:10px;width:55%;background:var(--gray-200);margin-bottom:5px"></div>
                       <div class="gd-mock-line" style="height:8px;width:75%;background:var(--gray-100)"></div>
                     </div>
-                    <div style="padding:4px 12px;border-radius:999px;font-size:.7rem;font-weight:700;" [style.background]="order.statusBg" [style.color]="order.statusColor">{{ order.status }}</div>
+                    <div style="padding:4px 12px;border-radius:999px;font-size:.7rem;font-weight:700;" [style.background]="order.statusBg" [style.color]="order.statusColor">{{ t('public.guide.' + order.statusKey) }}</div>
                     <div class="gd-mock-line" style="height:10px;width:50px;background:var(--brand);opacity:.5;border-radius:4px"></div>
                   </div>
                 }
               </div>
             </div>
-            <p class="gd-mock-caption">Tableau de bord des commandes — vue en temps réel avec filtres par statut</p>
+            <p class="gd-mock-caption">{{ t('public.guide.ordersCaption') }}</p>
           </section>
 
           <!-- ── Section 6 : Réservations ──────────────────────── -->
           <section id="reservations" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Inclus</div>
+              <div class="gd-section-badge">{{ t('public.guide.reservationsBadge') }}</div>
               <h2 class="gd-h2">📅 {{ sections[5].title }}</h2>
-              <p class="gd-section-intro">Recevez et gérez les demandes de réservation directement depuis votre tableau de bord.</p>
+              <p class="gd-section-intro">{{ t('public.guide.reservationsIntro') }}</p>
             </div>
 
             <div class="gd-two-col">
               <div>
-                <h3 class="gd-h3">Ce que voient vos clients</h3>
-                <p>Un bouton "Réserver une table" est affiché sur votre menu public. Le client choisit la date, l'heure, le nombre de personnes et peut laisser un message. Aucune application à télécharger.</p>
-                <h3 class="gd-h3" style="margin-top:var(--space-6)">Ce que vous voyez</h3>
-                <p>Les demandes arrivent dans <strong>Administration → Réservations</strong> avec toutes les informations. Vous pouvez confirmer ou refuser chaque demande. Un e-mail est automatiquement envoyé au client.</p>
+                <h3 class="gd-h3">{{ t('public.guide.reservationsH3Client') }}</h3>
+                <p>{{ t('public.guide.reservationsPClient') }}</p>
+                <h3 class="gd-h3" style="margin-top:var(--space-6)">{{ t('public.guide.reservationsH3Admin') }}</h3>
+                <p>{{ t('public.guide.reservationsPAdmin') }}</p>
                 <div class="gd-tip-box" style="margin-top:var(--space-5)">
                   <div class="gd-tip-icon">💡</div>
-                  <p>Les réservations peuvent être filtrées par date, statut (En attente, Confirmée, Annulée) et exportées.</p>
+                  <p>{{ t('public.guide.reservationsTip') }}</p>
                 </div>
               </div>
               <!-- Mock reservation form -->
@@ -432,30 +433,30 @@ const SECTIONS: GuideSection[] = [
           <!-- ── Section 7 : Équipe ────────────────────────────── -->
           <section id="team" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge">Pro</div>
+              <div class="gd-section-badge">{{ t('public.guide.teamBadge') }}</div>
               <h2 class="gd-h2">👥 {{ sections[6].title }}</h2>
-              <p class="gd-section-intro">Donnez accès à votre tableau de bord à vos employés selon leur rôle.</p>
+              <p class="gd-section-intro">{{ t('public.guide.teamIntro') }}</p>
             </div>
 
             <div class="gd-roles-grid">
               <div class="gd-role-card">
-                <div class="gd-role-badge" style="background:#FFF5F5;color:var(--brand)">Admin</div>
-                <div class="gd-role-title">Propriétaire / Admin</div>
+                <div class="gd-role-badge" style="background:#FFF5F5;color:var(--brand)">{{ t('public.guide.teamAdminBadge') }}</div>
+                <div class="gd-role-title">{{ t('public.guide.teamAdminTitle') }}</div>
                 <ul class="gd-role-list">
-                  <li>Accès complet à toutes les fonctionnalités</li>
-                  <li>Gestion du menu, de l'équipe et de l'abonnement</li>
-                  <li>Consultation des statistiques et logs d'audit</li>
-                  <li>Paramètres du restaurant</li>
+                  <li>{{ t('public.guide.teamAdminLi1') }}</li>
+                  <li>{{ t('public.guide.teamAdminLi2') }}</li>
+                  <li>{{ t('public.guide.teamAdminLi3') }}</li>
+                  <li>{{ t('public.guide.teamAdminLi4') }}</li>
                 </ul>
               </div>
               <div class="gd-role-card">
-                <div class="gd-role-badge" style="background:#EFF6FF;color:#2563EB">Caissier</div>
-                <div class="gd-role-title">Caissier / Serveur</div>
+                <div class="gd-role-badge" style="background:#EFF6FF;color:#2563EB">{{ t('public.guide.teamCashierBadge') }}</div>
+                <div class="gd-role-title">{{ t('public.guide.teamCashierTitle') }}</div>
                 <ul class="gd-role-list">
-                  <li>Vue et gestion des commandes en cours</li>
-                  <li>Confirmation et suivi des réservations</li>
-                  <li>Lecture seule du menu</li>
-                  <li>Pas d'accès aux paramètres ni à la facturation</li>
+                  <li>{{ t('public.guide.teamCashierLi1') }}</li>
+                  <li>{{ t('public.guide.teamCashierLi2') }}</li>
+                  <li>{{ t('public.guide.teamCashierLi3') }}</li>
+                  <li>{{ t('public.guide.teamCashierLi4') }}</li>
                 </ul>
               </div>
             </div>
@@ -464,15 +465,15 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-step">
                 <div class="gd-step-num">1</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Aller dans Administration → Équipe</div>
-                  <p>Cliquez sur "Inviter un membre". Saisissez l'e-mail de votre collaborateur et sélectionnez son rôle.</p>
+                  <div class="gd-step-title">{{ t('public.guide.teamStep1Title') }}</div>
+                  <p>{{ t('public.guide.teamStep1P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">2</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Votre collaborateur reçoit un e-mail</div>
-                  <p>Il clique sur le lien d'invitation, crée son mot de passe et accède immédiatement au tableau de bord avec ses droits.</p>
+                  <div class="gd-step-title">{{ t('public.guide.teamStep2Title') }}</div>
+                  <p>{{ t('public.guide.teamStep2P') }}</p>
                 </div>
               </div>
             </div>
@@ -481,9 +482,9 @@ const SECTIONS: GuideSection[] = [
           <!-- ── Section 8 : Statistiques ─────────────────────── -->
           <section id="stats" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge gd-badge-pro">Pro</div>
+              <div class="gd-section-badge gd-badge-pro">{{ t('public.guide.statsBadge') }}</div>
               <h2 class="gd-h2">📊 {{ sections[7].title }}</h2>
-              <p class="gd-section-intro">Comprenez les tendances de votre menu et identifiez vos plats les plus populaires.</p>
+              <p class="gd-section-intro">{{ t('public.guide.statsIntro') }}</p>
             </div>
 
             <!-- Stats mock -->
@@ -495,7 +496,7 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-mock-body" style="padding:20px">
                 <!-- KPIs -->
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
-                  @for (kpi of mockKpis; track kpi.label) {
+                  @for (kpi of mockKpis; track kpi.labelKey) {
                     <div style="padding:14px;border-radius:12px;border:1px solid var(--border);background:white">
                       <div class="gd-mock-line" [style.background]="kpi.color" style="height:6px;width:50%;border-radius:4px;opacity:.5;margin-bottom:8px"></div>
                       <div class="gd-mock-line" [style.background]="kpi.color" style="height:16px;width:70%;border-radius:4px;margin-bottom:4px"></div>
@@ -514,28 +515,28 @@ const SECTIONS: GuideSection[] = [
                 </div>
               </div>
             </div>
-            <p class="gd-mock-caption">Tableau de bord statistiques — KPIs + graphe d'activité hebdomadaire</p>
+            <p class="gd-mock-caption">{{ t('public.guide.statsCaption') }}</p>
 
             <div class="gd-feature-grid" style="margin-top:var(--space-8)">
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#FFF5F5;color:var(--brand)">📈</div>
-                <div class="gd-feature-title">Vues du menu</div>
-                <p>Nombre de scans QR code et de visites uniques sur votre menu, par jour et par semaine.</p>
+                <div class="gd-feature-title">{{ t('public.guide.statsCard1Title') }}</div>
+                <p>{{ t('public.guide.statsCard1P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#EFF6FF;color:#2563EB">🍽️</div>
-                <div class="gd-feature-title">Plats populaires</div>
-                <p>Classement de vos plats les plus commandés ou les plus consultés.</p>
+                <div class="gd-feature-title">{{ t('public.guide.statsCard2Title') }}</div>
+                <p>{{ t('public.guide.statsCard2P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#F0FDF4;color:#16A34A">💰</div>
-                <div class="gd-feature-title">Revenus estimés</div>
-                <p>Suivi du chiffre d'affaires généré via les commandes en ligne sur la période sélectionnée.</p>
+                <div class="gd-feature-title">{{ t('public.guide.statsCard3Title') }}</div>
+                <p>{{ t('public.guide.statsCard3P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#FDF4FF;color:#7C3AED">📅</div>
-                <div class="gd-feature-title">Pics d'activité</div>
-                <p>Identifiez les heures et jours de la semaine où votre menu est le plus consulté.</p>
+                <div class="gd-feature-title">{{ t('public.guide.statsCard4Title') }}</div>
+                <p>{{ t('public.guide.statsCard4P') }}</p>
               </div>
             </div>
           </section>
@@ -543,9 +544,9 @@ const SECTIONS: GuideSection[] = [
           <!-- ── Section 9 : Finance ──────────────────────── -->
           <section id="finance" class="gd-section">
             <div class="gd-section-head">
-              <div class="gd-section-badge gd-badge-enterprise">Enterprise</div>
+              <div class="gd-section-badge gd-badge-enterprise">{{ t('public.guide.financeBadge') }}</div>
               <h2 class="gd-h2">💰 {{ sections[8].title }}</h2>
-              <p class="gd-section-intro">Suivez l'intégralité de vos flux financiers : revenus des commandes, entrées manuelles et dépenses classées par catégorie. Des graphes interactifs vous donnent une vision claire de la santé de votre activité.</p>
+              <p class="gd-section-intro">{{ t('public.guide.financeIntro') }}</p>
             </div>
 
             <!-- KPI cards mock -->
@@ -557,29 +558,29 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-mock-body" style="padding:20px">
                 <!-- Period pills -->
                 <div style="display:flex;gap:6px;margin-bottom:18px">
-                  @for (lbl of ["Aujourd'hui","7 jours","Ce mois","6 mois","Cette année"]; track lbl) {
-                    <div style="padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;background:white;border:1px solid var(--border);color:var(--text-secondary)">{{ lbl }}</div>
+                  @for (period of financePeriods; track period) {
+                    <div style="padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;background:white;border:1px solid var(--border);color:var(--text-secondary)">{{ t('public.guide.' + period) }}</div>
                   }
                 </div>
                 <!-- 4 KPI cards -->
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Revenus totaux</div>
+                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">{{ t('public.guide.financeKpi1') }}</div>
                     <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:2px">1 250 000 F</div>
-                    <div style="font-size:9px;color:#10b981;font-weight:600">↑ +18% vs période préc.</div>
+                    <div style="font-size:9px;color:#10b981;font-weight:600">↑ +18%</div>
                   </div>
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Dépenses totales</div>
+                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">{{ t('public.guide.financeKpi2') }}</div>
                     <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:2px">340 000 F</div>
-                    <div style="font-size:9px;color:#ef4444;font-weight:600">↑ +5% vs période préc.</div>
+                    <div style="font-size:9px;color:#ef4444;font-weight:600">↑ +5%</div>
                   </div>
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Bénéfice net</div>
+                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">{{ t('public.guide.financeKpi3') }}</div>
                     <div style="font-size:18px;font-weight:800;color:#10b981;margin-bottom:2px">910 000 F</div>
-                    <div style="font-size:9px;color:#6b7280">Bénéficiaire sur la période</div>
+                    <div style="font-size:9px;color:#6b7280">—</div>
                   </div>
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Marge nette</div>
+                    <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">{{ t('public.guide.financeKpi4') }}</div>
                     <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:6px">73%</div>
                     <div style="height:4px;background:#e5e7eb;border-radius:4px"><div style="height:100%;width:73%;background:linear-gradient(90deg,#3b82f6,#6366f1);border-radius:4px"></div></div>
                   </div>
@@ -587,7 +588,7 @@ const SECTIONS: GuideSection[] = [
                 <!-- Chart placeholder + donut -->
                 <div style="display:grid;grid-template-columns:1fr 220px;gap:10px">
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:12px">Revenus vs Dépenses</div>
+                    <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:12px">{{ t('public.guide.financeChartTitle') }}</div>
                     <div style="display:flex;align-items:flex-end;gap:5px;height:70px;padding:0 4px">
                       @for (bar of financeChartBars; track bar.l) {
                         <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
@@ -601,7 +602,7 @@ const SECTIONS: GuideSection[] = [
                     </div>
                   </div>
                   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px">
-                    <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:12px">Répartition dépenses</div>
+                    <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:12px">{{ t('public.guide.financeDonutTitle') }}</div>
                     <div style="display:flex;align-items:center;gap:10px">
                       <svg viewBox="0 0 60 60" width="60" height="60" style="flex-shrink:0">
                         <circle cx="30" cy="30" r="22" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="83 55" transform="rotate(-90 30 30)"/>
@@ -610,10 +611,10 @@ const SECTIONS: GuideSection[] = [
                         <circle cx="30" cy="30" r="22" fill="none" stroke="#8b5cf6" stroke-width="10" stroke-dasharray="5 133" stroke-dashoffset="-133" transform="rotate(-90 30 30)"/>
                       </svg>
                       <div style="display:flex;flex-direction:column;gap:5px">
-                        @for (cat of donutLegend; track cat.l) {
+                        @for (cat of donutLegend; track cat.lKey) {
                           <div style="display:flex;align-items:center;gap:5px;font-size:8px">
                             <div [style.background]="cat.c" style="width:7px;height:7px;border-radius:50%;flex-shrink:0"></div>
-                            <span style="color:#6b7280">{{ cat.l }}</span>
+                            <span style="color:#6b7280">{{ t('public.guide.' + cat.lKey) }}</span>
                           </div>
                         }
                       </div>
@@ -622,29 +623,29 @@ const SECTIONS: GuideSection[] = [
                 </div>
               </div>
             </div>
-            <p class="gd-mock-caption">Tableau de bord financier — KPIs, graphe barres groupées et répartition des dépenses</p>
+            <p class="gd-mock-caption">{{ t('public.guide.financeCaption') }}</p>
 
             <!-- Feature cards -->
             <div class="gd-feature-grid" style="margin-top:var(--space-8)">
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#FFF5F5;color:var(--brand)">📊</div>
-                <div class="gd-feature-title">KPIs en temps réel</div>
-                <p>Revenus totaux, dépenses, bénéfice net et marge en pourcentage. Chaque indicateur affiche l'évolution par rapport à la période précédente.</p>
+                <div class="gd-feature-title">{{ t('public.guide.financeCard1Title') }}</div>
+                <p>{{ t('public.guide.financeCard1P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#FFF7ED;color:#f59e0b">🧾</div>
-                <div class="gd-feature-title">Suivi des dépenses</div>
-                <p>Enregistrez vos dépenses par catégorie : <strong>Ingrédients</strong>, <strong>Outils</strong>, <strong>Accessoires</strong> ou <strong>Autre</strong>. Ajoutez un libellé, un montant, une date et des notes.</p>
+                <div class="gd-feature-title">{{ t('public.guide.financeCard2Title') }}</div>
+                <p>{{ t('public.guide.financeCard2P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#F0FDF4;color:#10b981">💵</div>
-                <div class="gd-feature-title">Revenus automatiques & manuels</div>
-                <p>Les commandes validées sont intégrées automatiquement. Ajoutez aussi des entrées manuelles (traiteur, vente directe…) pour un tableau complet.</p>
+                <div class="gd-feature-title">{{ t('public.guide.financeCard3Title') }}</div>
+                <p>{{ t('public.guide.financeCard3P') }}</p>
               </div>
               <div class="gd-feature-card">
                 <div class="gd-feature-icon" style="background:#EDE9FE;color:#6366f1">📈</div>
-                <div class="gd-feature-title">Graphes sur 5 périodes</div>
-                <p>Analysez vos flux sur la journée (par heure), 7 jours, le mois, les 6 derniers mois ou l'année complète. Revenus, dépenses et bénéfice net sur le même graphe.</p>
+                <div class="gd-feature-title">{{ t('public.guide.financeCard4Title') }}</div>
+                <p>{{ t('public.guide.financeCard4P') }}</p>
               </div>
             </div>
 
@@ -653,29 +654,29 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-step">
                 <div class="gd-step-num">1</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Accéder à la section Finance</div>
-                  <p>Dans le menu latéral de votre tableau de bord, cliquez sur <strong>Finance</strong>. Cette section est réservée aux comptes sur le plan Enterprise.</p>
+                  <div class="gd-step-title">{{ t('public.guide.financeStep1Title') }}</div>
+                  <p>{{ t('public.guide.financeStep1P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">2</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Choisir la période d'analyse</div>
-                  <p>Utilisez le sélecteur en haut à droite pour filtrer : <em>Aujourd'hui</em>, <em>7 jours</em>, <em>Ce mois</em>, <em>6 mois</em> ou <em>Cette année</em>. Les KPIs et graphes se mettent à jour instantanément.</p>
+                  <div class="gd-step-title">{{ t('public.guide.financeStep2Title') }}</div>
+                  <p>{{ t('public.guide.financeStep2P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">3</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Enregistrer une dépense</div>
-                  <p>Dans l'onglet <strong>Dépenses</strong>, cliquez sur <em>Ajouter une dépense</em>. Sélectionnez la catégorie (Ingrédients, Outils, Accessoires, Autre), renseignez le libellé, le montant et la date.</p>
+                  <div class="gd-step-title">{{ t('public.guide.financeStep3Title') }}</div>
+                  <p>{{ t('public.guide.financeStep3P') }}</p>
                 </div>
               </div>
               <div class="gd-step">
                 <div class="gd-step-num">4</div>
                 <div class="gd-step-content">
-                  <div class="gd-step-title">Ajouter un revenu manuel</div>
-                  <p>Basculez sur l'onglet <strong>Revenus manuels</strong> pour saisir une entrée d'argent hors commandes : vente de traiteur, prestation spéciale, subvention…</p>
+                  <div class="gd-step-title">{{ t('public.guide.financeStep4Title') }}</div>
+                  <p>{{ t('public.guide.financeStep4P') }}</p>
                 </div>
               </div>
             </div>
@@ -684,7 +685,7 @@ const SECTIONS: GuideSection[] = [
               <div class="gd-tip-icon">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               </div>
-              <p><strong>Astuce :</strong> Le graphe en donut à droite décompose vos dépenses par catégorie. Si une catégorie représente une part trop importante (ex. Ingrédients > 60%), c'est un signal pour renégocier vos fournisseurs.</p>
+              <p>{{ t('public.guide.financeTip') }}</p>
             </div>
           </section>
 
@@ -692,11 +693,11 @@ const SECTIONS: GuideSection[] = [
           <div class="gd-final-cta">
             <div class="gd-final-cta-inner">
               <div class="gd-final-cta-icon">🚀</div>
-              <h2 class="gd-final-cta-h2">Prêt à digitaliser votre restaurant ?</h2>
-              <p>Créez votre menu en 5 minutes. Aucune carte bancaire requise pour commencer.</p>
+              <h2 class="gd-final-cta-h2">{{ t('public.guide.ctaH2') }}</h2>
+              <p>{{ t('public.guide.ctaSub') }}</p>
               <div class="gd-final-cta-actions">
-                <a routerLink="/register" class="gd-final-btn-primary">Créer mon compte gratuitement</a>
-                <a routerLink="/pricing" class="gd-final-btn-ghost">Voir les tarifs</a>
+                <a routerLink="/register" class="gd-final-btn-primary">{{ t('public.guide.ctaPrimary') }}</a>
+                <a routerLink="/pricing" class="gd-final-btn-ghost">{{ t('public.guide.ctaGhost') }}</a>
               </div>
             </div>
           </div>
@@ -708,15 +709,17 @@ const SECTIONS: GuideSection[] = [
     <!-- Footer -->
     <footer class="gd-footer">
       <div class="gd-footer-inner">
-        <span>© 2026 SaeMenus. Tous droits réservés.</span>
+        <span>{{ t('public.guide.footerCopy') }}</span>
         <div class="gd-footer-links">
-          <a routerLink="/" class="gd-footer-link">Accueil</a>
-          <a routerLink="/pricing" class="gd-footer-link">Tarifs</a>
-          <a routerLink="/faq" class="gd-footer-link">FAQ</a>
-          <a routerLink="/privacy" class="gd-footer-link">Confidentialité</a>
+          <a routerLink="/" class="gd-footer-link">{{ t('public.guide.footerHome') }}</a>
+          <a routerLink="/pricing" class="gd-footer-link">{{ t('public.guide.footerPricing') }}</a>
+          <a routerLink="/faq" class="gd-footer-link">{{ t('public.guide.footerFaq') }}</a>
+          <a routerLink="/privacy" class="gd-footer-link">{{ t('public.guide.footerPrivacy') }}</a>
         </div>
       </div>
     </footer>
+
+    </ng-container>
   `,
   styles: [`
     :host { display: block; font-family: var(--font-body); color: var(--text-primary); }
@@ -1050,31 +1053,31 @@ export class GuideComponent implements AfterViewInit, OnDestroy {
   private scrollHandler?: () => void
 
   readonly templates = [
-    { name: 'Classique',  desc: 'Simple & lisible', color: '#C0392B', bg: '#FFF5F5', preview: `<div style="padding:8px;width:100%;height:100%"><div style="height:20px;background:#C0392B;border-radius:4px 4px 0 0;margin-bottom:6px"></div><div style="display:flex;flex-direction:column;gap:4px;padding:0 6px"><div style="height:6px;background:#e0e0e0;border-radius:3px;width:80%"></div><div style="height:6px;background:#e0e0e0;border-radius:3px;width:60%"></div><div style="height:6px;background:#e0e0e0;border-radius:3px;width:70%"></div></div></div>` },
-    { name: 'Magazine',   desc: 'Texte + image',    color: '#2563EB', bg: '#EFF6FF', preview: `<div style="padding:8px;width:100%;height:100%"><div style="height:16px;background:#2563EB;border-radius:4px;margin-bottom:6px"></div><div style="display:flex;flex-direction:column;gap:4px;padding:0 4px"><div style="display:flex;gap:4px;height:22px"><div style="width:28px;background:#d0d0d0;border-radius:3px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:5px;background:#e0e0e0;border-radius:2px"></div><div style="height:4px;background:#ebebeb;border-radius:2px;width:70%"></div></div></div><div style="display:flex;gap:4px;height:22px"><div style="width:28px;background:#d0d0d0;border-radius:3px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:5px;background:#e0e0e0;border-radius:2px"></div><div style="height:4px;background:#ebebeb;border-radius:2px;width:60%"></div></div></div></div></div>` },
-    { name: 'Immersif',   desc: 'Full image',       color: '#16A34A', bg: '#111',    preview: `<div style="position:relative;width:100%;height:100%;background:linear-gradient(180deg,#1a1a1a 0%,#333 100%)"><div style="position:absolute;bottom:10px;left:8px;right:8px"><div style="height:8px;background:rgba(255,255,255,.9);border-radius:3px;margin-bottom:4px;width:70%"></div><div style="height:6px;background:rgba(255,255,255,.5);border-radius:3px;width:50%"></div></div><div style="position:absolute;top:8px;left:8px;right:8px;height:10px;background:rgba(255,255,255,.1);border-radius:3px"></div></div>` },
-    { name: 'Zen',        desc: 'Minimaliste',      color: '#D97706', bg: '#FFFBEB', preview: `<div style="padding:10px 8px;width:100%;height:100%"><div style="text-align:center;margin-bottom:8px"><div style="height:8px;background:#D97706;border-radius:3px;width:50%;margin:0 auto 4px"></div><div style="height:5px;background:#e8d5b0;border-radius:2px;width:70%;margin:0 auto"></div></div><div style="display:flex;flex-direction:column;gap:5px"><div style="height:5px;background:#e0e0e0;border-radius:2px;width:100%"></div><div style="height:5px;background:#e0e0e0;border-radius:2px;width:85%"></div><div style="height:5px;background:#e0e0e0;border-radius:2px;width:90%"></div></div></div>` },
-    { name: 'Bento',      desc: 'Grille moderne',   color: '#7C3AED', bg: '#F5F3FF', preview: `<div style="padding:6px;width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px"><div style="background:#d4b8ff;border-radius:4px"></div><div style="background:#e0d0ff;border-radius:4px"></div><div style="background:#e0d0ff;border-radius:4px;grid-column:span 2;height:28px"></div><div style="background:#d4b8ff;border-radius:4px"></div><div style="background:#ebe5ff;border-radius:4px"></div></div>` },
+    { nameKey: 'tplClassique', descKey: 'tplClassiqueDesc', color: '#C0392B', bg: '#FFF5F5', preview: `<div style="padding:8px;width:100%;height:100%"><div style="height:20px;background:#C0392B;border-radius:4px 4px 0 0;margin-bottom:6px"></div><div style="display:flex;flex-direction:column;gap:4px;padding:0 6px"><div style="height:6px;background:#e0e0e0;border-radius:3px;width:80%"></div><div style="height:6px;background:#e0e0e0;border-radius:3px;width:60%"></div><div style="height:6px;background:#e0e0e0;border-radius:3px;width:70%"></div></div></div>` },
+    { nameKey: 'tplMagazine',  descKey: 'tplMagazineDesc',  color: '#2563EB', bg: '#EFF6FF', preview: `<div style="padding:8px;width:100%;height:100%"><div style="height:16px;background:#2563EB;border-radius:4px;margin-bottom:6px"></div><div style="display:flex;flex-direction:column;gap:4px;padding:0 4px"><div style="display:flex;gap:4px;height:22px"><div style="width:28px;background:#d0d0d0;border-radius:3px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:5px;background:#e0e0e0;border-radius:2px"></div><div style="height:4px;background:#ebebeb;border-radius:2px;width:70%"></div></div></div><div style="display:flex;gap:4px;height:22px"><div style="width:28px;background:#d0d0d0;border-radius:3px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center"><div style="height:5px;background:#e0e0e0;border-radius:2px"></div><div style="height:4px;background:#ebebeb;border-radius:2px;width:60%"></div></div></div></div></div>` },
+    { nameKey: 'tplImmersif',  descKey: 'tplImmersifDesc',  color: '#16A34A', bg: '#111',    preview: `<div style="position:relative;width:100%;height:100%;background:linear-gradient(180deg,#1a1a1a 0%,#333 100%)"><div style="position:absolute;bottom:10px;left:8px;right:8px"><div style="height:8px;background:rgba(255,255,255,.9);border-radius:3px;margin-bottom:4px;width:70%"></div><div style="height:6px;background:rgba(255,255,255,.5);border-radius:3px;width:50%"></div></div><div style="position:absolute;top:8px;left:8px;right:8px;height:10px;background:rgba(255,255,255,.1);border-radius:3px"></div></div>` },
+    { nameKey: 'tplZen',       descKey: 'tplZenDesc',       color: '#D97706', bg: '#FFFBEB', preview: `<div style="padding:10px 8px;width:100%;height:100%"><div style="text-align:center;margin-bottom:8px"><div style="height:8px;background:#D97706;border-radius:3px;width:50%;margin:0 auto 4px"></div><div style="height:5px;background:#e8d5b0;border-radius:2px;width:70%;margin:0 auto"></div></div><div style="display:flex;flex-direction:column;gap:5px"><div style="height:5px;background:#e0e0e0;border-radius:2px;width:100%"></div><div style="height:5px;background:#e0e0e0;border-radius:2px;width:85%"></div><div style="height:5px;background:#e0e0e0;border-radius:2px;width:90%"></div></div></div>` },
+    { nameKey: 'tplBento',     descKey: 'tplBentoDesc',     color: '#7C3AED', bg: '#F5F3FF', preview: `<div style="padding:6px;width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px"><div style="background:#d4b8ff;border-radius:4px"></div><div style="background:#e0d0ff;border-radius:4px"></div><div style="background:#e0d0ff;border-radius:4px;grid-column:span 2;height:28px"></div><div style="background:#d4b8ff;border-radius:4px"></div><div style="background:#ebe5ff;border-radius:4px"></div></div>` },
   ]
 
   readonly orderBadges = [
-    { label: 'En attente', bg: '#FFF7ED', color: '#C2410C' },
-    { label: 'En préparation', bg: '#EFF6FF', color: '#1D4ED8' },
-    { label: 'Prêt', bg: '#F0FDF4', color: '#15803D' },
-    { label: 'Livré', bg: '#F9FAFB', color: '#6B7280' },
+    { labelKey: 'ordersStatusPending',   bg: '#FFF7ED', color: '#C2410C' },
+    { labelKey: 'ordersStatusPreparing', bg: '#EFF6FF', color: '#1D4ED8' },
+    { labelKey: 'ordersStatusReady',     bg: '#F0FDF4', color: '#15803D' },
+    { labelKey: 'ordersStatusDelivered', bg: '#F9FAFB', color: '#6B7280' },
   ]
 
   readonly mockOrders = [
-    { num: '042', status: 'En préparation', statusBg: '#EFF6FF', statusColor: '#1D4ED8' },
-    { num: '041', status: 'En attente',     statusBg: '#FFF7ED', statusColor: '#C2410C' },
-    { num: '040', status: 'Prêt',           statusBg: '#F0FDF4', statusColor: '#15803D' },
+    { num: '042', statusKey: 'ordersStatusPreparing', statusBg: '#EFF6FF', statusColor: '#1D4ED8' },
+    { num: '041', statusKey: 'ordersStatusPending',   statusBg: '#FFF7ED', statusColor: '#C2410C' },
+    { num: '040', statusKey: 'ordersStatusReady',     statusBg: '#F0FDF4', statusColor: '#15803D' },
   ]
 
   readonly mockKpis = [
-    { label: 'Scans',    color: '#C0392B' },
-    { label: 'Commandes', color: '#2563EB' },
-    { label: 'Revenus',  color: '#16A34A' },
-    { label: 'Plats vendus', color: '#7C3AED' },
+    { labelKey: 'statsKpi1', color: '#C0392B' },
+    { labelKey: 'statsKpi2', color: '#2563EB' },
+    { labelKey: 'statsKpi3', color: '#16A34A' },
+    { labelKey: 'statsKpi4', color: '#7C3AED' },
   ]
 
   readonly chartBars = [45, 60, 38, 72, 55, 80, 65]
@@ -1086,11 +1089,13 @@ export class GuideComponent implements AfterViewInit, OnDestroy {
   ]
 
   readonly donutLegend = [
-    { l: 'Ingrédients', c: '#f59e0b' },
-    { l: 'Outils',      c: '#6366f1' },
-    { l: 'Accessoires', c: '#3b82f6' },
-    { l: 'Autre',       c: '#8b5cf6' },
+    { lKey: 'financeDonut1', c: '#f59e0b' },
+    { lKey: 'financeDonut2', c: '#6366f1' },
+    { lKey: 'financeDonut3', c: '#3b82f6' },
+    { lKey: 'financeDonut4', c: '#8b5cf6' },
   ]
+
+  readonly financePeriods = ['financePeriodToday', 'financePeriod7', 'financePeriodMonth', 'financePeriod6m', 'financePeriodYear']
 
   // QR code pattern (10x10 deterministic decorative)
   readonly qrCells: boolean[] = (() => {

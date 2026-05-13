@@ -35,7 +35,6 @@
     "langDe": "Allemand",
     "langZh": "Chinois simplifié"
   },
-
   "nav": {
     "dashboard": "Tableau de bord",
     "categories": "Catégories",
@@ -60,7 +59,6 @@
     "ordersLocked": "Disponible sur le plan Enterprise",
     "reservationsLocked": "Disponible sur le plan Enterprise"
   },
-
   "auth": {
     "appName": "SaeMenus",
     "tagline": "La vitrine digitale pour vos plats",
@@ -128,7 +126,6 @@
       "submitting": "Enregistrement…"
     }
   },
-
   "dashboard": {
     "greeting": "Bonjour, {{ name }}",
     "subtitle": "Voici un aperçu de votre menu aujourd'hui",
@@ -156,7 +153,6 @@
     "plan": "Plan {{ name }}",
     "upgradePro": "Passer Pro"
   },
-
   "categories": {
     "title": "Catégories",
     "subtitle": "Organisez votre menu par sections",
@@ -184,7 +180,6 @@
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
     "errorGeneric": "Une erreur est survenue."
   },
-
   "menuItems": {
     "title": "Plats du menu",
     "subtitle": "{{ count }} plat(s) au total",
@@ -227,7 +222,6 @@
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
     "errorGeneric": "Une erreur est survenue."
   },
-
   "restaurant": {
     "title": "Informations restaurant",
     "subtitle": "Identité visuelle et horaires",
@@ -271,7 +265,6 @@
       "sunday": "Dimanche"
     }
   },
-
   "team": {
     "title": "Équipe",
     "subtitle": "{{ count }} caissier{{ plural }} dans votre équipe",
@@ -304,7 +297,6 @@
     "errorUpdate": "Erreur lors de la mise à jour.",
     "errorDelete": "Erreur lors de la suppression."
   },
-
   "subscription": {
     "title": "Abonnement",
     "subtitle": "Gérez votre plan et votre facturation",
@@ -333,7 +325,6 @@
       "suspended": "Suspendu"
     }
   },
-
   "stats": {
     "title": "Statistiques avancées",
     "subtitle": "Performances de votre menu — 30 derniers jours",
@@ -364,7 +355,6 @@
     "itemCountPlural": "{{ count }} plats",
     "footerNote": "Les vues correspondent aux ouvertures du menu public par vos clients. Les données sont mises à jour en temps réel."
   },
-
   "api": {
     "title": "API dédiée",
     "subtitle": "Intégrez votre menu dans vos propres applications",
@@ -377,7 +367,6 @@
     "regenerate": "Régénérer",
     "wip": "La gestion des clés API est en cours de développement."
   },
-
   "auditLogs": {
     "title": "Journal d'audit",
     "subtitle": "Historique de toutes les actions effectuées sur votre compte",
@@ -420,13 +409,11 @@
       "reservation.status_updated": "Statut de réservation modifié"
     }
   },
-
   "planLimit": {
     "nearLimit": "Vous approchez la limite de votre plan.",
     "atLimit": "Limite atteinte.",
     "upgrade": "Passer à un plan supérieur"
   },
-
   "superAdmin": {
     "layout": {
       "title": "Super Admin",
@@ -542,7 +529,6 @@
       "blocked": "Bloqué"
     }
   },
-
   "public": {
     "menu": {
       "searchPlaceholder": "Rechercher un plat…",
@@ -790,10 +776,242 @@
       "faqTitle": "Questions fréquentes",
       "ctaTitle": "Prêt à digitaliser votre menu ?",
       "ctaBtn": "Commencer gratuitement",
-      "footerRights": "Tous droits réservés."
+      "footerRights": "Tous droits réservés.",
+      "navDownload": "Applications",
+      "downloadTag": "Applications",
+      "downloadH2": "Disponible sur tous vos appareils",
+      "downloadSub": "Une app mobile pour vos clients, une app desktop pour gérer votre restaurant — tout est pensé pour vous.",
+      "downloadSoonLabel": "Bientôt disponible",
+      "downloadReadyLabel": "Disponible maintenant",
+      "downloadMobileTitle": "Application Mobile",
+      "downloadMobileDesc": "Vos clients scannent le QR code et accèdent à votre menu, passent commande et paient depuis leur téléphone.",
+      "downloadOnThe": "Télécharger sur l'",
+      "downloadGetOn": "Disponible sur",
+      "downloadMobileSoon": "Lancement prévu prochainement sur iOS & Android",
+      "downloadDesktopTitle": "Application Desktop",
+      "downloadDesktopDesc": "Gérez votre menu, vos commandes et votre équipe depuis Windows. Rapide, fluide et toujours connecté à votre compte.",
+      "downloadDesktopBtn": "Télécharger pour Windows",
+      "downloadDesktopMeta": "Windows 10 / 11 · 64-bit · v1.0.0",
+      "footerLinkGuide": "Guide d'utilisation",
+      "footerLinkFaq": "FAQ"
+    },
+    "faq": {
+      "navLogin": "Connexion",
+      "navCta": "Commencer gratuitement",
+      "back": "Retour",
+      "heroTag": "Support",
+      "heroH1": "Questions fréquentes",
+      "heroSub": "Tout ce que vous devez savoir sur SaeMenus. Vous ne trouvez pas votre réponse ?",
+      "heroContact": "Contactez-nous",
+      "catAll": "Tous",
+      "catGeneral": "Général",
+      "catAccount": "Compte & Plans",
+      "catMenu": "Menu & Contenu",
+      "catOrders": "Commandes & Réservations",
+      "catTech": "Technique",
+      "q0": "Qu'est-ce que SaeMenus ?",
+      "a0": "SaeMenus est une plateforme SaaS qui permet aux restaurants de créer un menu digital accessible via QR code. Les clients scannent le QR code avec leur smartphone et consultent le menu, passent des commandes ou réservent une table — sans aucune application à télécharger.",
+      "q1": "Comment fonctionne le QR code ?",
+      "a1": "Après avoir créé votre menu, SaeMenus génère automatiquement un QR code unique pour votre restaurant. Vous pouvez le télécharger, l'imprimer sur vos tables, menus physiques ou vitrine. Chaque scan affiche votre menu en temps réel — toute modification que vous faites est visible instantanément par vos clients.",
+      "q2": "Faut-il une application pour utiliser SaeMenus ?",
+      "a2": "Non. SaeMenus est accessible directement depuis le navigateur de n'importe quel smartphone. Vos clients n'ont rien à installer. De votre côté, le tableau de bord d'administration est accessible depuis un navigateur web sur ordinateur ou mobile.",
+      "q3": "Y a-t-il une période d'essai gratuite ?",
+      "a3": "Oui, le plan Gratuit est disponible sans limite de temps. Il vous permet de créer un menu avec jusqu'à 3 catégories, de générer votre QR code et de recevoir des réservations de base. Vous pouvez upgrader vers un plan payant à tout moment depuis votre tableau de bord.",
+      "q4": "Quelle est la différence entre les plans ?",
+      "a4": "Le plan Gratuit couvre l'essentiel : menu digital + QR code. Le plan Pro ajoute les commandes en ligne, les réservations avancées, les statistiques détaillées et la gestion d'équipe. Le plan Enterprise ajoute l'accès API, les QR codes cadeaux et un support prioritaire dédié. Consultez la page Tarifs pour le détail complet.",
+      "q5": "Puis-je changer de plan à tout moment ?",
+      "a5": "Oui. Vous pouvez upgrader immédiatement depuis Tableau de bord → Abonnement. Le changement est effectif instantanément et vous n'êtes facturé que pour la période restante. Pour downgrader, le changement prend effet à la prochaine date de renouvellement.",
+      "q6": "Comment fonctionne la facturation ?",
+      "a6": "Les paiements sont mensuels ou annuels (avec 20% de réduction). Nous utilisons CinetPay pour le traitement sécurisé des paiements. Vous recevez une facture par e-mail à chaque renouvellement. Aucun engagement : vous pouvez résilier à tout moment.",
+      "q7": "Combien de plats puis-je ajouter à mon menu ?",
+      "a7": "Le plan Gratuit permet jusqu'à 30 plats. Le plan Pro monte à 200 plats. Le plan Enterprise est illimité. Chaque plat peut avoir un nom, une description, un prix, une image et des badges (Nouveau, Populaire, Végétarien, etc.).",
+      "q8": "Puis-je rendre certains plats indisponibles temporairement ?",
+      "a8": "Oui. Dans le tableau de bord, vous pouvez activer ou désactiver un plat en un clic. Un plat désactivé n'apparaît plus dans le menu public mais ses données sont conservées. Idéal pour gérer les ruptures de stock ou les plats saisonniers.",
+      "q9": "Quels formats d'images sont acceptés ?",
+      "a9": "JPEG, PNG et WebP sont acceptés. La taille maximale est de 5 Mo par image. Les images sont automatiquement optimisées et redimensionnées pour un chargement rapide sur mobile. Nous recommandons un ratio 4:3 ou 16:9 pour un rendu optimal.",
+      "q10": "Puis-je avoir plusieurs menus (déjeuner, dîner, carte des vins) ?",
+      "a10": "Oui. Vous pouvez créer autant de catégories que votre plan le permet. Organisez-les librement : Entrées, Plats, Desserts, Boissons, Menu du jour, Carte des vins… L'ordre d'affichage est entièrement personnalisable par glisser-déposer.",
+      "q11": "Comment fonctionnent les commandes en ligne ?",
+      "a11": "Avec le plan Pro ou Enterprise, vos clients peuvent ajouter des plats à leur panier directement depuis le menu et passer commande en indiquant leur nom, téléphone et numéro de table. Vous recevez les commandes en temps réel dans votre tableau de bord avec le statut et les détails.",
+      "q12": "Comment fonctionnent les réservations ?",
+      "a12": "Les clients peuvent envoyer une demande de réservation (date, heure, nombre de personnes, message) directement depuis le menu. Vous recevez les demandes dans votre dashboard et pouvez les confirmer ou les refuser. Un e-mail de confirmation est automatiquement envoyé au client.",
+      "q13": "Qu'est-ce que la fonctionnalité QR Cadeau ?",
+      "a13": "Disponible en plan Enterprise, la fonctionnalité QR Cadeau permet à un client d'offrir un repas à quelqu'un. Il achète un bon cadeau, reçoit un QR code unique à offrir, et le bénéficiaire peut commander avec ce code lors de sa visite au restaurant.",
+      "q14": "Le menu est-il optimisé pour mobile ?",
+      "a14": "Oui, c'est la priorité. SaeMenus est conçu mobile-first. Vos clients accèdent au menu depuis leur smartphone et bénéficient d'une expérience fluide et rapide. Plusieurs templates visuels sont disponibles (Classique, Magazine, Immersif, Zen, Bento) adaptés à tous les styles de restaurant.",
+      "q15": "Mon menu est-il toujours accessible si internet est lent ?",
+      "a15": "Le menu est optimisé pour les connexions lentes : images compressées, chargement progressif et mise en cache navigateur. Les pages se chargent rapidement même avec une connexion 3G.",
+      "q16": "Puis-je accéder à une API ?",
+      "a16": "Oui, le plan Enterprise inclut un accès API REST documenté pour intégrer SaeMenus à votre propre système (caisse, logiciel de gestion, etc.). L'API permet de récupérer les commandes, les réservations et de mettre à jour le menu programmatiquement.",
+      "ctaTitle": "Vous n'avez pas trouvé votre réponse ?",
+      "ctaSub": "Notre équipe répond sous 24h en semaine.",
+      "ctaPrimary": "Contacter le support",
+      "ctaGhost": "Voir le guide",
+      "footerCopy": "© 2026 SaeMenus. Tous droits réservés.",
+      "footerHome": "Accueil",
+      "footerPricing": "Tarifs",
+      "footerGuide": "Guide",
+      "footerPrivacy": "Confidentialité"
+    },
+    "guide": {
+      "navFaq": "FAQ",
+      "navCta": "Commencer gratuitement",
+      "back": "Retour",
+      "heroTag": "Documentation",
+      "heroH1": "Guide d'utilisation SaeMenus",
+      "heroSub": "Tout ce qu'il faut savoir pour créer, configurer et gérer votre restaurant digital en quelques minutes.",
+      "tocTitle": "Dans ce guide",
+      "sidebarCtaTitle": "Prêt à démarrer ?",
+      "sidebarCtaBtn": "Créer mon compte",
+      "startLabel": "Démarrage",
+      "menuLabel": "Menu",
+      "appearanceLabel": "Apparence",
+      "qrcodeLabel": "QR Code",
+      "ordersLabel": "Commandes",
+      "reservationsLabel": "Réservations",
+      "teamLabel": "Équipe",
+      "statsLabel": "Statistiques",
+      "financeLabel": "Finance",
+      "ctaH2": "Prêt à digitaliser votre restaurant ?",
+      "ctaSub": "Créez votre menu en 5 minutes. Aucune carte bancaire requise pour commencer.",
+      "ctaPrimary": "Créer mon compte gratuitement",
+      "ctaGhost": "Voir les tarifs",
+      "footerCopy": "© 2026 SaeMenus. Tous droits réservés.",
+      "footerHome": "Accueil",
+      "footerPricing": "Tarifs",
+      "footerFaq": "FAQ",
+      "footerPrivacy": "Confidentialité",
+      "startBadge": "Étape 1",
+      "startIntro": "En moins de 5 minutes, votre menu est en ligne. Voici comment.",
+      "startStep1Title": "Créer votre compte",
+      "startStep1P": "Rendez-vous sur saemenus.com/register. Renseignez les informations de votre restaurant : nom, adresse, téléphone, et créez votre identifiant avec votre e-mail et un mot de passe sécurisé.",
+      "startStep2Title": "Configurer votre profil restaurant",
+      "startStep2P": "Dans Administration → Infos restaurant, ajoutez votre logo, une description, vos horaires d'ouverture et la devise de votre pays. Ces informations apparaissent en haut de votre menu public.",
+      "startStep3Title": "Choisir votre abonnement",
+      "startStep3P": "Commencez avec le plan Gratuit pour tester la plateforme. Upgradez vers Pro lorsque vous souhaitez activer les commandes en ligne et les statistiques avancées.",
+      "startCaption": "Formulaire d'inscription — étape 1 sur 2",
+      "menuBadge": "Étape 2",
+      "menuIntro": "Construisez votre menu en quelques clics. Catégories, plats, prix, images — tout est gérable depuis le tableau de bord.",
+      "menuCard1Title": "Créer une catégorie",
+      "menuCard1P": "Organisez votre menu en sections : Entrées, Plats, Desserts, Boissons… Réorganisez-les par glisser-déposer.",
+      "menuCard2Title": "Ajouter un plat",
+      "menuCard2P": "Nom, description, prix, photo, badges (Nouveau, Populaire, Végétarien…) et statut de disponibilité.",
+      "menuCard3Title": "Modifier en direct",
+      "menuCard3P": "Toute modification est visible instantanément par vos clients. Pas de publication manuelle.",
+      "menuCard4Title": "Désactiver un plat",
+      "menuCard4P": "Rupture de stock ? Désactivez un plat en un clic. Il disparaît du menu mais ses données sont conservées.",
+      "menuCaption": "Vue de gestion des plats — liste avec statut actif/inactif",
+      "appearanceBadge": "Étape 3",
+      "appearanceIntro": "Choisissez parmi 5 templates visuels et adaptez les couleurs à votre identité.",
+      "appearanceTip": "Astuce : La couleur de marque est utilisée pour les boutons, badges et éléments d'accentuation de votre menu. Choisissez-la en accord avec votre logo. Changeable à tout moment depuis Infos restaurant → Couleur de marque.",
+      "tplClassique": "Classique",
+      "tplClassiqueDesc": "Simple & lisible",
+      "tplMagazine": "Magazine",
+      "tplMagazineDesc": "Texte + image",
+      "tplImmersif": "Immersif",
+      "tplImmersifDesc": "Full image",
+      "tplZen": "Zen",
+      "tplZenDesc": "Minimaliste",
+      "tplBento": "Bento",
+      "tplBentoDesc": "Grille moderne",
+      "qrcodeBadge": "Étape 4",
+      "qrcodeIntro": "Votre QR code est généré automatiquement. Imprimez-le et placez-le sur vos tables.",
+      "qrcodeStep1Title": "Accéder au tableau de bord",
+      "qrcodeStep1P": "Dans Administration → Infos restaurant, vous trouverez votre QR code dans la section dédiée.",
+      "qrcodeStep2Title": "Télécharger en haute résolution",
+      "qrcodeStep2P": "Le QR code est disponible en format PNG haute résolution adapté à l'impression sur supports physiques.",
+      "qrcodeStep3Title": "Partager le lien direct",
+      "qrcodeStep3P": "Copiez l'URL unique de votre menu pour la partager sur vos réseaux sociaux, Google My Business ou WhatsApp.",
+      "ordersBadge": "Pro",
+      "ordersIntro": "Avec le plan Pro, vos clients commandent directement depuis leur smartphone. Les commandes arrivent en temps réel dans votre dashboard.",
+      "ordersFlow1Title": "Client scanne",
+      "ordersFlow1Desc": "Il consulte le menu, ajoute des plats au panier et valide sa commande avec son nom et numéro de table.",
+      "ordersFlow2Title": "Vous recevez",
+      "ordersFlow2Desc": "La commande apparaît immédiatement dans Administration → Commandes avec tous les détails.",
+      "ordersFlow3Title": "Vous traitez",
+      "ordersFlow3Desc": "Changez le statut : En attente → En préparation → Prêt → Livré. Le suivi est complet.",
+      "ordersStatusPending": "En attente",
+      "ordersStatusPreparing": "En préparation",
+      "ordersStatusReady": "Prêt",
+      "ordersStatusDelivered": "Livré",
+      "ordersCaption": "Tableau de bord des commandes — vue en temps réel avec filtres par statut",
+      "reservationsBadge": "Inclus",
+      "reservationsIntro": "Recevez et gérez les demandes de réservation directement depuis votre tableau de bord.",
+      "reservationsH3Client": "Ce que voient vos clients",
+      "reservationsPClient": "Un bouton Réserver une table est affiché sur votre menu public. Le client choisit la date, l'heure, le nombre de personnes et peut laisser un message. Aucune application à télécharger.",
+      "reservationsH3Admin": "Ce que vous voyez",
+      "reservationsPAdmin": "Les demandes arrivent dans Administration → Réservations avec toutes les informations. Vous pouvez confirmer ou refuser chaque demande. Un e-mail est automatiquement envoyé au client.",
+      "reservationsTip": "Les réservations peuvent être filtrées par date, statut (En attente, Confirmée, Annulée) et exportées.",
+      "teamBadge": "Pro",
+      "teamIntro": "Donnez accès à votre tableau de bord à vos employés selon leur rôle.",
+      "teamAdminBadge": "Admin",
+      "teamAdminTitle": "Propriétaire / Admin",
+      "teamAdminLi1": "Accès complet à toutes les fonctionnalités",
+      "teamAdminLi2": "Gestion du menu, de l'équipe et de l'abonnement",
+      "teamAdminLi3": "Consultation des statistiques et logs d'audit",
+      "teamAdminLi4": "Paramètres du restaurant",
+      "teamCashierBadge": "Caissier",
+      "teamCashierTitle": "Caissier / Serveur",
+      "teamCashierLi1": "Vue et gestion des commandes en cours",
+      "teamCashierLi2": "Confirmation et suivi des réservations",
+      "teamCashierLi3": "Lecture seule du menu",
+      "teamCashierLi4": "Pas d'accès aux paramètres ni à la facturation",
+      "teamStep1Title": "Aller dans Administration → Équipe",
+      "teamStep1P": "Cliquez sur Inviter un membre. Saisissez l'e-mail de votre collaborateur et sélectionnez son rôle.",
+      "teamStep2Title": "Votre collaborateur reçoit un e-mail",
+      "teamStep2P": "Il clique sur le lien d'invitation, crée son mot de passe et accède immédiatement au tableau de bord avec ses droits.",
+      "statsBadge": "Pro",
+      "statsIntro": "Comprenez les tendances de votre menu et identifiez vos plats les plus populaires.",
+      "statsKpi1": "Scans",
+      "statsKpi2": "Commandes",
+      "statsKpi3": "Revenus",
+      "statsKpi4": "Plats vendus",
+      "statsCaption": "Tableau de bord statistiques — KPIs + graphe d'activité hebdomadaire",
+      "statsCard1Title": "Vues du menu",
+      "statsCard1P": "Nombre de scans QR code et de visites uniques sur votre menu, par jour et par semaine.",
+      "statsCard2Title": "Plats populaires",
+      "statsCard2P": "Classement de vos plats les plus commandés ou les plus consultés.",
+      "statsCard3Title": "Revenus estimés",
+      "statsCard3P": "Suivi du chiffre d'affaires généré via les commandes en ligne sur la période sélectionnée.",
+      "statsCard4Title": "Pics d'activité",
+      "statsCard4P": "Identifiez les heures et jours de la semaine où votre menu est le plus consulté.",
+      "financeBadge": "Enterprise",
+      "financeIntro": "Suivez l'intégralité de vos flux financiers : revenus des commandes, entrées manuelles et dépenses classées par catégorie. Des graphes interactifs vous donnent une vision claire de la santé de votre activité.",
+      "financePeriodToday": "Aujourd'hui",
+      "financePeriod7": "7 jours",
+      "financePeriodMonth": "Ce mois",
+      "financePeriod6m": "6 mois",
+      "financePeriodYear": "Cette année",
+      "financeKpi1": "Revenus totaux",
+      "financeKpi2": "Dépenses totales",
+      "financeKpi3": "Bénéfice net",
+      "financeKpi4": "Marge nette",
+      "financeChartTitle": "Revenus vs Dépenses",
+      "financeDonutTitle": "Répartition dépenses",
+      "financeDonut1": "Ingrédients",
+      "financeDonut2": "Outils",
+      "financeDonut3": "Accessoires",
+      "financeDonut4": "Autre",
+      "financeCaption": "Tableau de bord financier — KPIs, graphe barres groupées et répartition des dépenses",
+      "financeCard1Title": "KPIs en temps réel",
+      "financeCard1P": "Revenus totaux, dépenses, bénéfice net et marge en pourcentage. Chaque indicateur affiche l'évolution par rapport à la période précédente.",
+      "financeCard2Title": "Suivi des dépenses",
+      "financeCard2P": "Enregistrez vos dépenses par catégorie : Ingrédients, Outils, Accessoires ou Autre. Ajoutez un libellé, un montant, une date et des notes.",
+      "financeCard3Title": "Revenus automatiques & manuels",
+      "financeCard3P": "Les commandes validées sont intégrées automatiquement. Ajoutez aussi des entrées manuelles (traiteur, vente directe…) pour un tableau complet.",
+      "financeCard4Title": "Graphes sur 5 périodes",
+      "financeCard4P": "Analysez vos flux sur la journée (par heure), 7 jours, le mois, les 6 derniers mois ou l'année complète.",
+      "financeStep1Title": "Accéder à la section Finance",
+      "financeStep1P": "Dans le menu latéral de votre tableau de bord, cliquez sur Finance. Cette section est réservée aux comptes sur le plan Enterprise.",
+      "financeStep2Title": "Choisir la période d'analyse",
+      "financeStep2P": "Utilisez le sélecteur en haut à droite pour filtrer : Aujourd'hui, 7 jours, Ce mois, 6 mois ou Cette année. Les KPIs et graphes se mettent à jour instantanément.",
+      "financeStep3Title": "Enregistrer une dépense",
+      "financeStep3P": "Dans l'onglet Dépenses, cliquez sur Ajouter une dépense. Sélectionnez la catégorie, renseignez le libellé, le montant et la date.",
+      "financeStep4Title": "Ajouter un revenu manuel",
+      "financeStep4P": "Basculez sur l'onglet Revenus manuels pour saisir une entrée d'argent hors commandes : vente de traiteur, prestation spéciale, subvention…",
+      "financeTip": "Astuce : Le graphe en donut à droite décompose vos dépenses par catégorie. Si une catégorie représente une part trop importante (ex. Ingrédients > 60%), c'est un signal pour renégocier vos fournisseurs."
     }
   },
-
   "orders": {
     "title": "Commandes",
     "subtitle": "Gérez les commandes de vos clients",
@@ -838,7 +1056,6 @@
       "cancelled": "Annulée"
     }
   },
-
   "reservations": {
     "title": "Réservations",
     "subtitle": "Gérez les réservations de vos clients",
@@ -866,7 +1083,6 @@
       "no_show": "Absent"
     }
   },
-
   "publicOrder": {
     "cartTitle": "Votre commande",
     "cartEmpty": "Votre panier est vide.",
@@ -940,7 +1156,6 @@
     "redeemSubmitBtn": "Confirmer",
     "redeemSuccessTitle": "Cadeau récupéré !"
   },
-
   "saAuditLogs": {
     "title": "Journal d'audit global",
     "subtitle": "Historique de toutes les actions sur tous les restaurants",
@@ -953,7 +1168,6 @@
     "firstPage": "Première page",
     "lastPage": "Dernière page"
   },
-
   "lang": {
     "fr": "Français",
     "en": "English",

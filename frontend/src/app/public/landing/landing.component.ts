@@ -52,6 +52,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
         <div class="lp-nav-links">
           <a href="#features" class="lp-nav-link" (click)="scrollTo($event, 'features')">{{ t('public.landing.navFeatures') }}</a>
           <a href="#how" class="lp-nav-link" (click)="scrollTo($event, 'how')">{{ t('public.landing.navHow') }}</a>
+          <a href="#download" class="lp-nav-link" (click)="scrollTo($event, 'download')">{{ t('public.landing.navDownload') }}</a>
           <a href="#pricing" class="lp-nav-link" (click)="scrollTo($event, 'pricing')">{{ t('public.landing.navPricing') }}</a>
         </div>
 
@@ -76,6 +77,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
         <div class="lp-mobile-drawer">
           <a href="#features" class="lp-mobile-link" (click)="scrollTo($event, 'features'); mobileOpen.set(false)">{{ t('public.landing.navFeatures') }}</a>
           <a href="#how" class="lp-mobile-link" (click)="scrollTo($event, 'how'); mobileOpen.set(false)">{{ t('public.landing.navHow') }}</a>
+          <a href="#download" class="lp-mobile-link" (click)="scrollTo($event, 'download'); mobileOpen.set(false)">{{ t('public.landing.navDownload') }}</a>
           <a href="#pricing" class="lp-mobile-link" (click)="scrollTo($event, 'pricing'); mobileOpen.set(false)">{{ t('public.landing.navPricing') }}</a>
           <div class="lp-mobile-sep"></div>
           <a routerLink="/login" class="lp-mobile-link">{{ t('public.landing.navLogin') }}</a>
@@ -403,6 +405,144 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
       </div>
     </section>
 
+    <!-- ── Download Apps ────────────────────────────────────── -->
+    <section class="lp-download" id="download">
+      <div class="dl-blobs" aria-hidden="true">
+        <div class="dl-blob-1"></div>
+        <div class="dl-blob-2"></div>
+      </div>
+      <div class="lp-container">
+        <div class="section-head reveal">
+          <div class="section-tag dl-tag">{{ t('public.landing.downloadTag') }}</div>
+          <h2 class="section-h2 dl-h2">{{ t('public.landing.downloadH2') }}</h2>
+          <p class="section-sub dl-sub">{{ t('public.landing.downloadSub') }}</p>
+        </div>
+
+        <div class="dl-grid">
+
+          <!-- ── Mobile card ─────────────────────────────── -->
+          <div class="dl-card reveal">
+            <div class="dl-card-top">
+              <div class="dl-card-icon dl-icon-mobile">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <span class="dl-badge dl-badge-soon">{{ t('public.landing.downloadSoonLabel') }}</span>
+            </div>
+            <h3 class="dl-card-title">{{ t('public.landing.downloadMobileTitle') }}</h3>
+            <p class="dl-card-desc">{{ t('public.landing.downloadMobileDesc') }}</p>
+
+            <div class="dl-visual dl-visual-mobile" aria-hidden="true">
+              <div class="dl-phone">
+                <div class="dl-phone-notch"></div>
+                <div class="dl-phone-screen">
+                  <div class="dl-phone-header">
+                    <div class="dl-ph-logo"></div>
+                    <div class="dl-ph-name"></div>
+                  </div>
+                  <div class="dl-phone-content">
+                    <div class="dl-ph-row">
+                      <div class="dl-ph-chip dl-ph-chip-on"></div>
+                      <div class="dl-ph-chip"></div>
+                      <div class="dl-ph-chip"></div>
+                    </div>
+                    <div class="dl-ph-card">
+                      <div class="dl-ph-card-img" style="background:linear-gradient(135deg,#C0392B,#6b1a12)"></div>
+                      <div class="dl-ph-card-info"><div class="dl-ph-line"></div><div class="dl-ph-line" style="width:60%;opacity:.5"></div></div>
+                    </div>
+                    <div class="dl-ph-card">
+                      <div class="dl-ph-card-img" style="background:linear-gradient(135deg,#D97706,#7c4200)"></div>
+                      <div class="dl-ph-card-info"><div class="dl-ph-line"></div><div class="dl-ph-line" style="width:75%;opacity:.5"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dl-store-btns">
+              <a href="#" class="dl-store-btn dl-store-disabled" tabindex="-1" aria-disabled="true">
+                <svg width="18" height="18" viewBox="0 0 814 1000" fill="currentColor"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.5 135.4-317.3 269-317.3 71 0 130.5 46.4 174.9 46.4 42.7 0 109.2-49.5 188.2-49.5 30.2 0 130.3 2.6 198 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg>
+                <div class="dl-store-text">
+                  <span class="dl-store-label">{{ t('public.landing.downloadOnThe') }}</span>
+                  <span class="dl-store-name">App Store</span>
+                </div>
+              </a>
+              <a href="#" class="dl-store-btn dl-store-disabled" tabindex="-1" aria-disabled="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-12.6-2.61-2.62L3.18 23.76zm17.12-9.44c.42-.25.7-.7.7-1.32s-.28-1.07-.7-1.32l-2.79-1.6-3.06 3.06 3.06 3.06 2.79-1.88zM2.13.3C1.7.56 1.44 1.04 1.44 1.66v20.68c0 .62.26 1.1.69 1.36l.08.04L13.77 12 2.21.26.13.3zm11.34 11.01L2.13.3l10.75 10.76L14.27.26 13.47 11.31z"/></svg>
+                <div class="dl-store-text">
+                  <span class="dl-store-label">{{ t('public.landing.downloadGetOn') }}</span>
+                  <span class="dl-store-name">Google Play</span>
+                </div>
+              </a>
+            </div>
+            <p class="dl-coming-soon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              {{ t('public.landing.downloadMobileSoon') }}
+            </p>
+          </div>
+
+          <!-- ── Desktop card ────────────────────────────── -->
+          <div class="dl-card dl-card-featured reveal" data-delay="1">
+            <div class="dl-card-top">
+              <div class="dl-card-icon dl-icon-desktop">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <span class="dl-badge dl-badge-ready">{{ t('public.landing.downloadReadyLabel') }}</span>
+            </div>
+            <h3 class="dl-card-title">{{ t('public.landing.downloadDesktopTitle') }}</h3>
+            <p class="dl-card-desc">{{ t('public.landing.downloadDesktopDesc') }}</p>
+
+            <div class="dl-visual dl-visual-desktop" aria-hidden="true">
+              <div class="dl-laptop">
+                <div class="dl-laptop-screen">
+                  <div class="dl-ls-bar">
+                    <div class="dl-ls-logo"></div>
+                    <div class="dl-ls-title"></div>
+                    <div class="dl-ls-controls">
+                      <span class="dl-ls-dot"></span>
+                      <span class="dl-ls-dot"></span>
+                      <span class="dl-ls-dot dl-ls-close"></span>
+                    </div>
+                  </div>
+                  <div class="dl-ls-body">
+                    <div class="dl-ls-sidebar">
+                      <div class="dl-ls-sq"></div>
+                      <div class="dl-ls-nav-item dl-ls-nav-active"></div>
+                      <div class="dl-ls-nav-item"></div>
+                      <div class="dl-ls-nav-item"></div>
+                      <div class="dl-ls-nav-item"></div>
+                    </div>
+                    <div class="dl-ls-main">
+                      <div class="dl-ls-kpis">
+                        <div class="dl-ls-kpi" style="--kc:#C0392B"></div>
+                        <div class="dl-ls-kpi" style="--kc:#2563EB"></div>
+                        <div class="dl-ls-kpi" style="--kc:#16A34A"></div>
+                      </div>
+                      <div class="dl-ls-line"></div>
+                      <div class="dl-ls-line" style="width:65%"></div>
+                      <div class="dl-ls-line" style="width:80%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="dl-laptop-base">
+                  <div class="dl-laptop-foot"></div>
+                </div>
+              </div>
+            </div>
+
+            <a href="/downloads/SaeMenus-Setup-1.0.0.exe" class="dl-win-btn" download>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ t('public.landing.downloadDesktopBtn') }}
+            </a>
+            <p class="dl-meta">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              {{ t('public.landing.downloadDesktopMeta') }}
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
     <!-- ── Pricing ──────────────────────────────────────────── -->
     <section class="lp-section lp-pricing" id="pricing">
       <div class="lp-container">
@@ -554,7 +694,8 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <a href="#pricing" class="footer-link" (click)="scrollTo($event, 'pricing')">{{ t('public.landing.footerLinkPricing') }}</a>
           <a href="#how" class="footer-link" (click)="scrollTo($event, 'how')">{{ t('public.landing.footerLinkHow') }}</a>
           <a routerLink="/pricing" class="footer-link">{{ t('public.landing.footerLinkDetailed') }}</a>
-          <a routerLink="/guide" class="footer-link">Guide d'utilisation</a>
+          <a routerLink="/guide" class="footer-link">{{ t('public.landing.footerLinkGuide') }}</a>
+          <a href="#download" class="footer-link" (click)="scrollTo($event, 'download')">{{ t('public.landing.navDownload') }}</a>
         </div>
 
         <div class="footer-col">
@@ -562,7 +703,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <a routerLink="/login" class="footer-link">{{ t('public.landing.footerLinkLogin') }}</a>
           <a routerLink="/register" class="footer-link">{{ t('public.landing.footerLinkRegister') }}</a>
           <a routerLink="/forgot-password" class="footer-link">{{ t('public.landing.footerLinkForgot') }}</a>
-          <a routerLink="/faq" class="footer-link">FAQ</a>
+          <a routerLink="/faq" class="footer-link">{{ t('public.landing.footerLinkFaq') }}</a>
         </div>
 
         <div class="footer-col">
@@ -1228,6 +1369,191 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);
       max-width: 1180px; margin: 0 auto;
       font-size: .8125rem; color: rgba(255,255,255,.3);
+    }
+
+    /* ── Download section ──────────────────────────────── */
+    .lp-download {
+      padding: 120px 0;
+      background: #0d0a0a;
+      position: relative;
+      overflow: hidden;
+    }
+    @media (max-width: 768px) { .lp-download { padding: 80px 0; } }
+    .dl-blobs { position: absolute; inset: 0; pointer-events: none; }
+    .dl-blob-1 {
+      position: absolute; width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(192,57,43,.1) 0%, transparent 65%);
+      top: -200px; right: -150px;
+    }
+    .dl-blob-2 {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(192,57,43,.06) 0%, transparent 65%);
+      bottom: -150px; left: -100px;
+    }
+    .dl-tag { background: rgba(192,57,43,.2); color: #f87171; border: 1px solid rgba(192,57,43,.3); }
+    .dl-h2 { color: #f1f5f9; }
+    .dl-sub { color: rgba(241,245,249,.55); }
+    .dl-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    }
+    @media (max-width: 768px) { .dl-grid { grid-template-columns: 1fr; } }
+
+    /* Card */
+    .dl-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      padding: 36px;
+      display: flex; flex-direction: column; gap: 0;
+      position: relative;
+      backdrop-filter: blur(8px);
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .dl-card:hover { border-color: rgba(255,255,255,.14); box-shadow: 0 8px 40px rgba(0,0,0,.3); }
+    .dl-card-featured {
+      background: rgba(192,57,43,.1);
+      border-color: rgba(192,57,43,.3);
+    }
+    .dl-card-featured:hover { border-color: rgba(192,57,43,.5); box-shadow: 0 8px 40px rgba(192,57,43,.15); }
+
+    .dl-card-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .dl-card-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dl-icon-mobile { background: rgba(37,99,235,.15); color: #60a5fa; }
+    .dl-icon-desktop { background: rgba(192,57,43,.2); color: #f87171; }
+
+    .dl-badge {
+      font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 99px;
+    }
+    .dl-badge-soon { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+    .dl-badge-ready { background: rgba(22,163,74,.15); color: #4ade80; border: 1px solid rgba(22,163,74,.3); }
+
+    .dl-card-title {
+      font-family: var(--font-display); font-size: 1.5rem; color: #f1f5f9;
+      margin: 0 0 10px; line-height: 1.2;
+    }
+    .dl-card-desc {
+      font-size: .9375rem; color: rgba(241,245,249,.55); line-height: 1.65;
+      margin: 0 0 28px;
+    }
+
+    /* Phone visual */
+    .dl-visual { display: flex; justify-content: center; margin-bottom: 28px; }
+    .dl-phone {
+      width: 140px; height: 240px;
+      background: #1a1a2e; border-radius: 22px;
+      border: 2px solid rgba(255,255,255,.12);
+      position: relative; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .dl-phone-notch {
+      width: 40px; height: 8px; background: #0d0a0a; border-radius: 0 0 8px 8px;
+      margin: 0 auto; position: relative; z-index: 2;
+    }
+    .dl-phone-screen { padding: 8px; }
+    .dl-phone-header {
+      background: linear-gradient(135deg, #C0392B, #6b1a12);
+      border-radius: 10px; padding: 8px; margin-bottom: 6px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .dl-ph-logo { width: 18px; height: 18px; background: rgba(255,255,255,.3); border-radius: 5px; }
+    .dl-ph-name { width: 55px; height: 5px; background: rgba(255,255,255,.5); border-radius: 3px; margin-top: 2px; }
+    .dl-phone-content { display: flex; flex-direction: column; gap: 6px; }
+    .dl-ph-row { display: flex; gap: 4px; }
+    .dl-ph-chip { height: 16px; flex: 1; background: rgba(255,255,255,.07); border-radius: 8px; }
+    .dl-ph-chip-on { background: rgba(192,57,43,.35); }
+    .dl-ph-card {
+      background: rgba(255,255,255,.05); border-radius: 8px; overflow: hidden;
+      display: flex; align-items: center; gap: 6px; padding: 4px;
+    }
+    .dl-ph-card-img { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; }
+    .dl-ph-card-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .dl-ph-line { height: 5px; background: rgba(255,255,255,.2); border-radius: 3px; }
+
+    /* Laptop visual */
+    .dl-laptop { display: flex; flex-direction: column; align-items: center; }
+    .dl-laptop-screen {
+      width: 240px; height: 150px;
+      background: #111827; border-radius: 10px 10px 0 0;
+      border: 2px solid rgba(255,255,255,.12);
+      border-bottom: none; overflow: hidden;
+      box-shadow: 0 -8px 40px rgba(0,0,0,.4);
+    }
+    .dl-ls-bar {
+      background: #0a0a0a; height: 24px; border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; padding: 0 8px; gap: 6px;
+    }
+    .dl-ls-logo { width: 14px; height: 14px; background: #C0392B; border-radius: 3px; }
+    .dl-ls-title { flex: 1; height: 5px; background: rgba(255,255,255,.12); border-radius: 3px; }
+    .dl-ls-controls { display: flex; gap: 4px; }
+    .dl-ls-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.15); }
+    .dl-ls-close { background: rgba(192,57,43,.6); }
+    .dl-ls-body { display: flex; height: calc(100% - 24px); }
+    .dl-ls-sidebar {
+      width: 40px; background: rgba(255,255,255,.03); border-right: 1px solid rgba(255,255,255,.06);
+      padding: 8px 6px; display: flex; flex-direction: column; gap: 5px;
+    }
+    .dl-ls-sq { width: 20px; height: 20px; background: #C0392B; border-radius: 5px; margin-bottom: 6px; }
+    .dl-ls-nav-item { height: 8px; background: rgba(255,255,255,.08); border-radius: 4px; }
+    .dl-ls-nav-active { background: rgba(192,57,43,.4); }
+    .dl-ls-main { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .dl-ls-kpis { display: flex; gap: 4px; }
+    .dl-ls-kpi {
+      flex: 1; height: 24px; border-radius: 5px;
+      background: color-mix(in srgb, var(--kc) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--kc) 30%, transparent);
+    }
+    .dl-ls-line { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; width: 100%; }
+    .dl-laptop-base {
+      width: 260px; height: 10px; background: #1a1a2e;
+      border-radius: 0 0 4px 4px;
+      border: 2px solid rgba(255,255,255,.1); border-top: none;
+      display: flex; justify-content: center; align-items: flex-end;
+    }
+    .dl-laptop-foot { width: 80px; height: 4px; background: rgba(255,255,255,.08); border-radius: 0 0 4px 4px; }
+
+    /* Store buttons */
+    .dl-store-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .dl-store-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.07); color: rgba(241,245,249,.8);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
+      padding: 11px 18px; text-decoration: none; font-size: .875rem;
+      transition: background .2s, border-color .2s;
+      flex: 1; min-width: 130px;
+    }
+    .dl-store-btn:hover { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.2); color: white; }
+    .dl-store-disabled { opacity: .45; pointer-events: none; cursor: not-allowed; }
+    .dl-store-text { display: flex; flex-direction: column; }
+    .dl-store-label { font-size: .7rem; color: rgba(255,255,255,.5); line-height: 1; }
+    .dl-store-name { font-size: .9rem; font-weight: 600; line-height: 1.3; }
+
+    .dl-coming-soon {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .8125rem; color: rgba(251,191,36,.6);
+      margin: 0;
+    }
+
+    /* Windows download button */
+    .dl-win-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      background: var(--brand); color: white; text-decoration: none;
+      padding: 14px 28px; border-radius: var(--radius-full);
+      font-size: 1rem; font-weight: 700; letter-spacing: -.01em;
+      box-shadow: 0 4px 24px rgba(192,57,43,.4);
+      transition: background .2s, transform .2s, box-shadow .2s;
+      margin-bottom: 14px;
+    }
+    .dl-win-btn:hover { background: var(--brand-dark); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(192,57,43,.5); }
+    .dl-meta {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .8125rem; color: rgba(241,245,249,.4); margin: 0;
     }
   `],
 })

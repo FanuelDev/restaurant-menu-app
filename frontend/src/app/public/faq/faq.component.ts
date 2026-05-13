@@ -1,114 +1,43 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { TranslocoModule } from '@jsverse/transloco'
 
 interface FaqItem {
-  q: string
-  a: string
+  qKey: string
   category: string
 }
 
 const FAQS: FaqItem[] = [
-  // Général
-  {
-    category: 'Général',
-    q: "Qu'est-ce que SaeMenus ?",
-    a: "SaeMenus est une plateforme SaaS qui permet aux restaurants de créer un menu digital accessible via QR code. Les clients scannent le QR code avec leur smartphone et consultent le menu, passent des commandes ou réservent une table — sans aucune application à télécharger."
-  },
-  {
-    category: 'Général',
-    q: "Comment fonctionne le QR code ?",
-    a: "Après avoir créé votre menu, SaeMenus génère automatiquement un QR code unique pour votre restaurant. Vous pouvez le télécharger, l'imprimer sur vos tables, menus physiques ou vitrine. Chaque scan affiche votre menu en temps réel — toute modification que vous faites est visible instantanément par vos clients."
-  },
-  {
-    category: 'Général',
-    q: "Faut-il une application pour utiliser SaeMenus ?",
-    a: "Non. SaeMenus est accessible directement depuis le navigateur de n'importe quel smartphone. Vos clients n'ont rien à installer. De votre côté, le tableau de bord d'administration est accessible depuis un navigateur web sur ordinateur ou mobile."
-  },
-  // Compte & Plans
-  {
-    category: 'Compte & Plans',
-    q: "Y a-t-il une période d'essai gratuite ?",
-    a: "Oui, le plan Gratuit est disponible sans limite de temps. Il vous permet de créer un menu avec jusqu'à 3 catégories, de générer votre QR code et de recevoir des réservations de base. Vous pouvez upgrader vers un plan payant à tout moment depuis votre tableau de bord."
-  },
-  {
-    category: 'Compte & Plans',
-    q: "Quelle est la différence entre les plans ?",
-    a: "Le plan Gratuit couvre l'essentiel : menu digital + QR code. Le plan Pro ajoute les commandes en ligne, les réservations avancées, les statistiques détaillées et la gestion d'équipe. Le plan Enterprise ajoute l'accès API, les QR codes cadeaux et un support prioritaire dédié. Consultez la page Tarifs pour le détail complet."
-  },
-  {
-    category: 'Compte & Plans',
-    q: "Puis-je changer de plan à tout moment ?",
-    a: "Oui. Vous pouvez upgrader immédiatement depuis Tableau de bord → Abonnement. Le changement est effectif instantanément et vous n'êtes facturé que pour la période restante. Pour downgrader, le changement prend effet à la prochaine date de renouvellement."
-  },
-  {
-    category: 'Compte & Plans',
-    q: "Comment fonctionne la facturation ?",
-    a: "Les paiements sont mensuels ou annuels (avec 20% de réduction). Nous utilisons CinetPay pour le traitement sécurisé des paiements. Vous recevez une facture par e-mail à chaque renouvellement. Aucun engagement : vous pouvez résilier à tout moment."
-  },
-  // Menu & Contenu
-  {
-    category: 'Menu & Contenu',
-    q: "Combien de plats puis-je ajouter à mon menu ?",
-    a: "Le plan Gratuit permet jusqu'à 30 plats. Le plan Pro monte à 200 plats. Le plan Enterprise est illimité. Chaque plat peut avoir un nom, une description, un prix, une image et des badges (Nouveau, Populaire, Végétarien, etc.)."
-  },
-  {
-    category: 'Menu & Contenu',
-    q: "Puis-je rendre certains plats indisponibles temporairement ?",
-    a: "Oui. Dans le tableau de bord, vous pouvez activer ou désactiver un plat en un clic. Un plat désactivé n'apparaît plus dans le menu public mais ses données sont conservées. Idéal pour gérer les ruptures de stock ou les plats saisonniers."
-  },
-  {
-    category: 'Menu & Contenu',
-    q: "Quels formats d'images sont acceptés ?",
-    a: "JPEG, PNG et WebP sont acceptés. La taille maximale est de 5 Mo par image. Les images sont automatiquement optimisées et redimensionnées pour un chargement rapide sur mobile. Nous recommandons un ratio 4:3 ou 16:9 pour un rendu optimal."
-  },
-  {
-    category: 'Menu & Contenu',
-    q: "Puis-je avoir plusieurs menus (déjeuner, dîner, carte des vins) ?",
-    a: "Oui. Vous pouvez créer autant de catégories que votre plan le permet. Organisez-les librement : Entrées, Plats, Desserts, Boissons, Menu du jour, Carte des vins… L'ordre d'affichage est entièrement personnalisable par glisser-déposer."
-  },
-  // Commandes & Réservations
-  {
-    category: 'Commandes & Réservations',
-    q: "Comment fonctionnent les commandes en ligne ?",
-    a: "Avec le plan Pro ou Enterprise, vos clients peuvent ajouter des plats à leur panier directement depuis le menu et passer commande en indiquant leur nom, téléphone et numéro de table. Vous recevez les commandes en temps réel dans votre tableau de bord avec le statut et les détails. Vous pouvez les marquer comme en cours, prêtes ou terminées."
-  },
-  {
-    category: 'Commandes & Réservations',
-    q: "Comment fonctionnent les réservations ?",
-    a: "Les clients peuvent envoyer une demande de réservation (date, heure, nombre de personnes, message) directement depuis le menu. Vous recevez les demandes dans votre dashboard et pouvez les confirmer ou les refuser. Un e-mail de confirmation est automatiquement envoyé au client."
-  },
-  {
-    category: 'Commandes & Réservations',
-    q: "Qu'est-ce que la fonctionnalité QR Cadeau ?",
-    a: "Disponible en plan Enterprise, la fonctionnalité QR Cadeau permet à un client d'offrir un repas à quelqu'un. Il achète un bon cadeau, reçoit un QR code unique à offrir, et le bénéficiaire peut commander avec ce code lors de sa visite au restaurant."
-  },
-  // Technique
-  {
-    category: 'Technique',
-    q: "Le menu est-il optimisé pour mobile ?",
-    a: "Oui, c'est la priorité. SaeMenus est conçu mobile-first. Vos clients accèdent au menu depuis leur smartphone et bénéficient d'une expérience fluide et rapide. Plusieurs templates visuels sont disponibles (Classique, Magazine, Immersif, Zen, Bento) adaptés à tous les styles de restaurant."
-  },
-  {
-    category: 'Technique',
-    q: "Mon menu est-il toujours accessible si internet est lent ?",
-    a: "Le menu est optimisé pour les connexions lentes : images compressées, chargement progressif et mise en cache navigateur. Les pages se chargent rapidement même avec une connexion 3G."
-  },
-  {
-    category: 'Technique',
-    q: "Puis-je accéder à une API ?",
-    a: "Oui, le plan Enterprise inclut un accès API REST documenté pour intégrer SaeMenus à votre propre système (caisse, logiciel de gestion, etc.). L'API permet de récupérer les commandes, les réservations et de mettre à jour le menu programmatiquement."
-  },
+  { category: 'general', qKey: '0' },
+  { category: 'general', qKey: '1' },
+  { category: 'general', qKey: '2' },
+  { category: 'account', qKey: '3' },
+  { category: 'account', qKey: '4' },
+  { category: 'account', qKey: '5' },
+  { category: 'account', qKey: '6' },
+  { category: 'menu', qKey: '7' },
+  { category: 'menu', qKey: '8' },
+  { category: 'menu', qKey: '9' },
+  { category: 'menu', qKey: '10' },
+  { category: 'orders', qKey: '11' },
+  { category: 'orders', qKey: '12' },
+  { category: 'orders', qKey: '13' },
+  { category: 'tech', qKey: '14' },
+  { category: 'tech', qKey: '15' },
+  { category: 'tech', qKey: '16' },
 ]
 
-const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Commandes & Réservations', 'Technique']
+const CATEGORY_KEYS = ['all', 'general', 'account', 'menu', 'orders', 'tech']
 
 @Component({
   selector: 'app-faq',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-container *transloco="let t">
+
     <!-- Nav -->
     <nav class="fq-nav">
       <div class="fq-nav-inner">
@@ -123,8 +52,8 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
           <span class="fq-logo-name">SaeMenus</span>
         </a>
         <div class="fq-nav-right">
-          <a routerLink="/login" class="fq-nav-login">Connexion</a>
-          <a routerLink="/register" class="fq-nav-cta">Commencer gratuitement</a>
+          <a routerLink="/login" class="fq-nav-login">{{ t('public.faq.navLogin') }}</a>
+          <a routerLink="/register" class="fq-nav-cta">{{ t('public.faq.navCta') }}</a>
         </div>
       </div>
     </nav>
@@ -135,13 +64,13 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
         <div class="fq-back">
           <a routerLink="/" class="fq-back-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Retour
+            {{ t('public.faq.back') }}
           </a>
         </div>
-        <div class="fq-hero-tag">Support</div>
-        <h1 class="fq-hero-h1">Questions fréquentes</h1>
-        <p class="fq-hero-sub">Tout ce que vous devez savoir sur SaeMenus. Vous ne trouvez pas votre réponse ?
-          <a href="mailto:support@saemenus.com" class="fq-inline-link">Contactez-nous</a>.
+        <div class="fq-hero-tag">{{ t('public.faq.heroTag') }}</div>
+        <h1 class="fq-hero-h1">{{ t('public.faq.heroH1') }}</h1>
+        <p class="fq-hero-sub">{{ t('public.faq.heroSub') }}
+          <a href="mailto:support@saemenus.com" class="fq-inline-link">{{ t('public.faq.heroContact') }}</a>.
         </p>
       </div>
     </div>
@@ -150,13 +79,13 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
     <div class="fq-filter-bar">
       <div class="fq-container">
         <div class="fq-filter-scroll">
-          @for (cat of categories; track cat) {
+          @for (cat of categoryKeys; track cat) {
             <button
               class="fq-filter-btn"
               [class.fq-filter-active]="activeCategory() === cat"
               (click)="activeCategory.set(cat)">
-              {{ cat }}
-              @if (cat !== 'Tous') {
+              {{ t('public.faq.cat' + capitalize(cat)) }}
+              @if (cat !== 'all') {
                 <span class="fq-filter-count">{{ countByCategory(cat) }}</span>
               }
             </button>
@@ -171,21 +100,21 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
 
         @for (cat of visibleCategories(); track cat) {
           <div class="fq-group">
-            @if (activeCategory() === 'Tous') {
-              <h2 class="fq-group-title">{{ cat }}</h2>
+            @if (activeCategory() === 'all') {
+              <h2 class="fq-group-title">{{ t('public.faq.cat' + capitalize(cat)) }}</h2>
             }
             <div class="fq-list">
-              @for (item of itemsByCategory(cat); track item.q; let i = $index) {
+              @for (item of itemsByCategory(cat); track item.qKey; let i = $index) {
                 <div class="fq-item" [class.fq-item-open]="isOpen(cat + i)">
                   <button class="fq-question" (click)="toggle(cat + i)" [attr.aria-expanded]="isOpen(cat + i)">
-                    <span>{{ item.q }}</span>
+                    <span>{{ t('public.faq.q' + item.qKey) }}</span>
                     <span class="fq-chevron" [class.fq-chevron-open]="isOpen(cat + i)">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
                     </span>
                   </button>
                   @if (isOpen(cat + i)) {
                     <div class="fq-answer">
-                      <p>{{ item.a }}</p>
+                      <p>{{ t('public.faq.a' + item.qKey) }}</p>
                     </div>
                   }
                 </div>
@@ -205,12 +134,12 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
           <div>
-            <div class="fq-cta-title">Vous n'avez pas trouvé votre réponse ?</div>
-            <div class="fq-cta-sub">Notre équipe répond sous 24h en semaine.</div>
+            <div class="fq-cta-title">{{ t('public.faq.ctaTitle') }}</div>
+            <div class="fq-cta-sub">{{ t('public.faq.ctaSub') }}</div>
           </div>
           <div class="fq-cta-actions">
-            <a href="mailto:support@saemenus.com" class="fq-cta-btn-primary">Contacter le support</a>
-            <a routerLink="/guide" class="fq-cta-btn-ghost">Voir le guide</a>
+            <a href="mailto:support@saemenus.com" class="fq-cta-btn-primary">{{ t('public.faq.ctaPrimary') }}</a>
+            <a routerLink="/guide" class="fq-cta-btn-ghost">{{ t('public.faq.ctaGhost') }}</a>
           </div>
         </div>
       </div>
@@ -219,15 +148,17 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
     <!-- Footer -->
     <footer class="fq-footer">
       <div class="fq-container fq-footer-inner">
-        <span>© 2026 SaeMenus. Tous droits réservés.</span>
+        <span>{{ t('public.faq.footerCopy') }}</span>
         <div class="fq-footer-links">
-          <a routerLink="/" class="fq-footer-link">Accueil</a>
-          <a routerLink="/pricing" class="fq-footer-link">Tarifs</a>
-          <a routerLink="/guide" class="fq-footer-link">Guide</a>
-          <a routerLink="/privacy" class="fq-footer-link">Confidentialité</a>
+          <a routerLink="/" class="fq-footer-link">{{ t('public.faq.footerHome') }}</a>
+          <a routerLink="/pricing" class="fq-footer-link">{{ t('public.faq.footerPricing') }}</a>
+          <a routerLink="/guide" class="fq-footer-link">{{ t('public.faq.footerGuide') }}</a>
+          <a routerLink="/privacy" class="fq-footer-link">{{ t('public.faq.footerPrivacy') }}</a>
         </div>
       </div>
     </footer>
+
+    </ng-container>
   `,
   styles: [`
     :host { display: block; font-family: var(--font-body); color: var(--text-primary); }
@@ -383,13 +314,18 @@ const CATEGORIES = ['Tous', 'Général', 'Compte & Plans', 'Menu & Contenu', 'Co
   `],
 })
 export class FaqComponent {
-  readonly categories = CATEGORIES
-  readonly activeCategory = signal('Tous')
+  readonly categoryKeys = CATEGORY_KEYS
+  readonly activeCategory = signal('all')
   readonly openItems = signal<Set<string>>(new Set())
+
+  capitalize(s: string): string {
+    if (!s) return s
+    return s.charAt(0).toUpperCase() + s.slice(1)
+  }
 
   visibleCategories(): string[] {
     const cat = this.activeCategory()
-    if (cat === 'Tous') return CATEGORIES.filter(c => c !== 'Tous')
+    if (cat === 'all') return CATEGORY_KEYS.filter(c => c !== 'all')
     return [cat]
   }
 
