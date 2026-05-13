@@ -91,7 +91,10 @@ class _State extends ConsumerState<TemplateObsidian>
       backgroundColor: const Color(0xFF080808),
       body: Stack(
         children: [
-      NestedScrollView(
+      RefreshIndicator(
+        onRefresh: () async => widget.onRefresh?.call(),
+        color: brand,
+        child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // ── App bar + hero ────────────────────────────────────────────
           SliverAppBar(
@@ -133,6 +136,14 @@ class _State extends ConsumerState<TemplateObsidian>
                     ],
                   ),
                   onPressed: () => CartSheet.show(context),
+                ),
+              if (hasOrders)
+                IconButton(
+                  icon: const Icon(Icons.calendar_month_outlined,
+                      color: Colors.white),
+                  onPressed: () =>
+                      context.push('/reservation/${widget.restaurant.slug}'),
+                  tooltip: 'Réserver',
                 ),
               if (widget.onRefresh != null)
                 IconButton(
@@ -235,6 +246,7 @@ class _State extends ConsumerState<TemplateObsidian>
           }).toList(),
         ),
       ),
+      ), // RefreshIndicator
 
           // ── Floating cart bar ───────────────────────────────────────────
           Positioned(

@@ -14,7 +14,6 @@ class CheckoutScreen extends ConsumerStatefulWidget {
   final String slug;
   const CheckoutScreen({super.key, required this.slug});
 
-  /// Show checkout as a bottom-sheet modal (preferred on mobile).
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
@@ -25,7 +24,6 @@ class CheckoutScreen extends ConsumerStatefulWidget {
     );
   }
 
-  // Kept for deep-link route compatibility.
   @override
   ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
@@ -55,10 +53,11 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _emailCtrl;
-  final TextEditingController _notesCtrl = TextEditingController();
+  final TextEditingController _notesCtrl        = TextEditingController();
+  final TextEditingController _giftMessageCtrl  = TextEditingController();
   bool _saveProfile = false;
-  bool _isGift = false;
-  bool _loading = false;
+  bool _isGift      = false;
+  bool _loading     = false;
   String? _error;
 
   @override
@@ -77,6 +76,7 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _notesCtrl.dispose();
+    _giftMessageCtrl.dispose();
     super.dispose();
   }
 
@@ -97,30 +97,48 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
         ));
       }
 
-      await ref.read(apiClientProvider).placeOrder({
-        'customer_name':  _nameCtrl.text.trim(),
-        'customer_phone': _phoneCtrl.text.trim(),
+      // Backend validator expects camelCase keys
+      final order = await ref.read(apiClientProvider).placeOrder({
+        'customerName':  _nameCtrl.text.trim(),
+        if (_phoneCtrl.text.trim().isNotEmpty)
+          'customerPhone': _phoneCtrl.text.trim(),
         if (_emailCtrl.text.trim().isNotEmpty)
-          'customer_email': _emailCtrl.text.trim(),
+          'customerEmail': _emailCtrl.text.trim(),
         if (_notesCtrl.text.trim().isNotEmpty)
           'notes': _notesCtrl.text.trim(),
-        'is_gift': _isGift,
-        'items': items
-            .map((ci) => {'menu_item_id': ci.item.id, 'quantity': ci.qty})
-            .toList(),
+        'isGift': _isGift,
+        if (_isGift && _giftMessageCtrl.text.trim().isNotEmpty)
+          'giftMessage': _giftMessageCtrl.text.trim(),
+        'items': items.map((ci) => {
+          'menuItemId': ci.item.id,
+          'quantity':   ci.qty,
+        }).toList(),
       });
 
       ref.read(cartProvider.notifier).clear();
 
       if (!mounted) return;
       if (!widget.asPage) Navigator.pop(context);
-      _showSuccess();
-    } catch (e) {
-      setState(() { _loading = false; _error = e.toString(); });
+      _showSuccess(order);
+    } on Exception catch (e) {
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      setState(() { _loading = false; _error = _friendlyError(msg); });
     }
   }
 
-  void _showSuccess() {
+  String _friendlyError(String raw) {
+    if (raw.contains('422') || raw.contains('validation')) {
+      return 'Données invalides. Vérifiez le formulaire.';
+    }
+    if (raw.contains('404')) return 'Restaurant introuvable.';
+    if (raw.contains('503') || raw.contains('connection')) {
+      return 'Serveur inaccessible. Vérifiez votre connexion.';
+    }
+    if (raw.contains('403')) return 'La commande n\'est pas activée pour ce restaurant.';
+    return 'Une erreur est survenue. Réessayez.';
+  }
+
+  void _showSuccess(PlacedOrder order) {
     final restaurant = ref.read(restaurantProvider).restaurant;
     final slug = restaurant?.slug ?? '';
 
@@ -128,7 +146,9 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
       context: context,
       backgroundColor: Colors.transparent,
       isDismissible: false,
+      enableDrag: false,
       builder: (_) => _SuccessSheet(
+        order: order,
         onBack: () {
           Navigator.pop(context);
           if (widget.asPage && mounted) context.go('/menu/$slug');
@@ -140,7 +160,7 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
   @override
   Widget build(BuildContext context) {
     final items    = ref.watch(cartProvider);
-    final total    = ref.watch(cartProvider.notifier).total;
+    final total    = items.fold<double>(0, (sum, ci) => sum + ci.subtotal);
     final restaurant = ref.watch(restaurantProvider).restaurant;
     final brand    = restaurant?.brandColorValue ?? AppTheme.charcoal;
     final currency = restaurant?.currency ?? 'XOF';
@@ -154,7 +174,7 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
         ),
         children: [
           // ── Handle / header ───────────────────────────────────────────────
-          if (!widget.asPage) ...[
+          if (!widget.asPage)
             Center(
               child: Container(
                 width: 36, height: 4,
@@ -165,7 +185,6 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
                 ),
               ),
             ),
-          ],
 
           Row(
             children: [
@@ -203,12 +222,17 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
 
           _Field(
             controller: _nameCtrl,
-            label: 'Votre nom',
+            label: 'Votre nom *',
             hint: 'Ex: Jean Dupont',
             icon: Icons.person_outline_rounded,
             brand: brand,
-            validator: (v) =>
-                (v ?? '').trim().isEmpty ? 'Le nom est requis' : null,
+            textCapitalization: TextCapitalization.words,
+            validator: (v) {
+              final s = (v ?? '').trim();
+              if (s.isEmpty) return 'Le nom est requis';
+              if (s.length < 2) return 'Minimum 2 caractères';
+              return null;
+            },
           ),
           const SizedBox(height: 10),
           Row(
@@ -217,7 +241,7 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
                 child: _Field(
                   controller: _phoneCtrl,
                   label: 'Téléphone',
-                  hint: '+229 XX XX XX',
+                  hint: '+229 XX XX XX XX',
                   icon: Icons.phone_outlined,
                   brand: brand,
                   keyboardType: TextInputType.phone,
@@ -232,6 +256,12 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
                   icon: Icons.email_outlined,
                   brand: brand,
                   keyboardType: TextInputType.emailAddress,
+                  validator: (v) {
+                    final s = (v ?? '').trim();
+                    if (s.isEmpty) return null;
+                    final ok = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(s);
+                    return ok ? null : 'Email invalide';
+                  },
                 ),
               ),
             ],
@@ -247,7 +277,6 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
           ),
           const SizedBox(height: 10),
 
-          // Save profile checkbox
           _CheckRow(
             value: _saveProfile,
             label: 'Mémoriser pour la prochaine fois',
@@ -262,6 +291,25 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
           _GiftToggle(
             value: _isGift,
             onChanged: (v) => setState(() => _isGift = v),
+          ),
+
+          // Message cadeau — visible uniquement si cadeau activé
+          AnimatedSize(
+            duration: AppTheme.normal,
+            curve: AppTheme.spring,
+            child: _isGift
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: _Field(
+                      controller: _giftMessageCtrl,
+                      label: 'Message pour le destinataire',
+                      hint: 'Ex: Joyeux anniversaire ! Profite bien...',
+                      icon: Icons.card_giftcard_rounded,
+                      brand: brand,
+                      maxLines: 3,
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
 
           const SizedBox(height: 20),
@@ -318,14 +366,9 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
                         style: AppTheme.bodyBold(AppTheme.charcoal)
                             .copyWith(fontSize: 15)),
                     const Spacer(),
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: total * 0.95, end: total),
-                      duration: AppTheme.normal,
-                      curve: AppTheme.spring,
-                      builder: (_, v, __) => Text(
-                        formatPrice(v, currency),
-                        style: AppTheme.heading(brand).copyWith(fontSize: 18),
-                      ),
+                    Text(
+                      formatPrice(total, currency),
+                      style: AppTheme.heading(brand).copyWith(fontSize: 18),
                     ),
                   ],
                 ),
@@ -334,27 +377,32 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
           ),
 
           // ── Error ─────────────────────────────────────────────────────────
-          if (_error != null) ...[
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.badgeSpicy.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline_rounded,
-                      color: AppTheme.badgeSpicy, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(_error!,
-                        style: AppTheme.caption(AppTheme.badgeSpicy)),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          AnimatedSize(
+            duration: AppTheme.quick,
+            child: _error != null
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.badgeSpicy.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: AppTheme.badgeSpicy, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(_error!,
+                                style: AppTheme.caption(AppTheme.badgeSpicy)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
 
           const SizedBox(height: 20),
 
@@ -375,15 +423,10 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
                       width: 22, height: 22,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Confirmer la commande · ${formatPrice(total, currency)}',
-                          style: AppTheme.bodyBold(Colors.white)
-                              .copyWith(fontSize: 15),
-                        ),
-                      ],
+                  : Text(
+                      'Confirmer · ${formatPrice(total, currency)}',
+                      style: AppTheme.bodyBold(Colors.white)
+                          .copyWith(fontSize: 15),
                     ),
             ),
           ),
@@ -409,8 +452,9 @@ class _CheckoutSheetState extends ConsumerState<_CheckoutSheet> {
 // ── Success bottom sheet ──────────────────────────────────────────────────────
 
 class _SuccessSheet extends StatelessWidget {
+  final PlacedOrder order;
   final VoidCallback onBack;
-  const _SuccessSheet({required this.onBack});
+  const _SuccessSheet({required this.order, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -440,6 +484,20 @@ class _SuccessSheet extends StatelessWidget {
                     .copyWith(fontSize: 20),
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
+            // Numéro de commande
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.cream,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                order.orderNumber,
+                style: AppTheme.bodyBold(AppTheme.charcoal)
+                    .copyWith(fontSize: 14, letterSpacing: 0.5),
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               'Votre commande a bien été transmise.\nLe restaurant vous contactera pour confirmation.',
               style: AppTheme.body(AppTheme.grey2).copyWith(height: 1.5),
@@ -476,9 +534,9 @@ class _Field extends StatelessWidget {
   final IconData icon;
   final Color brand;
   final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
   final String? Function(String?)? validator;
   final int maxLines;
-  final ValueChanged<String>? onChanged;
 
   const _Field({
     this.controller,
@@ -487,9 +545,9 @@ class _Field extends StatelessWidget {
     required this.icon,
     required this.brand,
     this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
     this.validator,
     this.maxLines = 1,
-    this.onChanged,
   });
 
   @override
@@ -497,9 +555,10 @@ class _Field extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
       maxLines: maxLines,
-      onChanged: onChanged,
       validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: AppTheme.body(AppTheme.charcoal).copyWith(fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
@@ -525,6 +584,10 @@ class _Field extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.badgeSpicy, width: 1.5),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.badgeSpicy, width: 1.5),
+        ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
@@ -546,9 +609,7 @@ class _GiftToggle extends StatelessWidget {
       child: AnimatedContainer(
         duration: AppTheme.quick,
         decoration: BoxDecoration(
-          color: value
-              ? const Color(0xFFFFF8E1)
-              : AppTheme.cream,
+          color: value ? const Color(0xFFFFF8E1) : AppTheme.cream,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: value ? const Color(0xFFFFB300) : AppTheme.border,
@@ -557,7 +618,7 @@ class _GiftToggle extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Text('🎁', style: const TextStyle(fontSize: 22)),
+            const Text('🎁', style: TextStyle(fontSize: 22)),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -566,8 +627,12 @@ class _GiftToggle extends StatelessWidget {
                   Text('Envoyer comme cadeau',
                       style: AppTheme.bodyBold(AppTheme.charcoal)
                           .copyWith(fontSize: 14)),
-                  Text('Un QR code sera généré pour le destinataire',
-                      style: AppTheme.caption(AppTheme.grey3)),
+                  Text(
+                    value
+                        ? 'Ajoutez un message pour le destinataire'
+                        : 'Un QR code sera généré pour le destinataire',
+                    style: AppTheme.caption(AppTheme.grey3),
+                  ),
                 ],
               ),
             ),
@@ -578,15 +643,12 @@ class _GiftToggle extends StatelessWidget {
                 color: value ? const Color(0xFFFFB300) : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: value
-                      ? const Color(0xFFFFB300)
-                      : AppTheme.grey4,
+                  color: value ? const Color(0xFFFFB300) : AppTheme.grey4,
                   width: 2,
                 ),
               ),
               child: value
-                  ? const Icon(Icons.check_rounded,
-                      color: Colors.white, size: 14)
+                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
                   : null,
             ),
           ],
@@ -626,8 +688,7 @@ class _CheckRow extends StatelessWidget {
               ),
             ),
             child: value
-                ? const Icon(Icons.check_rounded,
-                    color: Colors.white, size: 13)
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 13)
                 : null,
           ),
           const SizedBox(width: 10),

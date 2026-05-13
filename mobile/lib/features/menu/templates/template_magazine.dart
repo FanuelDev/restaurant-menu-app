@@ -71,8 +71,12 @@ class _State extends ConsumerState<TemplateMagazine> {
       backgroundColor: const Color(0xFFF5F0E8),
       body: Stack(
         children: [
-          CustomScrollView(
+          RefreshIndicator(
+            onRefresh: () async => widget.onRefresh?.call(),
+            color: brand,
+          child: CustomScrollView(
             controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               // ── App bar ──────────────────────────────────────────────────
               SliverAppBar(
@@ -89,6 +93,14 @@ class _State extends ConsumerState<TemplateMagazine> {
                       count: ref.watch(cartCountProvider),
                       brandColor: brand,
                       onTap: () => CartSheet.show(context),
+                    ),
+                  if (hasOrders)
+                    IconButton(
+                      icon: const Icon(Icons.calendar_month_outlined,
+                          color: Colors.white),
+                      onPressed: () =>
+                          context.push('/reservation/${widget.restaurant.slug}'),
+                      tooltip: 'Réserver',
                     ),
                   if (widget.onRefresh != null)
                     IconButton(
@@ -184,6 +196,7 @@ class _State extends ConsumerState<TemplateMagazine> {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
+          ), // RefreshIndicator
 
           // ── Cart FAB ─────────────────────────────────────────────────────
           Positioned(
@@ -455,7 +468,8 @@ class _ArticleCard extends ConsumerWidget {
     return Opacity(
       opacity: unavailable ? 0.5 : 1,
       child: Container(
-        height: horizontal ? 100 : null,
+        // Pas de hauteur fixe — la card s'adapte au contenu
+        constraints: const BoxConstraints(minHeight: 90),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -466,16 +480,19 @@ class _ArticleCard extends ConsumerWidget {
                 offset: const Offset(0, 2))
           ],
         ),
-        child: Row(
+        child: IntrinsicHeight(
+          child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image
+            // Image — largeur fixe, hauteur étirée sur celle du contenu
             ClipRRect(
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(14)),
               child: DishImage(
                 url: item.imageUrl,
                 width: 100,
-                height: double.infinity,
+                height: null,
+                fit: BoxFit.cover,
               ),
             ),
             // Text content
@@ -485,26 +502,22 @@ class _ArticleCard extends ConsumerWidget {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        if (item.badge != null) ...[
-                          BadgeChip(badge: item.badge!),
-                          const SizedBox(width: 6),
-                        ],
-                        Expanded(
-                          child: Text(
-                            item.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
+                    // Badge + nom sur la même ligne si badge court
+                    if (item.badge != null) ...[
+                      BadgeChip(badge: item.badge!),
+                      const SizedBox(height: 4),
+                    ],
+                    Text(
+                      item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w800, height: 1.3),
                     ),
-                    if (item.description != null)
+                    if (item.description != null) ...[
+                      const SizedBox(height: 4),
                       Text(
                         item.description!,
                         maxLines: 2,
@@ -512,19 +525,25 @@ class _ArticleCard extends ConsumerWidget {
                         style: const TextStyle(
                             fontSize: 11, color: Colors.black45, height: 1.4),
                       ),
+                    ],
+                    const SizedBox(height: 8),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          item.priceFormatted ??
-                              formatPrice(item.price, currency),
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: brandColor),
+                        Expanded(
+                          child: Text(
+                            item.priceFormatted ??
+                                formatPrice(item.price, currency),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: brandColor),
+                          ),
                         ),
-                        const Spacer(),
                         if (hasOrders && !unavailable)
-                          QtyControl(item: item, brandColor: brandColor),
+                          QtyControl(item: item, brandColor: brandColor, compact: true),
                       ],
                     ),
                   ],
@@ -533,6 +552,7 @@ class _ArticleCard extends ConsumerWidget {
             ),
           ],
         ),
+        ), // IntrinsicHeight
       ),
     );
   }

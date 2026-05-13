@@ -85,8 +85,12 @@ class _State extends ConsumerState<TemplateLumiere> {
       backgroundColor: const Color(0xFFFAF9F5),
       body: Stack(
         children: [
-          CustomScrollView(
+          RefreshIndicator(
+            onRefresh: () async => widget.onRefresh?.call(),
+            color: brand,
+          child: CustomScrollView(
             controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               // ── Hero ─────────────────────────────────────────────────────
               SliverAppBar(
@@ -190,6 +194,7 @@ class _State extends ConsumerState<TemplateLumiere> {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
+          ), // RefreshIndicator
 
           // ── Cart FAB ──────────────────────────────────────────────────────
           Positioned(
@@ -600,18 +605,22 @@ class _FeaturedLayout extends ConsumerWidget {
                 ],
                 const SizedBox(height: 10),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      item.priceFormatted ??
-                          formatPrice(item.price, currency),
-                      style: TextStyle(
-                          color: brandColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800),
+                    Expanded(
+                      child: Text(
+                        item.priceFormatted ??
+                            formatPrice(item.price, currency),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: brandColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800),
+                      ),
                     ),
-                    const Spacer(),
                     if (hasOrders && !unavailable)
-                      QtyControl(item: item, brandColor: brandColor),
+                      QtyControl(item: item, brandColor: brandColor, compact: true),
                   ],
                 ),
               ],
@@ -671,19 +680,22 @@ class _GridLayout extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
                       item.priceFormatted ??
                           formatPrice(item.price, currency),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: brandColor,
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800),
                     ),
                   ),
                   if (hasOrders && !unavailable)
-                    QtyControl(item: item, brandColor: brandColor),
+                    QtyControl(item: item, brandColor: brandColor, compact: true),
                 ],
               ),
             ],

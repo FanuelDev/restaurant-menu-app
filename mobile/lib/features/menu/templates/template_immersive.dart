@@ -176,6 +176,23 @@ class _State extends ConsumerState<TemplateImmersive> {
                         ),
                       ),
                     const SizedBox(width: 8),
+                    if (hasOrders) ...[
+                      GestureDetector(
+                        onTap: () => context.push(
+                            '/reservation/${widget.restaurant.slug}'),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.calendar_month_outlined,
+                              color: Colors.white, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     if (widget.onRefresh != null) ...[
                       GestureDetector(
                         onTap: widget.onRefresh,
@@ -337,7 +354,7 @@ class _SlideCard extends ConsumerWidget {
             ),
           ),
 
-          // Content overlay
+          // Content overlay — extra bottom padding when CartFab is visible
           Positioned(
             bottom: 0,
             left: 0,
@@ -345,7 +362,10 @@ class _SlideCard extends ConsumerWidget {
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                padding: EdgeInsets.fromLTRB(
+                  24, 0, 24,
+                  hasOrders ? 96 : 24, // leave room for CartFab
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
