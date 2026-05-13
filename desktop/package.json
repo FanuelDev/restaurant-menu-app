@@ -1,0 +1,78 @@
+{
+  "name": "saemenus-desktop",
+  "version": "1.0.0",
+  "description": "SaeMenus — Gérez votre menu digital depuis votre ordinateur",
+  "main": "main.js",
+  "author": {
+    "name": "SaeMenus",
+    "email": "contact@saemenus.com",
+    "url": "https://saemenus.com"
+  },
+  "scripts": {
+    "start": "electron .",
+    "setup": "node setup-cache.js",
+    "build:icon": "node build-icon.js",
+    "pack": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --dir",
+    "build:win": "npm run setup && npm run build:icon && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
+    "build:win:nsis": "npm run setup && npm run build:icon && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis",
+    "build:win:portable": "npm run setup && npm run build:icon && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable",
+    "dist": "npm run build:win"
+  },
+  "build": {
+    "appId": "com.saemenus.desktop",
+    "productName": "SaeMenus",
+    "copyright": "Copyright © 2025 SaeMenus",
+    "icon": "assets/icon",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "offline.html",
+      "assets/icon.ico",
+      "assets/icon.png"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SaeMenus",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "menuCategory": "SaeMenus",
+      "language": "1036"
+    },
+    "publish": null
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0",
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5"
+  }
+}
