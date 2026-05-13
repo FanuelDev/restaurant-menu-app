@@ -33,6 +33,24 @@ export const routes: Routes = [
       import('./public/redeem/redeem.component').then((m) => m.RedeemComponent),
     title: 'Récupérer votre cadeau',
   },
+  {
+    path: 'privacy',
+    loadComponent: () =>
+      import('./public/privacy/privacy.component').then((m) => m.PrivacyComponent),
+    title: 'Politique de confidentialité — SaeMenus',
+  },
+  {
+    path: 'faq',
+    loadComponent: () =>
+      import('./public/faq/faq.component').then((m) => m.FaqComponent),
+    title: 'Questions fréquentes — SaeMenus',
+  },
+  {
+    path: 'guide',
+    loadComponent: () =>
+      import('./public/guide/guide.component').then((m) => m.GuideComponent),
+    title: "Guide d'utilisation — SaeMenus",
+  },
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
   {
@@ -129,6 +147,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/api/api.component').then((m) => m.ApiComponent),
         title: 'API dédiée',
+      },
+      {
+        path: 'finance',
+        loadComponent: () =>
+          import('./admin/finance/finance.component').then((m) => m.FinanceComponent),
+        title: 'Gestion financière',
       },
     ],
   },

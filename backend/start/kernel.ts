@@ -17,4 +17,5 @@ export const middleware = router.named({
   role: () => import('#middleware/role_middleware'),
   subscriptionGuard: () => import('#middleware/subscription_guard_middleware'),
   enterpriseGuard: () => import('#middleware/enterprise_guard_middleware'),
+  financeGuard: () => import('#middleware/finance_guard_middleware'),
 })

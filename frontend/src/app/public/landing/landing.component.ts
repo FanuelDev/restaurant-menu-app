@@ -554,6 +554,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <a href="#pricing" class="footer-link" (click)="scrollTo($event, 'pricing')">{{ t('public.landing.footerLinkPricing') }}</a>
           <a href="#how" class="footer-link" (click)="scrollTo($event, 'how')">{{ t('public.landing.footerLinkHow') }}</a>
           <a routerLink="/pricing" class="footer-link">{{ t('public.landing.footerLinkDetailed') }}</a>
+          <a routerLink="/guide" class="footer-link">Guide d'utilisation</a>
         </div>
 
         <div class="footer-col">
@@ -561,6 +562,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <a routerLink="/login" class="footer-link">{{ t('public.landing.footerLinkLogin') }}</a>
           <a routerLink="/register" class="footer-link">{{ t('public.landing.footerLinkRegister') }}</a>
           <a routerLink="/forgot-password" class="footer-link">{{ t('public.landing.footerLinkForgot') }}</a>
+          <a routerLink="/faq" class="footer-link">FAQ</a>
         </div>
 
         <div class="footer-col">
@@ -569,7 +571,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
           <a href="mailto:support@saemenus.com" class="footer-link">support&#64;saemenus.com</a>
           <div class="footer-col-title" style="margin-top:var(--space-4)">{{ t('public.landing.footerLinkLegal') }}</div>
           <a href="#" class="footer-link">{{ t('public.landing.footerLinkTos') }}</a>
-          <a href="#" class="footer-link">{{ t('public.landing.footerLinkPrivacy') }}</a>
+          <a routerLink="/privacy" class="footer-link">{{ t('public.landing.footerLinkPrivacy') }}</a>
         </div>
       </div>
 
@@ -1288,12 +1290,28 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
     return index === this.featuredIndex()
   }
 
-  /** Only the enabled features (true values) as label strings */
+  private readonly FEATURE_DEFS: Array<{
+    key: string
+    label: (p: Plan) => string
+    value: (p: Plan) => boolean
+  }> = [
+    { key: 'qr',        label: () => 'Menu digital & QR code',                                                           value: () => true },
+    { key: 'cats',      label: (p) => p.maxCategories === -1 ? 'Catégories illimitées' : `${p.maxCategories} catégories de menu`, value: () => true },
+    { key: 'items',     label: (p) => p.maxMenuItems   === -1 ? 'Plats illimités'      : `${p.maxMenuItems} plats maximum`,       value: () => true },
+    { key: 'users',     label: (p) => p.maxUsers === -1 ? 'Caissiers illimités' : p.maxUsers <= 1 ? '1 utilisateur' : `${p.maxUsers} caissiers`, value: () => true },
+    { key: 'templates', label: () => '5 templates visuels',                                                               value: () => true },
+    { key: 'orders',    label: () => 'Commandes & réservations en ligne',                                                  value: (p) => !!(p.features?.['orders_and_reservations']) || p.slug === 'pro' || p.slug === 'enterprise' },
+    { key: 'stats',     label: () => 'Statistiques avancées',                                                              value: (p) => !!(p.features?.['stats']) || p.slug === 'pro' || p.slug === 'enterprise' },
+    { key: 'support',   label: (p) => p.slug === 'enterprise' ? 'Support 24/7 & SLA garanti' : 'Support prioritaire',    value: (p) => !!(p.features?.['priority_support']) || p.slug === 'pro' || p.slug === 'enterprise' },
+    { key: 'api',       label: () => 'API dédiée',                                                                        value: (p) => !!(p.features?.['api_access']) || p.slug === 'enterprise' },
+    { key: 'gift',      label: () => 'QR codes cadeaux',                                                                  value: (p) => !!(p.features?.['gift_qr']) || p.slug === 'enterprise' },
+    { key: 'finance',   label: () => 'Gestion financière complète',                                                       value: (p) => !!(p.features?.['financial_management']) || !!(p.features?.['api_access']) || p.slug === 'enterprise' },
+  ]
+
   enabledFeatures(plan: Plan): string[] {
-    if (!plan.features) return []
-    return Object.entries(plan.features)
-      .filter(([, v]) => v)
-      .map(([k]) => k)
+    return this.FEATURE_DEFS
+      .filter(def => def.value(plan))
+      .map(def => def.label(plan))
   }
 
   ngAfterViewInit(): void {

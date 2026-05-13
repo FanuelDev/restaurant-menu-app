@@ -319,6 +319,58 @@ export interface CreateReservationPayload {
   specialRequests: string | null
 }
 
+// ─── Finance ─────────────────────────────────────────────────────────────────
+export type ExpenseCategory = 'ingredient' | 'tool' | 'accessory' | 'other'
+export type FinancePeriod = 'day' | 'week' | 'month' | 'semester' | 'year'
+
+export interface FinanceExpense {
+  id: number
+  restaurantId: number
+  createdBy: number | null
+  category: ExpenseCategory
+  label: string
+  amount: number
+  date: string
+  notes: string | null
+  createdAt: string
+}
+
+export interface FinanceIncome {
+  id: number
+  restaurantId: number
+  createdBy: number | null
+  label: string
+  amount: number
+  date: string
+  notes: string | null
+  createdAt: string
+}
+
+export interface FinanceSummary {
+  period: FinancePeriod
+  totalRevenue: number
+  ordersRevenue: number
+  manualRevenue: number
+  totalExpenses: number
+  netProfit: number
+  marginPct: number
+  byCategory: { ingredient: number; tool: number; accessory: number; other: number }
+  trends: { revenue: number | null; expenses: number | null; net: number | null }
+}
+
+export interface FinanceChartPoint {
+  label: string
+  revenue: number
+  expenses: number
+  net: number
+}
+
+export interface FinanceChart {
+  period: FinancePeriod
+  groupBy: 'hour' | 'day' | 'month'
+  points: FinanceChartPoint[]
+}
+
 // ─── Misc ────────────────────────────────────────────────────────────────────
 export interface ApiError {
   message: string

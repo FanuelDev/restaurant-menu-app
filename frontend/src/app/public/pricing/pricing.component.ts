@@ -109,21 +109,6 @@ import type { Plan, BillingCycle } from '../../shared/models'
                   }
                 </div>
 
-                <!-- Limits summary -->
-                <div class="plan-limits">
-                  <span class="plan-limit-chip">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3V2M11 3V2"/></svg>
-                    {{ plan.maxCategories === -1 ? '∞' : plan.maxCategories }} {{ t('public.pricing.categoriesChip') }}
-                  </span>
-                  <span class="plan-limit-chip">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-                    {{ plan.maxMenuItems === -1 ? '∞' : plan.maxMenuItems }} {{ t('public.pricing.itemsChip') }}
-                  </span>
-                  <span class="plan-limit-chip">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="5" r="2.5"/><path d="M2 14c0-3 2-4 4-4s4 1 4 4"/><circle cx="12" cy="5" r="2" /><path d="M14 14c0-2-1-3-2-3"/></svg>
-                    {{ plan.maxUsers === -1 ? '∞' : plan.maxUsers }} {{ t('public.pricing.usersChip') }}
-                  </span>
-                </div>
 
                 <a routerLink="/register" class="plan-cta" [class.plan-cta-featured]="isFeatured(i)">
                   {{ plan.priceMonthlyCents === 0 ? t('public.pricing.choosePlan') : t('public.pricing.startTrial') }}
@@ -347,17 +332,6 @@ import type { Plan, BillingCycle } from '../../shared/models'
       background: var(--success-bg); padding: .15rem .5rem; border-radius: var(--radius-full);
     }
 
-    /* Limits chips */
-    .plan-limits {
-      display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4);
-    }
-    .plan-limit-chip {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: var(--gray-50); border: 1px solid var(--border);
-      border-radius: var(--radius-full); padding: .2rem .6rem;
-      font-size: .75rem; color: var(--text-muted); font-weight: 500;
-      svg { color: var(--text-muted); flex-shrink: 0; }
-    }
 
     .plan-cta {
       display: flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -459,32 +433,73 @@ export class PricingComponent implements OnInit {
     return index === this.featuredIndex()
   }
 
-  private readonly featureLabels: Record<string, string> = {
-    stats: 'Statistics & analytics',
-    api_access: 'API access',
-    orders_and_reservations: 'Orders & table reservations',
-    gift_qr: 'Gift QR codes',
-    priority_support: 'Priority support',
-    custom_domain: 'Custom domain',
-    white_label: 'White-label branding',
-  }
-
-  private readonly ALL_FEATURES = [
-    'stats',
-    'api_access',
-    'orders_and_reservations',
-    'gift_qr',
-    'priority_support',
+  private readonly FEATURE_DEFS: Array<{
+    key: string
+    label: (p: Plan) => string
+    value: (p: Plan) => boolean
+  }> = [
+    {
+      key: 'qr',
+      label: () => 'Menu digital & QR code',
+      value: () => true,
+    },
+    {
+      key: 'categories',
+      label: (p) => p.maxCategories === -1 ? 'Catégories illimitées' : `${p.maxCategories} catégories de menu`,
+      value: () => true,
+    },
+    {
+      key: 'items',
+      label: (p) => p.maxMenuItems === -1 ? 'Plats illimités' : `${p.maxMenuItems} plats maximum`,
+      value: () => true,
+    },
+    {
+      key: 'users',
+      label: (p) => p.maxUsers === -1 ? 'Caissiers illimités' : p.maxUsers <= 1 ? '1 utilisateur' : `${p.maxUsers} caissiers`,
+      value: () => true,
+    },
+    {
+      key: 'templates',
+      label: () => '5 templates visuels',
+      value: () => true,
+    },
+    {
+      key: 'orders_and_reservations',
+      label: () => 'Commandes & réservations en ligne',
+      value: (p) => !!(p.features?.['orders_and_reservations']) || p.slug === 'pro' || p.slug === 'enterprise',
+    },
+    {
+      key: 'stats',
+      label: () => 'Statistiques avancées',
+      value: (p) => !!(p.features?.['stats']) || p.slug === 'pro' || p.slug === 'enterprise',
+    },
+    {
+      key: 'priority_support',
+      label: (p) => p.slug === 'enterprise' ? 'Support 24/7 & SLA garanti' : 'Support prioritaire',
+      value: (p) => !!(p.features?.['priority_support']) || p.slug === 'pro' || p.slug === 'enterprise',
+    },
+    {
+      key: 'api_access',
+      label: () => 'API dédiée',
+      value: (p) => !!(p.features?.['api_access']) || p.slug === 'enterprise',
+    },
+    {
+      key: 'gift_qr',
+      label: () => 'QR codes cadeaux',
+      value: (p) => !!(p.features?.['gift_qr']) || p.slug === 'enterprise',
+    },
+    {
+      key: 'finance',
+      label: () => 'Gestion financière complète',
+      value: (p) => !!(p.features?.['financial_management']) || !!(p.features?.['api_access']) || p.slug === 'enterprise',
+    },
   ]
 
-  /** Convert plan features to a sorted list with human-readable labels */
   featureEntries(plan: Plan): { key: string; label: string; value: boolean }[] {
-    const feats = plan.features ?? {}
-    return this.ALL_FEATURES.map((k) => ({
-      key: k,
-      label: this.featureLabels[k] ?? k,
-      // fallback: Pro et Enterprise ont toujours orders_and_reservations
-      value: !!feats[k] || (k === 'orders_and_reservations' && (plan.slug === 'pro' || plan.slug === 'enterprise')),
+    return this.FEATURE_DEFS.map(def => ({
+      key: def.key,
+      label: def.label(plan),
+      value: def.value(plan),
     }))
   }
 

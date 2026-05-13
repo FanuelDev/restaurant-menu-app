@@ -168,6 +168,24 @@ import { AuthService } from '../../shared/services/auth.service'
                 @if (!hasApi()) { <span class="sb-lock">Enterprise</span> }
               }
             </a>
+
+            <a
+              routerLink="/admin/finance"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasFinance()"
+              [title]="collapsed() ? 'Finance' : (!hasFinance() ? 'Réservé Enterprise' : '')"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 14V8l5-5 5 5v6H2z"/>
+                <path d="M7 14v-4h4v4"/>
+                <path d="M1 14h16"/>
+              </svg>
+              @if (!collapsed()) {
+                <span>Finance</span>
+                @if (!hasFinance()) { <span class="sb-lock">Enterprise</span> }
+              }
+            </a>
           }
         </nav>
 
@@ -376,6 +394,10 @@ export class AdminLayoutComponent {
     return plan?.slug === 'pro' || plan?.slug === 'enterprise' || !!plan?.features?.['orders_and_reservations']
   })
   readonly hasApi     = computed(() => this.planSlug() === 'enterprise')
+  readonly hasFinance = computed(() => {
+    const plan = this.authService.restaurant()?.plan
+    return plan?.slug === 'enterprise' || !!plan?.features?.['financial_management']
+  })
 
   readonly userInitials = computed(() => {
     const name = this.user()?.fullName || this.user()?.email || '?'

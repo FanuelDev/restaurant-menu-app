@@ -20,6 +20,7 @@ const StatsController = () => import('#controllers/stats_controller')
 const WebhooksController = () => import('#controllers/webhooks_controller')
 const OrdersController = () => import('#controllers/orders_controller')
 const ReservationsController = () => import('#controllers/reservations_controller')
+const FinanceController = () => import('#controllers/finance_controller')
 
 // Super admin
 const SARestaurantsController = () => import('#controllers/super_admin/restaurants_controller')
@@ -144,6 +145,28 @@ router
       .use(middleware.role(['admin']))
     router.patch('/reservations/:id/status', [ReservationsController, 'adminUpdateStatus'])
       .use(middleware.role(['admin']))
+
+    // Finance — Enterprise only
+    router.get('/finance/summary', [FinanceController, 'summary'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.get('/finance/chart', [FinanceController, 'chart'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.get('/finance/expenses', [FinanceController, 'listExpenses'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.post('/finance/expenses', [FinanceController, 'createExpense'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.put('/finance/expenses/:id', [FinanceController, 'updateExpense'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.delete('/finance/expenses/:id', [FinanceController, 'deleteExpense'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.get('/finance/incomes', [FinanceController, 'listIncomes'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.post('/finance/incomes', [FinanceController, 'createIncome'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.put('/finance/incomes/:id', [FinanceController, 'updateIncome'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.delete('/finance/incomes/:id', [FinanceController, 'deleteIncome'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
 
     // Categories — admin + cashier can read/create/update; only admin can delete
     router.get('/categories', [CategoriesController, 'index'])
