@@ -1,5 +1,5 @@
 ﻿// lib/features/menu/templates/template_immersive.dart
-// Template 3 â€” Immersif : swipe plein Ã©cran (PageView vertical)
+// Template 3 — Immersif : swipe plein ecran (PageView vertical)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,7 +14,8 @@ class TemplateImmersive extends ConsumerStatefulWidget {
   final Restaurant restaurant;
   final List<Category> categories;
   final RestaurantFeatures? features;
-  const TemplateImmersive({super.key, required this.restaurant, required this.categories, this.features});
+  final VoidCallback? onRefresh;
+  const TemplateImmersive({super.key, required this.restaurant, required this.categories, this.features, this.onRefresh});
 
   @override
   ConsumerState<TemplateImmersive> createState() => _State();
@@ -86,7 +87,7 @@ class _State extends ConsumerState<TemplateImmersive> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // â”€â”€ PageView â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── PageView ─────────────────────────────────────────────────────
           PageView.builder(
             controller: _pageCtrl,
             scrollDirection: Axis.vertical,
@@ -100,7 +101,7 @@ class _State extends ConsumerState<TemplateImmersive> {
             ),
           ),
 
-          // â”€â”€ Progress bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Progress bar ─────────────────────────────────────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -113,7 +114,7 @@ class _State extends ConsumerState<TemplateImmersive> {
             ),
           ),
 
-          // â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Top bar ──────────────────────────────────────────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -175,6 +176,22 @@ class _State extends ConsumerState<TemplateImmersive> {
                         ),
                       ),
                     const SizedBox(width: 8),
+                    if (widget.onRefresh != null) ...[
+                      GestureDetector(
+                        onTap: widget.onRefresh,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.refresh_rounded,
+                              color: Colors.white, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     GestureDetector(
                       onTap: () => context.go('/'),
                       child: Container(
@@ -194,7 +211,7 @@ class _State extends ConsumerState<TemplateImmersive> {
             ),
           ),
 
-          // â”€â”€ Nav arrows (tablet) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Nav arrows (tablet) ───────────────────────────────────────────
           if (size.width > 600) ...[
             Positioned(
               right: 20,
@@ -216,7 +233,7 @@ class _State extends ConsumerState<TemplateImmersive> {
             ),
           ],
 
-          // â”€â”€ Swipe hint on first slide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Swipe hint on first slide ─────────────────────────────────────
           if (_current == 0)
             Positioned(
               bottom: 200,
@@ -232,7 +249,15 @@ class _State extends ConsumerState<TemplateImmersive> {
               ),
             ),
 
-          // â”€â”€ Category drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Floating cart bar ────────────────────────────────────────────
+          Positioned(
+            bottom: 20,
+            left: 16,
+            right: 16,
+            child: CartFab(brandColor: brand),
+          ),
+
+          // ── Category drawer ───────────────────────────────────────────────
           if (_drawerOpen) ...[
             GestureDetector(
               onTap: () => setState(() => _drawerOpen = false),
@@ -491,7 +516,7 @@ class _CategoryDrawer extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Center(
-                                  child: Text('ðŸ½ï¸', style: TextStyle(fontSize: 20))),
+                                  child: Text('?', style: TextStyle(fontSize: 20))),
                             ),
                       title: Text(cat.name,
                           style: TextStyle(

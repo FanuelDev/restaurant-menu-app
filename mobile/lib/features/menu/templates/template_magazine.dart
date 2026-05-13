@@ -1,5 +1,5 @@
 ﻿// lib/features/menu/templates/template_magazine.dart
-// Template 2 â€” Magazine : hero Ã©ditorial + sidebar catÃ©gories + liste articles
+// Template 2 — Magazine : hero editorial + sidebar categories + liste articles
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,11 +14,13 @@ class TemplateMagazine extends ConsumerStatefulWidget {
   final Restaurant restaurant;
   final List<Category> categories;
   final RestaurantFeatures? features;
+  final VoidCallback? onRefresh;
   const TemplateMagazine({
     super.key,
     required this.restaurant,
     required this.categories,
     this.features,
+    this.onRefresh,
   });
 
   @override
@@ -72,7 +74,7 @@ class _State extends ConsumerState<TemplateMagazine> {
           CustomScrollView(
             controller: _scroll,
             slivers: [
-              // â”€â”€ App bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── App bar ──────────────────────────────────────────────────
               SliverAppBar(
                 expandedHeight: 280,
                 pinned: true,
@@ -88,6 +90,12 @@ class _State extends ConsumerState<TemplateMagazine> {
                       brandColor: brand,
                       onTap: () => CartSheet.show(context),
                     ),
+                  if (widget.onRefresh != null)
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                      onPressed: widget.onRefresh,
+                      tooltip: 'Actualiser',
+                    ),
                   IconButton(
                     icon: const Icon(Icons.qr_code_scanner_rounded,
                         color: Colors.white),
@@ -99,12 +107,12 @@ class _State extends ConsumerState<TemplateMagazine> {
                 ),
               ),
 
-              // â”€â”€ Hours band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Hours band ───────────────────────────────────────────────
               SliverToBoxAdapter(
                 child: HoursBand(restaurant: widget.restaurant),
               ),
 
-              // â”€â”€ Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Search ───────────────────────────────────────────────────
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _SearchBarDelegate(
@@ -112,7 +120,7 @@ class _State extends ConsumerState<TemplateMagazine> {
                 ),
               ),
 
-              // â”€â”€ Category chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Category chips ───────────────────────────────────────────
               SliverToBoxAdapter(
                 child: _CategoryChips(
                   categories: widget.categories,
@@ -122,11 +130,11 @@ class _State extends ConsumerState<TemplateMagazine> {
                 ),
               ),
 
-              // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Content ──────────────────────────────────────────────────
               if (_filtered.isEmpty)
                 const SliverFillRemaining(
                   child: Center(
-                    child: Text('Aucun plat trouvÃ© ðŸ½ï¸',
+                    child: Text('Aucun plat trouve ?',
                         style: TextStyle(color: Colors.black38)),
                   ),
                 )
@@ -177,10 +185,15 @@ class _State extends ConsumerState<TemplateMagazine> {
             ],
           ),
 
-          // â”€â”€ Cart FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          CartFab(brandColor: brand),
+          // ── Cart FAB ─────────────────────────────────────────────────────
+          Positioned(
+            bottom: 20,
+            left: 16,
+            right: 16,
+            child: CartFab(brandColor: brand),
+          ),
 
-          // â”€â”€ Sidebar drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Sidebar drawer ───────────────────────────────────────────────
           if (_drawerOpen) ...[
             GestureDetector(
               onTap: () => setState(() => _drawerOpen = false),
@@ -205,7 +218,7 @@ class _State extends ConsumerState<TemplateMagazine> {
   }
 }
 
-// â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hero ──────────────────────────────────────────────────────────────────────
 
 class _MagazineHero extends StatelessWidget {
   final Restaurant restaurant;
@@ -277,7 +290,7 @@ class _MagazineHero extends StatelessWidget {
   }
 }
 
-// â”€â”€ Search delegate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Search delegate ───────────────────────────────────────────────────────────
 
 class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<String> onChanged;
@@ -296,7 +309,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
       child: TextField(
         onChanged: onChanged,
         decoration: InputDecoration(
-          hintText: 'Rechercher dans la carteâ€¦',
+          hintText: 'Rechercher dans la carte...',
           prefixIcon: const Icon(Icons.search_rounded, size: 18),
           filled: true,
           fillColor: Colors.white,
@@ -314,7 +327,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-// â”€â”€ Category chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Category chips ────────────────────────────────────────────────────────────
 
 class _CategoryChips extends StatelessWidget {
   final List<Category> categories;
@@ -389,7 +402,7 @@ class _Chip extends StatelessWidget {
   }
 }
 
-// â”€â”€ Section header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Section header ────────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   final String label;
@@ -420,7 +433,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// â”€â”€ Article card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Article card ──────────────────────────────────────────────────────────────
 
 class _ArticleCard extends ConsumerWidget {
   final MenuItem item;
@@ -525,7 +538,7 @@ class _ArticleCard extends ConsumerWidget {
   }
 }
 
-// â”€â”€ Cart badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Cart badge ────────────────────────────────────────────────────────────────
 
 class _CartBadge extends StatelessWidget {
   final int count;
@@ -569,7 +582,7 @@ class _CartBadge extends StatelessWidget {
   }
 }
 
-// â”€â”€ Side drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Side drawer ───────────────────────────────────────────────────────────────
 
 class _SideDrawer extends StatelessWidget {
   final Restaurant restaurant;
@@ -673,7 +686,7 @@ class _SideDrawer extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Center(
-                                  child: Text('ðŸ½ï¸',
+                                  child: Text('?',
                                       style: TextStyle(fontSize: 16))),
                             ),
                       title: Text(cat.name,

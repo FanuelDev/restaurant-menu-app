@@ -1,7 +1,24 @@
 // lib/core/models/models.dart
-// Barrel export + toutes les données models
+// Barrel export + toutes les donn�es models
 
 import 'package:flutter/material.dart';
+
+// ─── Helpers JSON ─────────────────────────────────────────────────────────────
+
+double _toDouble(dynamic v) {
+  if (v == null) return 0;
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v) ?? 0;
+  return 0;
+}
+
+int _toInt(dynamic v, {int fallback = 0}) {
+  if (v == null) return fallback;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? fallback;
+  return fallback;
+}
 
 // ─── Restaurant ───────────────────────────────────────────────────────────────
 
@@ -51,18 +68,18 @@ class Restaurant {
   factory Restaurant.fromJson(Map<String, dynamic> j) {
     final hours = j['openingHours'] as Map<String, dynamic>?;
     return Restaurant(
-      id: j['id'],
-      slug: j['slug'],
-      name: j['name'],
-      slogan: j['slogan'],
-      brandColor: j['brandColor'] ?? '#C0392B',
-      templateId: j['templateId'] ?? 1,
-      logoUrl: j['logoUrl'],
-      coverImageUrl: j['coverImageUrl'],
-      address: j['address'],
-      phone: j['phone'],
-      email: j['email'],
-      currency: j['currency'] ?? 'XOF',
+      id: _toInt(j['id'], fallback: 0),
+      slug: j['slug']?.toString() ?? '',
+      name: j['name']?.toString() ?? '',
+      slogan: j['slogan']?.toString(),
+      brandColor: j['brandColor']?.toString() ?? '#C0392B',
+      templateId: _toInt(j['templateId'], fallback: 1),
+      logoUrl: j['logoUrl']?.toString(),
+      coverImageUrl: j['coverImageUrl']?.toString(),
+      address: j['address']?.toString(),
+      phone: j['phone']?.toString(),
+      email: j['email']?.toString(),
+      currency: j['currency']?.toString() ?? 'XOF',
       openingHours: hours?.map((k, v) => MapEntry(k, DaySchedule.fromJson(v as Map<String, dynamic>))),
     );
   }
@@ -104,10 +121,10 @@ class Category {
   });
 
   factory Category.fromJson(Map<String, dynamic> j) => Category(
-        id: j['id'],
-        name: j['name'],
-        description: j['description'],
-        sortOrder: j['sortOrder'] ?? 0,
+        id: _toInt(j['id']),
+        name: j['name']?.toString() ?? '',
+        description: j['description']?.toString(),
+        sortOrder: _toInt(j['sortOrder']),
         menuItems: (j['menuItems'] as List<dynamic>? ?? [])
             .map((e) => MenuItem.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -140,16 +157,16 @@ class MenuItem {
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> j) => MenuItem(
-        id: j['id'],
-        categoryId: j['categoryId'],
-        name: j['name'],
-        description: j['description'],
-        price: (j['price'] as num).toDouble(),
-        priceFormatted: j['priceFormatted'],
-        imageUrl: j['imageUrl'],
-        isAvailable: j['isAvailable'] ?? true,
-        badge: j['badge'],
-        sortOrder: j['sortOrder'] ?? 0,
+        id: _toInt(j['id']),
+        categoryId: _toInt(j['categoryId']),
+        name: j['name']?.toString() ?? '',
+        description: j['description']?.toString(),
+        price: _toDouble(j['price']),
+        priceFormatted: j['priceFormatted']?.toString(),
+        imageUrl: j['imageUrl']?.toString(),
+        isAvailable: j['isAvailable'] == true || j['isAvailable'] == 1 || j['isAvailable'] == 'true',
+        badge: j['badge']?.toString(),
+        sortOrder: _toInt(j['sortOrder']),
       );
 }
 
@@ -228,9 +245,9 @@ class PlacedOrder {
   });
 
   factory PlacedOrder.fromJson(Map<String, dynamic> j) => PlacedOrder(
-        orderNumber: j['orderNumber'] ?? '',
-        total: (j['total'] as num?)?.toDouble() ?? 0,
-        status: j['status'] ?? 'pending',
-        customerName: j['customerName'],
+        orderNumber: j['orderNumber']?.toString() ?? '',
+        total: _toDouble(j['total']),
+        status: j['status']?.toString() ?? 'pending',
+        customerName: j['customerName']?.toString(),
       );
 }

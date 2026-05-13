@@ -1,13 +1,13 @@
-﻿// lib/features/profile/profile_screen.dart
+// lib/features/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
+import '../../core/theme/app_theme.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
-
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -23,22 +23,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(profileProvider);
-    _nameCtrl = TextEditingController(text: profile.name ?? '');
-    _phoneCtrl = TextEditingController(text: profile.phone ?? '');
-    _emailCtrl = TextEditingController(text: profile.email ?? '');
-    _nameCtrl.addListener(_markDirty);
-    _phoneCtrl.addListener(_markDirty);
-    _emailCtrl.addListener(_markDirty);
+    final p = ref.read(profileProvider);
+    _nameCtrl  = TextEditingController(text: p.name ?? '');
+    _phoneCtrl = TextEditingController(text: p.phone ?? '');
+    _emailCtrl = TextEditingController(text: p.email ?? '');
+    _nameCtrl.addListener(_mark);
+    _phoneCtrl.addListener(_mark);
+    _emailCtrl.addListener(_mark);
   }
 
-  void _markDirty() => setState(() => _dirty = true);
+  void _mark() => setState(() => _dirty = true);
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _phoneCtrl.dispose();
-    _emailCtrl.dispose();
+    _nameCtrl.dispose(); _phoneCtrl.dispose(); _emailCtrl.dispose();
     super.dispose();
   }
 
@@ -46,58 +44,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     await ref.read(profileProvider.notifier).save(CustomerProfile(
-          name:
-              _nameCtrl.text.trim().isEmpty ? null : _nameCtrl.text.trim(),
-          phone: _phoneCtrl.text.trim().isEmpty
-              ? null
-              : _phoneCtrl.text.trim(),
-          email:
-              _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
-        ));
-    setState(() {
-      _saving = false;
-      _dirty = false;
-    });
+      name:  _nameCtrl.text.trim().isEmpty  ? null : _nameCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+      email: _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
+    ));
+    setState(() { _saving = false; _dirty = false; });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil sauvegardÃ© âœ“'),
-          backgroundColor: Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Profil sauvegarde', style: AppTheme.body(Colors.white)),
+        backgroundColor: AppTheme.badgeVeg,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ));
     }
   }
 
   Future<void> _clear() async {
-    final confirm = await showDialog<bool>(
+    final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Supprimer le profil ?',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-        content: const Text(
-            'Vos informations sauvegardÃ©es seront effacÃ©es de cet appareil.',
-            style: TextStyle(fontSize: 13, color: Colors.black54)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Supprimer le profil ?', style: AppTheme.title(AppTheme.charcoal)),
+        content: Text('Vos informations seront effacees de cet appareil.',
+            style: AppTheme.body(AppTheme.grey2)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppTheme.body(AppTheme.grey2)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Supprimer'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.badgeSpicy,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: Text('Supprimer', style: AppTheme.bodyBold(Colors.white)),
           ),
         ],
       ),
     );
-    if (confirm == true) {
+    if (ok == true) {
       await ref.read(profileProvider.notifier).clear();
-      _nameCtrl.clear();
-      _phoneCtrl.clear();
-      _emailCtrl.clear();
+      _nameCtrl.clear(); _phoneCtrl.clear(); _emailCtrl.clear();
       setState(() => _dirty = false);
     }
   }
@@ -105,103 +94,85 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
-    final hasProfile = profile.name != null;
+    final initial = (profile.name?.isNotEmpty == true)
+        ? profile.name![0].toUpperCase()
+        : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F6F2),
+      backgroundColor: AppTheme.cream,
       appBar: AppBar(
-        title: const Text('Mon profil',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1),
+        backgroundColor: AppTheme.surface,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              size: 18, color: AppTheme.charcoal),
+          onPressed: () => context.go('/'),
         ),
+        title: Text('Mon profil', style: AppTheme.title(AppTheme.charcoal)),
         actions: [
-          if (hasProfile)
+          if (profile.name != null)
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded,
-                  color: Colors.red),
-              tooltip: 'Effacer le profil',
+                  color: AppTheme.badgeSpicy, size: 22),
               onPressed: _clear,
             ),
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: AppTheme.border),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           children: [
-            // â”€â”€ Info card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Row(
+            // Avatar
+            Center(
+              child: Column(
                 children: [
-                  const Text('â„¹ï¸', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Vos informations sont stockÃ©es uniquement sur cet appareil. Elles prÃ©-rempliront les formulaires de commande et de rÃ©servation.',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF1E40AF),
-                          height: 1.5),
+                  Container(
+                    width: 72, height: 72,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC0392B).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: initial != null
+                          ? Text(initial,
+                              style: AppTheme.display(const Color(0xFFC0392B))
+                                  .copyWith(fontSize: 30))
+                          : const Icon(Icons.person_outline_rounded,
+                              size: 32, color: Color(0xFFC0392B)),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Text('Stocke uniquement sur cet appareil',
+                      style: AppTheme.caption(AppTheme.grey3)),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
 
-            // â”€â”€ Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2))
-                ],
-              ),
-              padding: const EdgeInsets.all(16),
+            _Card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Informations personnelles',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2)),
+                  Text('Informations personnelles',
+                      style: AppTheme.title(AppTheme.charcoal)),
                   const SizedBox(height: 16),
-                  _ProfileField(
-                    controller: _nameCtrl,
-                    label: 'Nom complet',
-                    icon: Icons.person_outline_rounded,
-                    keyboardType: TextInputType.name,
-                  ),
+                  _Field(ctrl: _nameCtrl, label: 'Nom complet',
+                      icon: Icons.person_outline_rounded,
+                      type: TextInputType.name),
                   const SizedBox(height: 12),
-                  _ProfileField(
-                    controller: _phoneCtrl,
-                    label: 'TÃ©lÃ©phone',
-                    icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                  ),
+                  _Field(ctrl: _phoneCtrl, label: 'Telephone',
+                      icon: Icons.phone_outlined,
+                      type: TextInputType.phone),
                   const SizedBox(height: 12),
-                  _ProfileField(
-                    controller: _emailCtrl,
-                    label: 'Email',
+                  _Field(
+                    ctrl: _emailCtrl, label: 'Email',
                     icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
+                    type: TextInputType.emailAddress,
                     validator: (v) {
                       if (v == null || v.isEmpty) return null;
                       if (!v.contains('@')) return 'Email invalide';
@@ -212,40 +183,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // â”€â”€ Save button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: (_dirty && !_saving) ? _save : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFC0392B),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  disabledBackgroundColor:
-                      const Color(0xFFC0392B).withValues(alpha: 0.3),
-                ),
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.save_rounded, size: 18),
-                label: Text(
-                  _saving ? 'Sauvegardeâ€¦' : 'Sauvegarder le profil',
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700),
+            AnimatedOpacity(
+              opacity: _dirty ? 1 : 0.45,
+              duration: AppTheme.quick,
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: (_dirty && !_saving) ? _save : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.charcoal,
+                    disabledBackgroundColor: AppTheme.grey4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  icon: _saving
+                      ? const SizedBox(width: 18, height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.check_rounded, size: 18),
+                  label: Text(
+                    _saving ? 'Sauvegarde...' : 'Sauvegarder le profil',
+                    style: AppTheme.bodyBold(Colors.white),
+                  ),
                 ),
               ),
             ),
 
-            // â”€â”€ Recent restaurants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             const SizedBox(height: 32),
             _RecentSection(),
-
             const SizedBox(height: 32),
           ],
         ),
@@ -254,68 +222,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-// â”€â”€ Recent restaurants section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 class _RecentSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recents = ref.watch(recentRestaurantsProvider);
     if (recents.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
+    return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('Restaurants rÃ©cents',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2)),
+              Text('Restaurants recents', style: AppTheme.title(AppTheme.charcoal)),
               const Spacer(),
-              TextButton(
-                onPressed: () =>
-                    ref.read(recentRestaurantsProvider.notifier).clear(),
-                style:
-                    TextButton.styleFrom(foregroundColor: Colors.black38),
-                child: const Text('Effacer', style: TextStyle(fontSize: 12)),
+              GestureDetector(
+                onTap: () => ref.read(recentRestaurantsProvider.notifier).clear(),
+                child: Text('Effacer', style: AppTheme.caption(AppTheme.grey3)),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           ...recents.map((slug) => ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Container(
-                  width: 36,
-                  height: 36,
+                  width: 38, height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.cream,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child:
-                      const Icon(Icons.store_outlined, size: 18, color: Colors.black38),
+                  child: const Icon(Icons.storefront_outlined,
+                      size: 18, color: AppTheme.grey3),
                 ),
-                title: Text(slug,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                title: Text(slug, style: AppTheme.bodyBold(AppTheme.charcoal)),
                 trailing: const Icon(Icons.chevron_right_rounded,
-                    color: Colors.black26, size: 18),
+                    color: AppTheme.grey4, size: 18),
                 onTap: () {
-                  ref
-                      .read(recentRestaurantsProvider.notifier)
-                      .addSlug(slug);
+                  ref.read(recentRestaurantsProvider.notifier).addSlug(slug);
                   context.go('/menu/$slug');
                 },
               )),
@@ -325,52 +268,62 @@ class _RecentSection extends ConsumerWidget {
   }
 }
 
-// â”€â”€ Field widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class _Card extends StatelessWidget {
+  final Widget child;
+  const _Card({required this.child});
 
-class _ProfileField extends StatelessWidget {
-  final TextEditingController controller;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: AppTheme.cardShadow,
+      ),
+      padding: const EdgeInsets.all(18),
+      child: child,
+    );
+  }
+}
+
+class _Field extends StatelessWidget {
+  final TextEditingController ctrl;
   final String label;
   final IconData icon;
-  final TextInputType? keyboardType;
+  final TextInputType? type;
   final String? Function(String?)? validator;
-  const _ProfileField({
-    required this.controller,
+  const _Field({
+    required this.ctrl,
     required this.label,
     required this.icon,
-    this.keyboardType,
+    this.type,
     this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
+      controller: ctrl,
+      keyboardType: type,
       validator: validator,
-      style: const TextStyle(fontSize: 14),
+      style: AppTheme.body(AppTheme.charcoal),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(fontSize: 13),
-        prefixIcon: Icon(icon, size: 18),
+        labelStyle: AppTheme.caption(AppTheme.grey3),
+        prefixIcon: Icon(icon, size: 18, color: AppTheme.grey3),
         filled: true,
-        fillColor: const Color(0xFFF8F6F2),
+        fillColor: AppTheme.cream,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.border)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.border)),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-              color: Color(0xFFC0392B), width: 1.5),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.charcoal, width: 1.5)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }
 }
-

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme/app_theme.dart';
 import 'features/scanner/scanner_screen.dart';
 import 'features/menu/menu_screen.dart';
 import 'features/checkout/checkout_screen.dart';
@@ -14,20 +15,57 @@ final _router = GoRouter(
     GoRoute(path: '/', builder: (_, __) => const ScannerScreen()),
     GoRoute(
       path: '/menu/:slug',
-      builder: (context, state) =>
-          MenuScreen(slug: state.pathParameters['slug']!),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: MenuScreen(slug: state.pathParameters['slug']!),
+        transitionsBuilder: (_, anim, __, child) => FadeTransition(
+          opacity: anim,
+          child: child,
+        ),
+      ),
     ),
     GoRoute(
       path: '/checkout/:slug',
-      builder: (context, state) =>
-          CheckoutScreen(slug: state.pathParameters['slug']!),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: CheckoutScreen(slug: state.pathParameters['slug']!),
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: AppTheme.spring)),
+          child: child,
+        ),
+      ),
     ),
     GoRoute(
       path: '/reservation/:slug',
-      builder: (context, state) =>
-          ReservationScreen(slug: state.pathParameters['slug']!),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: ReservationScreen(slug: state.pathParameters['slug']!),
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: AppTheme.spring)),
+          child: child,
+        ),
+      ),
     ),
-    GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+    GoRoute(
+      path: '/profile',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const ProfileScreen(),
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim, curve: AppTheme.spring)),
+          child: child,
+        ),
+      ),
+    ),
   ],
 );
 
@@ -39,16 +77,7 @@ class SaeMenusApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'SaeMenus',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFFC0392B),
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-        ),
-      ),
+      theme: AppTheme.light(const Color(0xFFC0392B)),
       routerConfig: _router,
     );
   }

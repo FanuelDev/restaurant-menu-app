@@ -1,5 +1,5 @@
 ﻿// lib/features/menu/templates/template_lumiere.dart
-// Template 5 â€” LumiÃ¨re : thÃ¨me crÃ¨me clair, bento grid, navigation pill sticky
+// Template 5 — Lumière : thème crème clair, bento grid, navigation pill sticky
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,11 +12,13 @@ class TemplateLumiere extends ConsumerStatefulWidget {
   final Restaurant restaurant;
   final List<Category> categories;
   final RestaurantFeatures? features;
+  final VoidCallback? onRefresh;
   const TemplateLumiere({
     super.key,
     required this.restaurant,
     required this.categories,
     this.features,
+    this.onRefresh,
   });
 
   @override
@@ -28,7 +30,7 @@ class _State extends ConsumerState<TemplateLumiere> {
   String _search = '';
   final _scroll = ScrollController();
 
-  // Map category id â†’ GlobalKey for scroll-to-section
+  // Map category id → GlobalKey for scroll-to-section
   final Map<int, GlobalKey> _catKeys = {};
 
   @override
@@ -86,7 +88,7 @@ class _State extends ConsumerState<TemplateLumiere> {
           CustomScrollView(
             controller: _scroll,
             slivers: [
-              // â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Hero ─────────────────────────────────────────────────────
               SliverAppBar(
                 expandedHeight: 300,
                 pinned: false,
@@ -98,6 +100,12 @@ class _State extends ConsumerState<TemplateLumiere> {
                   onPressed: () => context.go('/'),
                 ),
                 actions: [
+                  if (widget.onRefresh != null)
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: Colors.black87),
+                      onPressed: widget.onRefresh,
+                      tooltip: 'Actualiser',
+                    ),
                   MenuAppBarActions(
                     restaurant: widget.restaurant,
                     showReservation: hasOrders,
@@ -108,12 +116,12 @@ class _State extends ConsumerState<TemplateLumiere> {
                 ),
               ),
 
-              // â”€â”€ Hours band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Hours band ────────────────────────────────────────────────
               SliverToBoxAdapter(
                 child: HoursBand(restaurant: widget.restaurant),
               ),
 
-              // â”€â”€ Sticky pill nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Sticky pill nav ───────────────────────────────────────────
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _PillNavDelegate(
@@ -124,14 +132,14 @@ class _State extends ConsumerState<TemplateLumiere> {
                 ),
               ),
 
-              // â”€â”€ Search bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Search bar ────────────────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: TextField(
                     onChanged: (v) => setState(() => _search = v),
                     decoration: InputDecoration(
-                      hintText: 'Rechercher un platâ€¦',
+                      hintText: 'Rechercher un plat...',
                       prefixIcon:
                           const Icon(Icons.search_rounded, size: 18),
                       filled: true,
@@ -149,11 +157,11 @@ class _State extends ConsumerState<TemplateLumiere> {
                 ),
               ),
 
-              // â”€â”€ Bento content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Bento content ─────────────────────────────────────────────
               if (_filtered.isEmpty)
                 const SliverFillRemaining(
                   child: Center(
-                    child: Text('Aucun plat trouvÃ© ðŸ½ï¸',
+                    child: Text('Aucun plat trouve ?',
                         style:
                             TextStyle(color: Colors.black38, fontSize: 15)),
                   ),
@@ -183,15 +191,20 @@ class _State extends ConsumerState<TemplateLumiere> {
             ],
           ),
 
-          // â”€â”€ Cart FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          CartFab(brandColor: brand),
+          // ── Cart FAB ──────────────────────────────────────────────────────
+          Positioned(
+            bottom: 20,
+            left: 16,
+            right: 16,
+            child: CartFab(brandColor: brand),
+          ),
         ],
       ),
     );
   }
 }
 
-// â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hero ──────────────────────────────────────────────────────────────────────
 
 class _LumiereHero extends StatelessWidget {
   final Restaurant restaurant;
@@ -277,7 +290,7 @@ class _LumiereHero extends StatelessWidget {
   }
 }
 
-// â”€â”€ Sticky pill nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sticky pill nav ───────────────────────────────────────────────────────────
 
 class _PillNavDelegate extends SliverPersistentHeaderDelegate {
   final List<Category> categories;
@@ -346,7 +359,7 @@ class _PillNavDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-// â”€â”€ Section header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Section header ────────────────────────────────────────────────────────────
 
 class _LumiereSectionHeader extends StatelessWidget {
   final String label;
@@ -399,7 +412,7 @@ class _LumiereSectionHeader extends StatelessWidget {
   }
 }
 
-// â”€â”€ Bento grid sliver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Bento grid sliver ─────────────────────────────────────────────────────────
 
 class _BentoGrid extends StatelessWidget {
   final List<MenuItem> items;
@@ -422,7 +435,7 @@ class _BentoGrid extends StatelessWidget {
 
     for (int i = 0; i < items.length; i++) {
       if (i == 0) {
-        // Featured card â€” full width
+        // Featured card — full width
         widgets.add(
           _LumiereCard(
             item: items[i],
@@ -478,7 +491,7 @@ class _BentoGrid extends StatelessWidget {
   }
 }
 
-// â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Card ──────────────────────────────────────────────────────────────────────
 
 class _LumiereCard extends ConsumerWidget {
   final MenuItem item;

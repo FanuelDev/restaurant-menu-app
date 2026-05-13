@@ -48,17 +48,17 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   String get _dateStr {
     final months = [
       'janv.',
-      'fÃ©vr.',
+      'févr.',
       'mars',
       'avr.',
       'mai',
       'juin',
       'juil.',
-      'aoÃ»t',
+      'août',
       'sept.',
       'oct.',
       'nov.',
-      'dÃ©c.'
+      'déc.'
     ];
     return '${_date.day} ${months[_date.month - 1]} ${_date.year}';
   }
@@ -142,15 +142,15 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            const Text('ðŸŽ‰', style: TextStyle(fontSize: 52)),
+            const Text('🎉', style: TextStyle(fontSize: 52)),
             const SizedBox(height: 16),
-            const Text('RÃ©servation envoyÃ©e !',
+            const Text('Réservation envoyée !',
                 style:
                     TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
-              'Votre demande pour le $_dateStr Ã  $_timeStr ($_guests pers.) a Ã©tÃ© transmise. Le restaurant vous confirmera par tÃ©lÃ©phone.',
+              'Votre demande pour le $_dateStr à $_timeStr ($_guests pers.) a été transmise. Le restaurant vous confirmera par téléphone.',
               style: const TextStyle(
                   color: Colors.black54, fontSize: 13, height: 1.5),
               textAlign: TextAlign.center,
@@ -180,7 +180,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F6F2),
       appBar: AppBar(
-        title: const Text('RÃ©server une table',
+        title: const Text('Réserver une table',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
@@ -195,7 +195,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // â”€â”€ Date & time â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Date & time ──────────────────────────────────────────────
             _SectionCard(
               title: 'Date et heure',
               child: Column(
@@ -242,7 +242,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
 
             const SizedBox(height: 16),
 
-            // â”€â”€ Customer info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Customer info ────────────────────────────────────────────
             _SectionCard(
               title: 'Vos informations',
               child: Column(
@@ -257,7 +257,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                   const SizedBox(height: 12),
                   _Field(
                     controller: _phoneCtrl,
-                    label: 'TÃ©lÃ©phone',
+                    label: 'Téléphone',
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: (v) =>
@@ -283,7 +283,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                       ),
                       const Expanded(
                         child: Text(
-                          'MÃ©moriser mes informations pour la prochaine fois',
+                          'Mémoriser mes informations pour la prochaine fois',
                           style: TextStyle(
                               fontSize: 12, color: Colors.black54),
                         ),
@@ -296,12 +296,12 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
 
             const SizedBox(height: 16),
 
-            // â”€â”€ Notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Notes ────────────────────────────────────────────────────
             _SectionCard(
-              title: 'Informations supplÃ©mentaires',
+              title: 'Informations supplémentaires',
               child: _Field(
                 controller: _notesCtrl,
-                label: 'Demandes particuliÃ¨res (optionnel)',
+                label: 'Demandes particulières (optionnel)',
                 icon: Icons.notes_rounded,
                 maxLines: 3,
               ),
@@ -309,7 +309,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
 
             const SizedBox(height: 24),
 
-            // â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Submit ───────────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -327,7 +327,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white))
                     : Text(
-                        'Confirmer la rÃ©servation Â· $_dateStr Ã  $_timeStr',
+                        'Confirmer la réservation · $_dateStr à $_timeStr',
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w700),
                         textAlign: TextAlign.center,
@@ -343,7 +343,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   }
 }
 
-// â”€â”€ Picker row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Picker row ────────────────────────────────────────────────────────────────
 
 class _PickerRow extends StatelessWidget {
   final IconData icon;
@@ -393,7 +393,7 @@ class _PickerRow extends StatelessWidget {
   }
 }
 
-// â”€â”€ Guest stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Guest stepper ─────────────────────────────────────────────────────────────
 
 class _GuestStepper extends StatelessWidget {
   final int value;
@@ -467,7 +467,7 @@ class _StepBtn extends StatelessWidget {
   }
 }
 
-// â”€â”€ Shared widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Shared widgets ────────────────────────────────────────────────────────────
 
 class _SectionCard extends StatelessWidget {
   final String title;

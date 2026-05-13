@@ -9,7 +9,7 @@ import '../models/models.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
-// ─── Tenant (slug du restaurant scanné) ──────────────────────────────────────
+// ─── Tenant (slug du restaurant scann�) ──────────────────────────────────────
 
 final currentSlugProvider = StateProvider<String?>((ref) => null);
 
@@ -136,7 +136,7 @@ final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>(
     (ref) => CartNotifier());
 
 final cartCountProvider = Provider<int>((ref) {
-  return ref.watch(cartProvider.notifier).itemCount;
+  return ref.watch(cartProvider).fold(0, (sum, c) => sum + c.quantity);
 });
 
 // ─── Customer profile (stored locally) ───────────────────────────────────────

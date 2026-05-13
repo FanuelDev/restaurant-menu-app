@@ -1,5 +1,5 @@
 ﻿// lib/features/menu/templates/template_obsidian.dart
-// Template 4 â€” Obsidian : thÃ¨me sombre luxueux, grille de cartes, detail en BottomSheet
+// Template 4 — Obsidian : thème sombre luxueux, grille de cartes, detail en BottomSheet
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,16 +9,19 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/price_formatter.dart';
 import '../widgets/shared_widgets.dart';
 import '../../cart/cart_sheet.dart';
+import '../../checkout/checkout_screen.dart';
 
 class TemplateObsidian extends ConsumerStatefulWidget {
   final Restaurant restaurant;
   final List<Category> categories;
   final RestaurantFeatures? features;
+  final VoidCallback? onRefresh;
   const TemplateObsidian({
     super.key,
     required this.restaurant,
     required this.categories,
     this.features,
+    this.onRefresh,
   });
 
   @override
@@ -86,9 +89,11 @@ class _State extends ConsumerState<TemplateObsidian>
 
     return Scaffold(
       backgroundColor: const Color(0xFF080808),
-      body: NestedScrollView(
+      body: Stack(
+        children: [
+      NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // â”€â”€ App bar + hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── App bar + hero ────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: 260,
             pinned: true,
@@ -129,6 +134,12 @@ class _State extends ConsumerState<TemplateObsidian>
                   ),
                   onPressed: () => CartSheet.show(context),
                 ),
+              if (widget.onRefresh != null)
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: widget.onRefresh,
+                  tooltip: 'Actualiser',
+                ),
               IconButton(
                 icon: const Icon(Icons.qr_code_scanner_rounded),
                 onPressed: () => context.go('/'),
@@ -139,7 +150,7 @@ class _State extends ConsumerState<TemplateObsidian>
             ),
           ),
 
-          // â”€â”€ Hours band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Hours band ────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: HoursBand(
               restaurant: widget.restaurant,
@@ -148,7 +159,7 @@ class _State extends ConsumerState<TemplateObsidian>
             ),
           ),
 
-          // â”€â”€ Search bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Search bar ────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -156,7 +167,7 @@ class _State extends ConsumerState<TemplateObsidian>
                 onChanged: (v) => setState(() => _search = v),
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: 'Rechercherâ€¦',
+                  hintText: 'Rechercher...',
                   hintStyle: const TextStyle(color: Colors.white38),
                   prefixIcon: const Icon(Icons.search_rounded,
                       color: Colors.white38, size: 18),
@@ -173,7 +184,7 @@ class _State extends ConsumerState<TemplateObsidian>
             ),
           ),
 
-          // â”€â”€ Category tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Category tabs ─────────────────────────────────────────────
           SliverToBoxAdapter(
             child: TabBar(
               controller: _tabCtrl,
@@ -200,7 +211,7 @@ class _State extends ConsumerState<TemplateObsidian>
             final items = _itemsFor(cat);
             if (items.isEmpty) {
               return const Center(
-                child: Text('Aucun plat trouvÃ©',
+                child: Text('Aucun plat trouve',
                     style: TextStyle(color: Colors.white38)),
               );
             }
@@ -224,11 +235,21 @@ class _State extends ConsumerState<TemplateObsidian>
           }).toList(),
         ),
       ),
+
+          // ── Floating cart bar ───────────────────────────────────────────
+          Positioned(
+            bottom: 20,
+            left: 16,
+            right: 16,
+            child: CartFab(brandColor: brand),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// â”€â”€ Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hero ──────────────────────────────────────────────────────────────────────
 
 class _ObsidianHero extends StatelessWidget {
   final Restaurant restaurant;
@@ -305,7 +326,7 @@ class _ObsidianHero extends StatelessWidget {
   }
 }
 
-// â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Card ──────────────────────────────────────────────────────────────────────
 
 class _ObsidianCard extends ConsumerWidget {
   final MenuItem item;
@@ -420,7 +441,7 @@ class _ObsidianCard extends ConsumerWidget {
   }
 }
 
-// â”€â”€ Detail bottom sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Detail bottom sheet ───────────────────────────────────────────────────────
 
 class _DishDetailSheet extends ConsumerWidget {
   final MenuItem item;
@@ -474,7 +495,7 @@ class _DishDetailSheet extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Center(
-                  child: Text('ðŸ½ï¸', style: TextStyle(fontSize: 48))),
+                  child: Text('?', style: TextStyle(fontSize: 48))),
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -523,7 +544,7 @@ class _DishDetailSheet extends ConsumerWidget {
                     child: FilledButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        CartSheet.show(context);
+                        CheckoutScreen.show(context);
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: brandColor,
@@ -532,7 +553,7 @@ class _DishDetailSheet extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                          'Voir le panier (${ref.watch(cartCountProvider)})',
+                          'Commander (${ref.watch(cartCountProvider)})',
                           style: const TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w700)),
                     ),

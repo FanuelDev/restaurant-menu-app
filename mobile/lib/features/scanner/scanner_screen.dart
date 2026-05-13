@@ -1,47 +1,107 @@
 // lib/features/scanner/scanner_screen.dart
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/providers/providers.dart';
+import '../../core/theme/app_theme.dart';
 
 class ScannerScreen extends ConsumerStatefulWidget {
   const ScannerScreen({super.key});
-
   @override
   ConsumerState<ScannerScreen> createState() => _ScannerScreenState();
 }
 
-class _ScannerScreenState extends ConsumerState<ScannerScreen> {
+class _ScannerScreenState extends ConsumerState<ScannerScreen>
+    with TickerProviderStateMixin {
   final MobileScannerController _ctrl = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     facing: CameraFacing.back,
   );
   bool _scanned = false;
+  bool _torchOn = false;
+
+  // GlobalKey to measure the actual frame position for overlay alignment
+  final _frameKey = GlobalKey();
+  double? _frameCenterY;
+
+  // Animations
+  late AnimationController _pulseCtrl;
+  late AnimationController _laserCtrl;
+  late AnimationController _fadeCtrl;
+  late Animation<double> _pulse1;
+  late Animation<double> _pulse2;
+  late Animation<double> _laser;
+  late Animation<double> _fadeIn;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pulseCtrl = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 2000))..repeat();
+
+    _laserCtrl = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 1800))..repeat(reverse: true);
+
+    _fadeCtrl = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 800));
+
+    _pulse1 = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut));
+
+    _pulse2 = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _pulseCtrl,
+          curve: const Interval(0.4, 1, curve: Curves.easeOut)));
+
+    _laser = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _laserCtrl, curve: Curves.easeInOut));
+
+    _fadeIn = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _fadeCtrl.forward();
+    });
+
+    // Measure frame position after first layout
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFrameCenter());
+  }
+
+  void _updateFrameCenter() {
+    final ctx = _frameKey.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final pos = box.localToGlobal(Offset.zero);
+    if (mounted) {
+      setState(() => _frameCenterY = pos.dy + box.size.height / 2);
+    }
+  }
 
   @override
   void dispose() {
     _ctrl.dispose();
+    _pulseCtrl.dispose();
+    _laserCtrl.dispose();
+    _fadeCtrl.dispose();
     super.dispose();
   }
 
   void _onDetect(BarcodeCapture capture) {
     if (_scanned) return;
-    final barcode = capture.barcodes.firstOrNull;
-    if (barcode == null) return;
-    final raw = barcode.rawValue ?? '';
-
-    // Accept full URL (https://slug.saemenus.com) or bare slug
+    final raw = capture.barcodes.firstOrNull?.rawValue ?? '';
     final slug = _extractSlug(raw);
     if (slug == null || slug.isEmpty) return;
-
+    HapticFeedback.mediumImpact();
     setState(() => _scanned = true);
     ref.read(recentRestaurantsProvider.notifier).addSlug(slug);
     context.go('/menu/$slug');
   }
 
   String? _extractSlug(String value) {
-    // Try to parse as URL first
     try {
       final uri = Uri.parse(value);
       if (uri.host.isNotEmpty) {
@@ -53,7 +113,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         }
       }
     } catch (_) {}
-    // Fallback: treat raw value as slug if it matches pattern
     if (RegExp(r'^[a-z0-9-]{2,50}$').hasMatch(value)) return value;
     return null;
   }
@@ -61,125 +120,161 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final recents = ref.watch(recentRestaurantsProvider);
-    final profile = ref.watch(profileProvider);
-    final isTablet = MediaQuery.sizeOf(context).width > 600;
+    final size = MediaQuery.sizeOf(context);
+    final frameSize = math.min(size.width * 0.72, 280.0);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.scanBg,
       body: Stack(
         children: [
           // Camera
           MobileScanner(controller: _ctrl, onDetect: _onDetect),
 
-          // Overlay UI
-          SafeArea(
-            child: Column(
-              children: [
-                // Top bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'SaeMenus',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
+          // Dark vignette overlay — centered on the actual frame position
+          _ScanOverlay(frameSize: frameSize, frameCenterY: _frameCenterY),
+
+          // UI
+          FadeTransition(
+            opacity: _fadeIn,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // ── Top bar ──────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('SaeMenus',
+                            style: AppTheme.title(Colors.white).copyWith(
+                                fontSize: 22, letterSpacing: -0.5)),
+                        Row(children: [
+                          _GlassBtn(
+                            icon: _torchOn
+                                ? Icons.flash_on_rounded
+                                : Icons.flash_off_rounded,
+                            active: _torchOn,
+                            onTap: () {
+                              _ctrl.toggleTorch();
+                              setState(() => _torchOn = !_torchOn);
+                            },
+                          ),
+                          const SizedBox(width: 10),
+                          _GlassBtn(
+                            icon: Icons.person_outline_rounded,
+                            onTap: () async {
+                              await context.push('/profile');
+                              if (mounted) setState(() {});
+                            },
+                          ),
+                        ]),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // ── Scan frame + animations ───────────────────────────────
+                  SizedBox(
+                    key: _frameKey,
+                    width: frameSize + 80,
+                    height: frameSize + 80,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Pulse rings
+                        AnimatedBuilder(
+                          animation: _pulseCtrl,
+                          builder: (_, __) => Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              _PulseRing(
+                                  size: frameSize,
+                                  progress: _pulse1.value,
+                                  maxExpand: 60),
+                              _PulseRing(
+                                  size: frameSize,
+                                  progress: _pulse2.value,
+                                  maxExpand: 40),
+                            ],
+                          ),
                         ),
+                        // Scan frame
+                        _ScanFrame(size: frameSize, laser: _laser),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+                  Text('Pointez vers un QR code',
+                      style: AppTheme.body(Colors.white).copyWith(
+                          fontSize: 15, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 6),
+                  Text('ou entrez le nom manuellement',
+                      style: AppTheme.caption(Colors.white54)),
+                  const SizedBox(height: 24),
+
+                  // ── Manual entry ──────────────────────────────────────────
+                  GestureDetector(
+                    onTap: () => _showManualEntry(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 22, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white24),
+                        borderRadius: BorderRadius.circular(99),
                       ),
-                      Row(children: [
-                        _TopBtn(
-                          icon: Icons.flash_on_rounded,
-                          onTap: () => _ctrl.toggleTorch(),
-                        ),
-                        const SizedBox(width: 8),
-                        _TopBtn(
-                          icon: Icons.person_outline_rounded,
-                          badge: profile.isComplete ? null : '!',
-                          onTap: () async {
-                            await context.push('/profile');
-                            if (mounted) setState(() {});
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.keyboard_alt_outlined,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 8),
+                          Text('Saisir manuellement',
+                              style: AppTheme.caption(Colors.white70)
+                                  .copyWith(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // ── Recent restaurants ────────────────────────────────────
+                  if (recents.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                      child: Row(children: [
+                        Text('Récents',
+                            style: AppTheme.label(Colors.white38)
+                                .copyWith(fontSize: 10)),
+                      ]),
+                    ),
+                    SizedBox(
+                      height: 40,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        itemCount: recents.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: 8),
+                        itemBuilder: (_, i) => _RecentChip(
+                          slug: recents[i],
+                          onTap: () {
+                            ref
+                                .read(recentRestaurantsProvider.notifier)
+                                .addSlug(recents[i]);
+                            context.go('/menu/${recents[i]}');
                           },
                         ),
-                      ]),
-                    ],
-                  ),
-                ),
-
-                const Spacer(),
-
-                // Scan frame
-                _ScanFrame(size: isTablet ? 280 : 240),
-
-                const SizedBox(height: 24),
-                const Text(
-                  'Scannez le QR code du restaurant',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'ou entrez le nom du restaurant manuellement',
-                  style: TextStyle(color: Colors.white54, fontSize: 13),
-                ),
-                const SizedBox(height: 20),
-
-                // Manual entry button
-                TextButton(
-                  onPressed: () => _showManualEntry(context),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.white12,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(99)),
-                  ),
-                  child: const Text('Entrer le nom manuellement'),
-                ),
-
-                const Spacer(),
-
-                // Recent restaurants
-                if (recents.isNotEmpty) ...[
-                  const Padding(
-                    padding: EdgeInsets.only(left: 20, bottom: 10),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('Récents',
-                          style: TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.8)),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 48,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: recents.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) => _RecentChip(
-                        slug: recents[i],
-                        onTap: () {
-                          ref
-                              .read(recentRestaurantsProvider.notifier)
-                              .addSlug(recents[i]);
-                          context.go('/menu/${recents[i]}');
-                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 16),
+                  ],
+
+                  const SizedBox(height: 16),
                 ],
-              ],
+              ),
             ),
           ),
         ],
@@ -194,49 +289,71 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(ctx).bottom),
         child: Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Accéder à un restaurant',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 16),
+              Center(
+                child: Container(
+                  width: 36, height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.border,
+                    borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Text('Accéder à un restaurant',
+                  style: AppTheme.heading(AppTheme.charcoal)),
+              const SizedBox(height: 4),
+              Text('Entrez le nom ou identifiant du restaurant',
+                  style: AppTheme.caption(AppTheme.grey3)),
+              const SizedBox(height: 20),
               TextField(
                 controller: ctrl,
                 autofocus: true,
+                style: AppTheme.body(AppTheme.charcoal),
                 decoration: InputDecoration(
-                  hintText: 'Ex : mon-restaurant',
-                  prefixIcon: const Icon(Icons.store_rounded),
+                  hintText: 'ex : mon-restaurant',
+                  hintStyle: AppTheme.body(AppTheme.grey3),
+                  prefixIcon: const Icon(Icons.store_rounded,
+                      size: 18, color: AppTheme.grey3),
+                  filled: true,
+                  fillColor: AppTheme.cream,
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
                 ),
                 textInputAction: TextInputAction.go,
-                onSubmitted: (v) => Navigator.pop(ctx, v.trim().toLowerCase()),
+                onSubmitted: (v) =>
+                    Navigator.pop(ctx, v.trim().toLowerCase()),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () =>
                       Navigator.pop(ctx, ctrl.text.trim().toLowerCase()),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFC0392B),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: AppTheme.charcoal,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Voir le menu',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
+                  child: Text('Voir le menu',
+                      style: AppTheme.bodyBold(Colors.white)),
                 ),
               ),
             ],
@@ -244,125 +361,202 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         ),
       ),
     );
-
+    if (!mounted) return;
     if (result != null &&
         result.isNotEmpty &&
         RegExp(r'^[a-z0-9-]{2,50}$').hasMatch(result)) {
-      if (mounted) {
-        ref.read(recentRestaurantsProvider.notifier).addSlug(result);
-        context.go('/menu/$result');
-      }
+      ref.read(recentRestaurantsProvider.notifier).addSlug(result);
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      context.go('/menu/$result');
     }
   }
 }
 
-// ── Widgets ───────────────────────────────────────────────────────────────────
+// ── Widgets ─────────────────────────────────────────────────────────────────
+
+class _ScanOverlay extends StatelessWidget {
+  final double frameSize;
+  final double? frameCenterY;
+  const _ScanOverlay({required this.frameSize, this.frameCenterY});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _OverlayPainter(frameSize: frameSize, frameCenterY: frameCenterY),
+      child: const SizedBox.expand(),
+    );
+  }
+}
+
+class _OverlayPainter extends CustomPainter {
+  final double frameSize;
+  final double? frameCenterY;
+  _OverlayPainter({required this.frameSize, this.frameCenterY});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xCC090909)
+      ..style = PaintingStyle.fill;
+    final cx = size.width / 2;
+    // Use measured frame center, fall back to screen center
+    final cy = frameCenterY ?? size.height / 2;
+    final half = frameSize / 2;
+
+    final path = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(cx, cy),
+            width: frameSize, height: frameSize),
+        const Radius.circular(20)))
+      ..fillType = PathFillType.evenOdd;
+    canvas.drawPath(path, paint);
+
+    // Corner brackets
+    final bracket = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    const len = 28.0;
+    const r = 20.0;
+
+    // Top-left
+    canvas.drawPath(Path()
+      ..moveTo(cx - half + r, cy - half)
+      ..lineTo(cx - half + r + len, cy - half), bracket);
+    canvas.drawPath(Path()
+      ..moveTo(cx - half, cy - half + r)
+      ..lineTo(cx - half, cy - half + r + len), bracket);
+
+    // Top-right
+    canvas.drawPath(Path()
+      ..moveTo(cx + half - r, cy - half)
+      ..lineTo(cx + half - r - len, cy - half), bracket);
+    canvas.drawPath(Path()
+      ..moveTo(cx + half, cy - half + r)
+      ..lineTo(cx + half, cy - half + r + len), bracket);
+
+    // Bottom-left
+    canvas.drawPath(Path()
+      ..moveTo(cx - half + r, cy + half)
+      ..lineTo(cx - half + r + len, cy + half), bracket);
+    canvas.drawPath(Path()
+      ..moveTo(cx - half, cy + half - r)
+      ..lineTo(cx - half, cy + half - r - len), bracket);
+
+    // Bottom-right
+    canvas.drawPath(Path()
+      ..moveTo(cx + half - r, cy + half)
+      ..lineTo(cx + half - r - len, cy + half), bracket);
+    canvas.drawPath(Path()
+      ..moveTo(cx + half, cy + half - r)
+      ..lineTo(cx + half, cy + half - r - len), bracket);
+  }
+
+  @override
+  bool shouldRepaint(_OverlayPainter old) =>
+      old.frameSize != frameSize || old.frameCenterY != frameCenterY;
+}
 
 class _ScanFrame extends StatelessWidget {
   final double size;
-  const _ScanFrame({required this.size});
+  final Animation<double> laser;
+  const _ScanFrame({required this.size, required this.laser});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(
-        children: [
-          // Dimmed area is handled by camera overlay
-          // Corners
-          for (final corner in _Corner.values) _CornerWidget(corner: corner, size: size),
-          // Center dot animation
-          Center(
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: Colors.white54,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ],
+      child: AnimatedBuilder(
+        animation: laser,
+        builder: (_, __) {
+          return CustomPaint(
+            painter: _LaserPainter(progress: laser.value, size: size),
+          );
+        },
       ),
     );
   }
 }
 
-enum _Corner { topLeft, topRight, bottomLeft, bottomRight }
-
-class _CornerWidget extends StatelessWidget {
-  final _Corner corner;
+class _LaserPainter extends CustomPainter {
+  final double progress;
   final double size;
-  const _CornerWidget({required this.corner, required this.size});
+  _LaserPainter({required this.progress, required this.size});
+
+  @override
+  void paint(Canvas canvas, Size canvasSize) {
+    final y = progress * (size - 4);
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          Colors.white.withValues(alpha: 0.6),
+          Colors.white.withValues(alpha: 0.9),
+          Colors.white.withValues(alpha: 0.6),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, y, size, 2))
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(0, y), Offset(size, y), paint);
+  }
+
+  @override
+  bool shouldRepaint(_LaserPainter old) => old.progress != progress;
+}
+
+class _PulseRing extends StatelessWidget {
+  final double size;
+  final double progress;
+  final double maxExpand;
+  const _PulseRing(
+      {required this.size, required this.progress, required this.maxExpand});
 
   @override
   Widget build(BuildContext context) {
-    final isTop = corner == _Corner.topLeft || corner == _Corner.topRight;
-    final isLeft = corner == _Corner.topLeft || corner == _Corner.bottomLeft;
-    return Positioned(
-      top: isTop ? 0 : null,
-      bottom: isTop ? null : 0,
-      left: isLeft ? 0 : null,
-      right: isLeft ? null : 0,
+    final expanded = size + maxExpand * progress;
+    return Opacity(
+      opacity: (1 - progress).clamp(0, 1),
       child: Container(
-        width: 28,
-        height: 28,
+        width: expanded,
+        height: expanded,
         decoration: BoxDecoration(
-          border: Border(
-            top: isTop ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            bottom: !isTop ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            left: isLeft ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-            right: !isLeft ? const BorderSide(color: Colors.white, width: 3) : BorderSide.none,
-          ),
+          borderRadius: BorderRadius.circular(20 + maxExpand * progress * 0.3),
+          border: Border.all(
+              color: Colors.white.withValues(alpha: 0.25), width: 1.5),
         ),
       ),
     );
   }
 }
 
-class _TopBtn extends StatelessWidget {
+class _GlassBtn extends StatelessWidget {
   final IconData icon;
-  final String? badge;
   final VoidCallback onTap;
-  const _TopBtn({required this.icon, this.badge, required this.onTap});
+  final bool active;
+  const _GlassBtn({required this.icon, required this.onTap, this.active = false});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white12,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-          if (badge != null)
-            Positioned(
-              top: -4,
-              right: -4,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFC0392B),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                    child: Text(badge!,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800))),
-              ),
-            ),
-        ],
+      child: AnimatedContainer(
+        duration: AppTheme.quick,
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: active
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        child: Icon(icon,
+            color: active ? Colors.white : Colors.white70, size: 18),
       ),
     );
   }
@@ -378,22 +572,19 @@ class _RecentChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: Colors.white12,
+          color: Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(99),
-          border: Border.all(color: Colors.white24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.store_outlined, color: Colors.white70, size: 14),
+            const Icon(Icons.storefront_outlined,
+                color: Colors.white54, size: 13),
             const SizedBox(width: 6),
-            Text(slug,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500)),
+            Text(slug, style: AppTheme.caption(Colors.white70)),
           ],
         ),
       ),

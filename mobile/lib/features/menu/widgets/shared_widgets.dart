@@ -1,14 +1,17 @@
-﻿// lib/features/menu/widgets/shared_widgets.dart
+// lib/features/menu/widgets/shared_widgets.dart
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/models/models.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/price_formatter.dart';
 import '../../cart/cart_sheet.dart';
+import '../../checkout/checkout_screen.dart';
 
-// â”€â”€ Cart FAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Cart FAB ──────────────────────────────────────────────────────────────────
 
 class CartFab extends ConsumerWidget {
   final Color brandColor;
@@ -16,45 +19,128 @@ class CartFab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartProvider);
     final count = ref.watch(cartCountProvider);
-    if (count == 0) return const SizedBox.shrink();
+    final total = cart.fold<double>(0, (sum, c) => sum + c.subtotal);
     final restaurant = ref.watch(restaurantProvider).restaurant;
-    final total = ref.watch(cartProvider.notifier).total;
-    return Positioned(
-      bottom: 20,
-      left: 20,
-      right: 20,
-      child: GestureDetector(
-        onTap: () => CartSheet.show(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: brandColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: brandColor.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6))],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: Colors.white24, borderRadius: BorderRadius.circular(8)),
-                child: Text('$count',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text('Voir mon panier',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
-              ),
-              Text(
-                formatPrice(total, restaurant?.currency ?? 'XOF'),
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
-              ),
-            ],
+    final hasOrders =
+        ref.watch(restaurantProvider).features?.ordersAndReservations ?? false;
+    final currency = restaurant?.currency ?? 'XOF';
+
+    return IgnorePointer(
+      ignoring: count == 0,
+      child: AnimatedSlide(
+        offset: count == 0 ? const Offset(0, 0.3) : Offset.zero,
+        duration: AppTheme.normal,
+        curve: AppTheme.spring,
+        child: AnimatedOpacity(
+          opacity: count == 0 ? 0 : 1,
+          duration: AppTheme.quick,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppTheme.charcoal,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.charcoal.withValues(alpha: 0.30),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // ── Left: cart preview (tap to review) ──────────────────────
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => CartSheet.show(context),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 15),
+                      child: Row(
+                        children: [
+                          // Count badge
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.7, end: 1),
+                            duration: AppTheme.quick,
+                            curve: Curves.elasticOut,
+                            builder: (_, v, child) =>
+                                Transform.scale(scale: v, child: child),
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: BoxDecoration(
+                                color: brandColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text('$count',
+                                    style: AppTheme.label(Colors.white)
+                                        .copyWith(fontSize: 12)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$count article${count > 1 ? 's' : ''}',
+                                  style: AppTheme.label(Colors.white70)
+                                      .copyWith(fontSize: 11),
+                                ),
+                                Text(
+                                  formatPrice(total, currency),
+                                  style: AppTheme.bodyBold(Colors.white)
+                                      .copyWith(fontSize: 15),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ── Divider ──────────────────────────────────────────────────
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+
+                // ── Right: Commander button ──────────────────────────────────
+                GestureDetector(
+                  onTap: hasOrders
+                      ? () => CheckoutScreen.show(context)
+                      : () => CartSheet.show(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Commander',
+                          style: AppTheme.bodyBold(
+                                  hasOrders ? brandColor : Colors.white54)
+                              .copyWith(fontSize: 15),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: hasOrders ? brandColor : Colors.white54,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -62,7 +148,7 @@ class CartFab extends ConsumerWidget {
   }
 }
 
-// â”€â”€ Dish image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Dish image ────────────────────────────────────────────────────────────────
 
 class DishImage extends StatelessWidget {
   final String? url;
@@ -82,40 +168,65 @@ class DishImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget content;
     if (url == null || url!.isEmpty) {
-      return Container(
+      content = _Placeholder(width: width, height: height);
+    } else {
+      content = CachedNetworkImage(
+        imageUrl: url!,
         width: width,
         height: height,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: borderRadius,
-        ),
-        child: const Center(
-            child: Text('ðŸ½ï¸', style: TextStyle(fontSize: 32))),
+        fit: fit,
+        placeholder: (_, __) => _ShimmerPlaceholder(width: width, height: height),
+        errorWidget: (_, __, ___) =>
+            _Placeholder(width: width, height: height),
       );
     }
-    Widget img = CachedNetworkImage(
-      imageUrl: url!,
-      width: width,
-      height: height,
-      fit: fit,
-      placeholder: (_, __) => Container(
-        color: Colors.grey[100],
-        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      ),
-      errorWidget: (_, __, ___) => Container(
-        color: Colors.grey[100],
-        child: const Center(child: Text('ðŸ½ï¸', style: TextStyle(fontSize: 32))),
-      ),
-    );
     if (borderRadius != null) {
-      img = ClipRRect(borderRadius: borderRadius!, child: img);
+      content = ClipRRect(borderRadius: borderRadius!, child: content);
     }
-    return img;
+    return content;
   }
 }
 
-// â”€â”€ Badge chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class _ShimmerPlaceholder extends StatelessWidget {
+  final double? width;
+  final double? height;
+  const _ShimmerPlaceholder({this.width, this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppTheme.border,
+      highlightColor: AppTheme.cream,
+      child: Container(
+        width: width, height: height,
+        color: AppTheme.border,
+      ),
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  final double? width;
+  final double? height;
+  const _Placeholder({this.width, this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      color: AppTheme.cream,
+      child: const Center(
+        child: Icon(Icons.restaurant_rounded,
+            color: AppTheme.grey4, size: 28),
+      ),
+    );
+  }
+}
+
+// ── Badge chip ────────────────────────────────────────────────────────────────
 
 class BadgeChip extends StatelessWidget {
   final String badge;
@@ -125,86 +236,98 @@ class BadgeChip extends StatelessWidget {
   static const _labels = {
     'new': 'Nouveau',
     'popular': 'Populaire',
-    'vegetarian': 'VÃ©gÃ©tarien',
-    'spicy': 'Ã‰picÃ©',
+    'vegetarian': 'Végétarien',
+    'spicy': 'Épicé',
   };
 
   static const _colors = {
-    'new': Color(0xFF3B82F6),
-    'popular': Color(0xFFF59E0B),
-    'vegetarian': Color(0xFF10B981),
-    'spicy': Color(0xFFEF4444),
+    'new': AppTheme.badgeNew,
+    'popular': AppTheme.badgePopular,
+    'vegetarian': AppTheme.badgeVeg,
+    'spicy': AppTheme.badgeSpicy,
   };
 
   @override
   Widget build(BuildContext context) {
     final label = _labels[badge] ?? badge;
-    final color = _colors[badge] ?? Colors.grey;
+    final color = _colors[badge] ?? AppTheme.grey2;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: dark ? color.withValues(alpha: 0.9) : color.withValues(alpha: 0.12),
+        color: dark ? color : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: dark ? null : Border.all(color: color.withValues(alpha: 0.3)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: dark ? Colors.white : color,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.3,
-        ),
-      ),
+      child: Text(label,
+          style: AppTheme.label(dark ? Colors.white : color)
+              .copyWith(fontSize: 10)),
     );
   }
 }
 
-// â”€â”€ Qty control â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Qty control ───────────────────────────────────────────────────────────────
 
 class QtyControl extends ConsumerWidget {
   final MenuItem item;
   final Color brandColor;
-  const QtyControl({super.key, required this.item, required this.brandColor});
+  final bool compact;
+  const QtyControl({
+    super.key,
+    required this.item,
+    required this.brandColor,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final qty = ref.watch(cartProvider.notifier).qty(item.id);
+    final cart = ref.watch(cartProvider);
+    final qty = cart.fold<int>(0, (q, c) => c.menuItem.id == item.id ? c.quantity : q);
+
     if (qty == 0) {
       return GestureDetector(
         onTap: () => ref.read(cartProvider.notifier).add(item),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: AnimatedContainer(
+          duration: AppTheme.quick,
+          curve: AppTheme.spring,
+          padding: EdgeInsets.symmetric(
+              horizontal: compact ? 10 : 14, vertical: compact ? 6 : 8),
           decoration: BoxDecoration(
             color: brandColor,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Text('+ Ajouter',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700)),
+          child: Text('+ Ajouter',
+              style: AppTheme.label(Colors.white)
+                  .copyWith(fontSize: compact ? 11 : 12)),
         ),
       );
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _QtyBtn(
-            icon: Icons.remove,
+
+    return AnimatedContainer(
+      duration: AppTheme.quick,
+      curve: AppTheme.spring,
+      decoration: BoxDecoration(
+        color: brandColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _QtyBtn(
+            icon: qty == 1 ? Icons.delete_outline_rounded : Icons.remove_rounded,
             color: brandColor,
-            onTap: () => ref.read(cartProvider.notifier).remove(item.id)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Text('$qty',
-              style:
-                  TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: brandColor)),
-        ),
-        _QtyBtn(
-            icon: Icons.add,
+            onTap: () => ref.read(cartProvider.notifier).remove(item.id),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text('$qty',
+                style: AppTheme.bodyBold(brandColor).copyWith(fontSize: 15)),
+          ),
+          _QtyBtn(
+            icon: Icons.add_rounded,
             color: brandColor,
-            onTap: () => ref.read(cartProvider.notifier).add(item)),
-      ],
+            onTap: () => ref.read(cartProvider.notifier).add(item),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -214,24 +337,20 @@ class _QtyBtn extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
   const _QtyBtn({required this.icon, required this.color, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
         child: Icon(icon, size: 16, color: color),
       ),
     );
   }
 }
 
-// â”€â”€ Hours bottom widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hours band ────────────────────────────────────────────────────────────────
 
 class HoursBand extends StatelessWidget {
   final Restaurant restaurant;
@@ -240,70 +359,74 @@ class HoursBand extends StatelessWidget {
   const HoursBand({super.key, required this.restaurant, this.bgColor, this.textColor});
 
   static const _days = [
-    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+    'monday', 'tuesday', 'wednesday', 'thursday',
+    'friday', 'saturday', 'sunday'
   ];
   static const _labels = {
     'monday': 'LUN', 'tuesday': 'MAR', 'wednesday': 'MER',
     'thursday': 'JEU', 'friday': 'VEN', 'saturday': 'SAM', 'sunday': 'DIM',
   };
 
-  String _todayKey() {
-    final w = DateTime.now().weekday; // 1=Mon â€¦ 7=Sun
-    return _days[w - 1];
-  }
+  String _todayKey() => _days[DateTime.now().weekday - 1];
 
   @override
   Widget build(BuildContext context) {
     final hours = restaurant.openingHours;
     if (hours == null || hours.isEmpty) return const SizedBox.shrink();
-
     final todayKey = _todayKey();
-    final bg = bgColor ?? Colors.black.withValues(alpha: 0.04);
-    final txt = textColor ?? Colors.black;
+    final bg = bgColor ?? AppTheme.cream;
+    final txt = textColor ?? AppTheme.charcoal;
 
     return Container(
       color: bg,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(
           children: _days.map((day) {
             final h = hours[day];
             final isToday = day == todayKey;
             final isClosed = h?.closed ?? (h == null);
-            return Container(
-              width: 72,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                border: Border(right: BorderSide(color: txt.withValues(alpha: 0.08))),
-              ),
+            return Padding(
+              padding: const EdgeInsets.only(right: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    _labels[day]!,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: isToday
-                          ? restaurant.brandColorValue
-                          : txt.withValues(alpha: 0.38),
+                  Text(_labels[day]!,
+                      style: AppTheme.label(
+                          isToday ? restaurant.brandColorValue : txt.withValues(alpha: 0.35))
+                          .copyWith(fontSize: 9)),
+                  const SizedBox(height: 2),
+                  if (isClosed)
+                    Text('Fermé',
+                        style: AppTheme.caption(txt.withValues(alpha: 0.25))
+                            .copyWith(fontSize: 11))
+                  else
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(h!.open,
+                            style: AppTheme.caption(
+                                isToday ? txt : txt.withValues(alpha: 0.55))
+                                .copyWith(
+                                fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                                fontSize: 11)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Icon(Icons.arrow_forward_rounded,
+                              size: 9,
+                              color: isToday
+                                  ? restaurant.brandColorValue
+                                  : txt.withValues(alpha: 0.35)),
+                        ),
+                        Text(h.close,
+                            style: AppTheme.caption(
+                                isToday ? txt : txt.withValues(alpha: 0.55))
+                                .copyWith(
+                                fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                                fontSize: 11)),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    isClosed ? 'FermÃ©' : '${h!.open}â€“${h.close}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
-                      color: isClosed
-                          ? txt.withValues(alpha: 0.25)
-                          : isToday
-                              ? txt
-                              : txt.withValues(alpha: 0.6),
-                    ),
-                  ),
                 ],
               ),
             );
@@ -314,7 +437,7 @@ class HoursBand extends StatelessWidget {
   }
 }
 
-// â”€â”€ Reservation & back buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── App bar actions ───────────────────────────────────────────────────────────
 
 class MenuAppBarActions extends ConsumerWidget {
   final Restaurant restaurant;
@@ -329,28 +452,23 @@ class MenuAppBarActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final color = iconColor ?? Colors.black87;
+    final color = iconColor ?? AppTheme.charcoal;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (showReservation)
           IconButton(
-            onPressed: () => context.push('/reservation/${restaurant.slug}'),
-            icon: Icon(Icons.calendar_today_outlined, color: color),
-            tooltip: 'RÃ©server',
+            onPressed: () =>
+                context.push('/reservation/${restaurant.slug}'),
+            icon: Icon(Icons.calendar_month_outlined, color: color, size: 22),
+            tooltip: 'Réserver',
           ),
         IconButton(
           onPressed: () => context.go('/'),
-          icon: Icon(Icons.qr_code_scanner_rounded, color: color),
+          icon: Icon(Icons.qr_code_scanner_rounded, color: color, size: 22),
           tooltip: 'Scanner un autre QR',
-        ),
-        IconButton(
-          onPressed: () => context.push('/profile'),
-          icon: Icon(Icons.person_outline_rounded, color: color),
-          tooltip: 'Mon profil',
         ),
       ],
     );
   }
 }
-
