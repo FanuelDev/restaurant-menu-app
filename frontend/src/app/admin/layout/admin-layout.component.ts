@@ -152,24 +152,6 @@ import { AuthService } from '../../shared/services/auth.service'
             </a>
 
             <a
-              routerLink="/admin/api"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasApi()"
-              [title]="collapsed() ? t('nav.api') : (!hasApi() ? t('nav.apiLocked') : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="5 6 1.5 9 5 12"/>
-                <polyline points="13 6 16.5 9 13 12"/>
-                <line x1="10" y1="4" x2="8" y2="14"/>
-              </svg>
-              @if (!collapsed()) {
-                <span>{{ t('nav.api') }}</span>
-                @if (!hasApi()) { <span class="sb-lock">Enterprise</span> }
-              }
-            </a>
-
-            <a
               routerLink="/admin/finance"
               routerLinkActive="active"
               class="sb-link"
@@ -184,6 +166,24 @@ import { AuthService } from '../../shared/services/auth.service'
               @if (!collapsed()) {
                 <span>Finance</span>
                 @if (!hasFinance()) { <span class="sb-lock">Enterprise</span> }
+              }
+            </a>
+
+            <a
+              routerLink="/admin/api"
+              routerLinkActive="active"
+              class="sb-link"
+              [class.sb-link-locked]="!hasApi()"
+              [title]="collapsed() ? t('nav.api') : (!hasApi() ? t('nav.apiLocked') : '')"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="5 6 1.5 9 5 12"/>
+                <polyline points="13 6 16.5 9 13 12"/>
+                <line x1="10" y1="4" x2="8" y2="14"/>
+              </svg>
+              @if (!collapsed()) {
+                <span>{{ t('nav.api') }}</span>
+                @if (!hasApi()) { <span class="sb-lock">Enterprise</span> }
               }
             </a>
           }
