@@ -1,8 +1,9 @@
-// preload.js — isolation stricte, aucune API Node exposée
-// L'app charge une URL de production (https://saemenus.com) : pas besoin
-// d'exposer d'APIs supplémentaires au renderer.
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('saemenusElectron', {
-  version: () => ipcRenderer.invoke('app:version'),
+  version:     () => ipcRenderer.invoke('app:version'),
+  minimize:    () => ipcRenderer.invoke('window:minimize'),
+  maximize:    () => ipcRenderer.invoke('window:maximize'),
+  close:       () => ipcRenderer.invoke('window:close'),
+  isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
 })
