@@ -73,7 +73,7 @@ export default class FinanceController {
 
   // GET /api/admin/finance/summary?period=month
   async summary({ auth, request }: HttpContext) {
-    const restaurantId = auth.user!.restaurantId
+    const restaurantId = auth.user!.restaurantId!
     const period = (request.qs().period ?? 'month') as Period
     const { start, end } = periodBounds(period)
 
@@ -169,7 +169,7 @@ export default class FinanceController {
 
   // GET /api/admin/finance/chart?period=month
   async chart({ auth, request }: HttpContext) {
-    const restaurantId = auth.user!.restaurantId
+    const restaurantId = auth.user!.restaurantId!
     const period = (request.qs().period ?? 'month') as Period
     const { start, end, groupBy } = periodBounds(period)
     const fmt = sqlDateFormat(groupBy)
@@ -224,7 +224,7 @@ export default class FinanceController {
   // ── Expenses CRUD ─────────────────────────────────────────────────────────
 
   async listExpenses({ auth, request }: HttpContext) {
-    const restaurantId = auth.user!.restaurantId
+    const restaurantId = auth.user!.restaurantId!!
     const { page = 1, category, from, to } = request.qs()
 
     const query = FinanceExpense.query()
@@ -244,16 +244,16 @@ export default class FinanceController {
     const data = await request.validateUsing(expenseValidator)
     const expense = await FinanceExpense.create({
       ...data,
-      restaurantId: auth.user!.restaurantId,
+      restaurantId: auth.user!.restaurantId!,
       createdBy: auth.user!.id,
     })
     return response.created(expense)
   }
 
-  async updateExpense({ auth, params, request, response }: HttpContext) {
+  async updateExpense({ auth, params, request }: HttpContext) {
     const expense = await FinanceExpense.query()
       .where('id', params.id)
-      .where('restaurant_id', auth.user!.restaurantId)
+      .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     const data = await request.validateUsing(expenseValidator)
     await expense.merge(data).save()
@@ -263,7 +263,7 @@ export default class FinanceController {
   async deleteExpense({ auth, params, response }: HttpContext) {
     const expense = await FinanceExpense.query()
       .where('id', params.id)
-      .where('restaurant_id', auth.user!.restaurantId)
+      .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     await expense.delete()
     return response.noContent()
@@ -272,7 +272,7 @@ export default class FinanceController {
   // ── Incomes CRUD ──────────────────────────────────────────────────────────
 
   async listIncomes({ auth, request }: HttpContext) {
-    const restaurantId = auth.user!.restaurantId
+    const restaurantId = auth.user!.restaurantId!!
     const { page = 1, from, to } = request.qs()
 
     const query = FinanceIncome.query()
@@ -291,16 +291,16 @@ export default class FinanceController {
     const data = await request.validateUsing(incomeValidator)
     const income = await FinanceIncome.create({
       ...data,
-      restaurantId: auth.user!.restaurantId,
+      restaurantId: auth.user!.restaurantId!,
       createdBy: auth.user!.id,
     })
     return response.created(income)
   }
 
-  async updateIncome({ auth, params, request, response }: HttpContext) {
+  async updateIncome({ auth, params, request }: HttpContext) {
     const income = await FinanceIncome.query()
       .where('id', params.id)
-      .where('restaurant_id', auth.user!.restaurantId)
+      .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     const data = await request.validateUsing(incomeValidator)
     await income.merge(data).save()
@@ -310,7 +310,7 @@ export default class FinanceController {
   async deleteIncome({ auth, params, response }: HttpContext) {
     const income = await FinanceIncome.query()
       .where('id', params.id)
-      .where('restaurant_id', auth.user!.restaurantId)
+      .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     await income.delete()
     return response.noContent()
