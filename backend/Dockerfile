@@ -35,3 +35,5 @@ RUN chmod +x docker-entrypoint.sh
 EXPOSE 3333
 
 CMD ["./docker-entrypoint.sh"]
+
+
