@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core'
+﻿import { Component, signal, inject } from '@angular/core'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { CommonModule } from '@angular/common'
@@ -9,104 +9,7 @@ import { TranslocoModule } from '@jsverse/transloco'
   selector: 'app-forgot-password',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink, TranslocoModule],
-  template: `
-    <ng-container *transloco="let t">
-    <div class="auth-page">
-
-      <div class="auth-visual" aria-hidden="true">
-        <div class="auth-visual-inner">
-          <div class="av-icon-wrap">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-          </div>
-          <h2 class="av-title">{{ t('auth.forgotPassword.title') }}</h2>
-          <p class="av-subtitle">{{ t('auth.forgotPassword.subtitle') }}</p>
-
-          <div class="av-steps">
-            <div class="av-step" [class.av-step-done]="sent()">
-              <div class="av-step-icon">
-                @if (sent()) {
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                } @else { 1 }
-              </div>
-              <span>{{ t('auth.forgotPassword.step1') }}</span>
-            </div>
-            <div class="av-step-line" [class.done]="sent()"></div>
-            <div class="av-step" [class.av-step-done]="false">
-              <div class="av-step-icon">2</div>
-              <span>{{ t('auth.forgotPassword.step2') }}</span>
-            </div>
-            <div class="av-step-line"></div>
-            <div class="av-step">
-              <div class="av-step-icon">3</div>
-              <span>{{ t('auth.forgotPassword.step3') }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="av-blob av-blob-1"></div>
-        <div class="av-blob av-blob-2"></div>
-      </div>
-
-      <div class="auth-form-panel">
-        <div class="auth-form-wrap animate-right">
-
-          <a routerLink="/login" class="back-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            {{ t('auth.forgotPassword.backToLogin') }}
-          </a>
-
-          @if (!sent()) {
-            <h1 class="af-title">{{ t('auth.forgotPassword.title') }}</h1>
-            <p class="af-sub">{{ t('auth.forgotPassword.subtitle') }}</p>
-
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-              <div class="form-group">
-                <label class="form-label" for="email">{{ t('auth.forgotPassword.email') }}</label>
-                <input
-                  id="email" type="email" class="form-control"
-                  formControlName="email" autocomplete="email"
-                  [placeholder]="t('auth.forgotPassword.emailPlaceholder')"
-                  [class.is-invalid]="isInvalid('email')"
-                />
-                @if (isInvalid('email')) {
-                  <span class="form-error" role="alert">{{ t('auth.forgotPassword.emailInvalid') }}</span>
-                }
-              </div>
-
-              @if (apiError()) {
-                <div class="alert alert-error" role="alert" style="margin-bottom: var(--space-4)">{{ apiError() }}</div>
-              }
-
-              <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()">
-                @if (loading()) { <span class="spinner"></span> {{ t('auth.forgotPassword.submitting') }} }
-                @else { {{ t('auth.forgotPassword.submit') }} }
-              </button>
-            </form>
-          } @else {
-            <div class="success-state animate-up">
-              <div class="success-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-              </div>
-              <h2 class="success-title">{{ t('auth.forgotPassword.successTitle') }}</h2>
-              <p class="success-msg">
-                {{ t('auth.forgotPassword.successMessage', { email: form.value.email }) }}
-              </p>
-              <p class="success-hint">{{ t('auth.forgotPassword.checkSpam') }}</p>
-              <button class="btn btn-outline btn-full" (click)="reset()">{{ t('auth.forgotPassword.tryAgain') }}</button>
-            </div>
-          }
-
-        </div>
-      </div>
-    </div>
-    </ng-container>
-  `,
+  templateUrl: './forgot-password.component.html',
   styles: [`
     .auth-page { display: flex; min-height: 100vh; }
 

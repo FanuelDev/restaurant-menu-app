@@ -1,0 +1,510 @@
+﻿    <ng-container *transloco="let t">
+
+    @if ((restaurant()?.templateId ?? 1) === 2) {
+      <app-template-magazine
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
+      />
+    } @else if ((restaurant()?.templateId ?? 1) === 3) {
+      <app-template-immersive
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [cartCount]="cartCount()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
+        (openReservation)="reservationOpen.set(true)"
+      />
+    } @else if ((restaurant()?.templateId ?? 1) === 4) {
+      <app-template-zen
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [cartCount]="cartCount()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
+      />
+    } @else if ((restaurant()?.templateId ?? 1) === 5) {
+      <app-template-bento
+        [restaurant]="restaurant()"
+        [categories]="categoriesWithItems()"
+        [cart]="cart()"
+        [cartCount]="cartCount()"
+        [hasOrders]="hasOrders()"
+        [loading]="loading()"
+        (addToCart)="addToCart($event)"
+        (removeFromCart)="removeFromCart($event)"
+        (openCart)="cartOpen.set(true)"
+      />
+    } @else {
+    <div class="menu-page">
+      <app-hero [restaurant]="restaurant()" />
+
+      <div class="filter-section">
+        <div class="container">
+          <div class="filters">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <input
+                type="search"
+                class="search-input"
+                [placeholder]="t('public.menu.searchPlaceholder')"
+                [value]="filters().search"
+                (input)="onSearch($event)"
+                [attr.aria-label]="t('public.menu.searchAriaLabel')"
+              />
+            </div>
+            <div class="filter-chips" role="group" [attr.aria-label]="t('public.menu.filterAriaLabel')">
+              @for (chip of filterChips; track chip.value) {
+                <button
+                  class="chip"
+                  [class.chip-active]="filters().badge === chip.value"
+                  (click)="setFilter(chip.value)"
+                  [attr.aria-pressed]="filters().badge === chip.value"
+                >
+                  {{ chip.icon }} {{ t('public.menu.' + chip.key) }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <app-category-tabs
+        [categories]="categoriesWithItems()"
+        [activeCategoryId]="activeCategoryId()"
+        (categorySelected)="scrollToCategory($event)"
+      />
+
+      <main class="menu-content container" id="menu-content">
+        @if (loading()) {
+          <div class="loading-grid">
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <div class="skeleton-card" aria-hidden="true"></div>
+            }
+          </div>
+        } @else if (categoriesWithItems().length === 0) {
+          <div class="empty-menu">
+            <p>{{ t('public.menu.noResults') }}</p>
+          </div>
+        } @else {
+          @for (cat of categoriesWithItems(); track cat.id) {
+            <section [id]="'cat-' + cat.id" class="category-section">
+              <div class="category-header">
+                <h2 class="category-title">{{ cat.name }}</h2>
+                @if (cat.description) {
+                  <p class="category-desc">{{ cat.description }}</p>
+                }
+              </div>
+              <div class="dishes-grid">
+                @for (item of cat.menuItems; track item.id) {
+                  <app-dish-card
+                    [item]="item"
+                    [cartEnabled]="hasOrders()"
+                    [qty]="getCartQty(item.id)"
+                    [currency]="restaurant()?.currency ?? 'XOF'"
+                    (add)="addToCart(item)"
+                    (remove)="removeFromCart(item.id)"
+                  />
+                }
+              </div>
+            </section>
+          }
+        }
+      </main>
+
+      <!-- Reservation drawer backdrop -->
+      @if (reservationOpen()) {
+        <div class="res-backdrop" (click)="reservationOpen.set(false)"></div>
+        <aside class="res-drawer">
+          <!-- Drawer header -->
+          <div class="res-drawer-header">
+            <div class="res-drawer-header-bg"></div>
+            <div class="res-header-content">
+              <div class="res-header-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+                  <path d="M16 2v4M8 2v4M3 10h18"/>
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="res-drawer-title">{{ t('publicOrder.reservationTitle') }}</h2>
+                <p class="res-drawer-sub">{{ restaurant()?.name }}</p>
+              </div>
+            </div>
+            <button class="res-close-btn" (click)="reservationOpen.set(false)" type="button" aria-label="Fermer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Drawer body -->
+          <div class="res-drawer-body">
+            @if (reservationSuccess()) {
+              <!-- Success state -->
+              <div class="res-success">
+                <div class="res-success-anim">
+                  <div class="res-success-ring"></div>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </div>
+                <h3 class="res-success-title">{{ t('publicOrder.reservationSuccess') }}</h3>
+                <p class="res-success-desc">{{ t('publicOrder.reservationSuccessDesc') }}</p>
+                <button class="res-new-btn" (click)="newReservation()" type="button">
+                  + Nouvelle réservation
+                </button>
+              </div>
+            } @else {
+              <form class="res-form" (ngSubmit)="submitReservation()" #resForm="ngForm" novalidate>
+
+                <!-- Date & Heure -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    Quand ?
+                  </div>
+                  <div class="res-row">
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationDate') }}</label>
+                      <input type="date" class="res-input" [(ngModel)]="resDate" name="resDate" [min]="todayDate" required />
+                    </div>
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationTime') }}</label>
+                      <input type="time" class="res-input" [(ngModel)]="resTime" name="resTime" required />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Couverts -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    {{ t('publicOrder.reservationGuests') }}
+                  </div>
+                  <div class="res-guests-ctrl">
+                    <button type="button" class="res-guests-btn" (click)="resGuests = resGuests > 1 ? resGuests - 1 : 1">−</button>
+                    <span class="res-guests-val">{{ resGuests }}</span>
+                    <button type="button" class="res-guests-btn" (click)="resGuests = resGuests < 100 ? resGuests + 1 : 100">+</button>
+                    <span class="res-guests-unit">{{ resGuests > 1 ? 'couverts' : 'couvert' }}</span>
+                  </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Vos informations
+                  </div>
+                  <div class="res-row">
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationName') }}</label>
+                      <input type="text" class="res-input" [(ngModel)]="resName" name="resName" placeholder="Jean Dupont" required autocomplete="name" />
+                    </div>
+                    <div class="res-field">
+                      <label class="res-label">{{ t('publicOrder.reservationPhone') }}</label>
+                      <input type="tel" class="res-input" [(ngModel)]="resPhone" name="resPhone" placeholder="+225 XX XX XX XX" required autocomplete="tel" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Demandes spéciales -->
+                <div class="res-form-group">
+                  <div class="res-group-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    {{ t('publicOrder.reservationRequests') }}
+                  </div>
+                  <textarea class="res-input res-textarea" [(ngModel)]="resRequests" name="resRequests"
+                    rows="3" placeholder="Allergie, occasion spéciale, table en terrasse…"></textarea>
+                </div>
+
+                @if (reservationError()) {
+                  <div class="res-error">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                    {{ reservationError() }}
+                  </div>
+                }
+
+                <button type="submit" class="res-submit" [disabled]="reservationSubmitting() || resForm.invalid">
+                  @if (reservationSubmitting()) {
+                    <span class="res-spinner"></span>
+                    {{ t('publicOrder.reservationSubmitting') }}
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+                    {{ t('publicOrder.reservationSubmit') }}
+                  }
+                </button>
+
+              </form>
+            }
+          </div>
+        </aside>
+      }
+
+      <footer class="menu-footer">
+        <div class="container">
+          @if (restaurant()) {
+            <div class="footer-content">
+              @if (restaurant()!.logoUrl) {
+                <img [src]="restaurant()!.logoUrl" [alt]="restaurant()!.name" class="footer-logo" />
+              }
+              <div class="footer-info">
+                <strong>{{ restaurant()!.name }}</strong>
+                @if (restaurant()!.address) { <span>{{ restaurant()!.address }}</span> }
+                @if (restaurant()!.phone) { <a [href]="'tel:' + restaurant()!.phone">{{ restaurant()!.phone }}</a> }
+              </div>
+            </div>
+          }
+          <p class="footer-copy">{{ t('public.menu.footerUpdated') }}</p>
+        </div>
+      </footer>
+    </div>
+
+    } <!-- end @else template 1 -->
+
+    <!-- Reservation FAB (templates 1 & 2 uniquement — 3/4/5 ont leur propre UI) -->
+    @if (hasOrders() && (restaurant()?.templateId ?? 1) !== 3 && (restaurant()?.templateId ?? 1) !== 4 && (restaurant()?.templateId ?? 1) !== 5 && !reservationOpen() && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
+      <button class="res-fab" (click)="reservationOpen.set(true)" type="button" aria-label="Réserver une table">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+        </svg>
+        <span class="res-fab-label">Réserver</span>
+      </button>
+    }
+
+    <!-- Cart FAB (templates 1 & 2 — 3/4/5 ont leur propre panier intégré) -->
+    @if (hasOrders() && cartCount() > 0 && (restaurant()?.templateId ?? 1) !== 3 && (restaurant()?.templateId ?? 1) !== 4 && (restaurant()?.templateId ?? 1) !== 5 && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
+      <button class="cart-fab" (click)="cartOpen.set(true)" type="button" aria-label="Open cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span class="cart-fab-count">{{ cartCount() }}</span>
+        <span class="cart-fab-total">{{ formatPrice(cartTotal()) }}</span>
+      </button>
+    }
+
+    <!-- Cart drawer backdrop -->
+    @if (cartOpen()) {
+      <div class="drawer-backdrop" (click)="cartOpen.set(false)" aria-hidden="true"></div>
+      <aside class="cart-drawer" role="dialog" [attr.aria-label]="t('publicOrder.cartTitle')">
+        <div class="cart-drawer-header">
+          <h2 class="cart-drawer-title">{{ t('publicOrder.cartTitle') }}</h2>
+          <button class="drawer-close" (click)="cartOpen.set(false)" type="button" aria-label="Close">✕</button>
+        </div>
+
+        @if (cart().length === 0) {
+          <div class="cart-empty">{{ t('publicOrder.cartEmpty') }}</div>
+        } @else {
+          <div class="cart-items">
+            @for (ci of cart(); track ci.menuItem.id) {
+              <div class="cart-item">
+                <div class="cart-item-info">
+                  <span class="cart-item-name">{{ ci.menuItem.name }}</span>
+                  <span class="cart-item-price">{{ formatPrice(ci.menuItem.price * ci.quantity) }}</span>
+                </div>
+                <div class="cart-item-controls">
+                  <button class="qty-btn-sm" (click)="removeFromCart(ci.menuItem.id)" type="button">−</button>
+                  <span class="qty-val-sm">{{ ci.quantity }}</span>
+                  <button class="qty-btn-sm" (click)="addToCart(ci.menuItem)" type="button">+</button>
+                  <button class="remove-btn" (click)="removeItemFully(ci.menuItem.id)" type="button" aria-label="Remove">🗑</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="cart-summary">
+            <div class="cart-total-row">
+              <span>{{ t('publicOrder.total') }}</span>
+              <strong>{{ formatPrice(cartTotal()) }}</strong>
+            </div>
+            <button class="btn-primary btn-full" (click)="openCheckout()" type="button">
+              {{ t('publicOrder.checkoutBtn') }}
+            </button>
+          </div>
+        }
+      </aside>
+    }
+
+    <!-- Checkout modal -->
+    @if (checkoutOpen()) {
+      <div class="modal-backdrop" (click)="closeCheckout()" aria-modal="true" role="dialog">
+        <div class="checkout-modal" (click)="$event.stopPropagation()">
+
+          <!-- Header -->
+          <div class="modal-header">
+            <div class="modal-header-left">
+              <div class="modal-header-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+              </div>
+              <h2 class="modal-title">{{ t('publicOrder.checkoutTitle') }}</h2>
+            </div>
+            <button class="modal-close-btn" (click)="closeCheckout()" type="button" aria-label="Close">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3 3l10 10M13 3L3 13"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <form (ngSubmit)="placeOrder()" #checkoutForm="ngForm">
+
+              <!-- Section: Customer info -->
+              <div class="modal-section">
+                <p class="modal-section-label">Vos informations</p>
+                <div class="form-field">
+                  <label class="form-label">{{ t('publicOrder.customerName') }}</label>
+                  <input type="text" class="form-input" [(ngModel)]="ckName" name="ckName"
+                    placeholder="Ex: Jean Dupont" required autocomplete="name" />
+                </div>
+                <div class="form-row-2">
+                  <div class="form-field">
+                    <label class="form-label">{{ t('publicOrder.customerPhone') }}</label>
+                    <input type="tel" class="form-input" [(ngModel)]="ckPhone" name="ckPhone"
+                      placeholder="+229 XX XX XX XX" autocomplete="tel" />
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label">{{ t('publicOrder.customerEmail') }}</label>
+                    <input type="email" class="form-input" [(ngModel)]="ckEmail" name="ckEmail"
+                      placeholder="email@exemple.com" autocomplete="email" />
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">{{ t('publicOrder.orderNotes') }}</label>
+                  <textarea class="form-input form-textarea" [(ngModel)]="ckNotes" name="ckNotes"
+                    rows="2" placeholder="Allergies, instructions particulières…"></textarea>
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="modal-divider"></div>
+
+              <!-- Section: Gift option -->
+              <div class="modal-section">
+                <label class="gift-toggle-row">
+                  <input type="checkbox" [(ngModel)]="ckIsGift" name="ckIsGift" class="gift-checkbox" />
+                  <div class="gift-toggle-content">
+                    <span class="gift-toggle-title">🎁 {{ t('publicOrder.isGift') }}</span>
+                    <span class="gift-toggle-desc">Un QR code sera généré pour le destinataire</span>
+                  </div>
+                </label>
+                @if (ckIsGift) {
+                  <div class="gift-message-field">
+                    <label class="form-label">{{ t('publicOrder.giftMessage') }}</label>
+                    <textarea
+                      class="form-input form-textarea gift-textarea"
+                      [(ngModel)]="ckGiftMessage" name="ckGiftMessage"
+                      [placeholder]="t('publicOrder.giftMessagePlaceholder')"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                }
+              </div>
+
+              <!-- Divider -->
+              <div class="modal-divider"></div>
+
+              <!-- Section: Order summary -->
+              <div class="modal-section">
+                <p class="modal-section-label">Récapitulatif</p>
+                <div class="modal-order-summary">
+                  @for (ci of cart(); track ci.menuItem.id) {
+                    <div class="modal-order-line">
+                      <span class="order-line-name">
+                        <span class="order-line-qty">{{ ci.quantity }}×</span>
+                        {{ ci.menuItem.name }}
+                      </span>
+                      <span class="order-line-price">{{ formatPrice(ci.menuItem.price * ci.quantity) }}</span>
+                    </div>
+                  }
+                  <div class="modal-order-total">
+                    <span>{{ t('publicOrder.total') }}</span>
+                    <strong class="total-amount">{{ formatPrice(cartTotal()) }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error -->
+              @if (orderError()) {
+                <div class="form-error-box">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/>
+                  </svg>
+                  {{ orderError() }}
+                </div>
+              }
+
+              <!-- Submit -->
+              <div class="modal-footer">
+                <button
+                  type="submit"
+                  class="btn-submit"
+                  [disabled]="orderSubmitting() || checkoutForm.invalid"
+                >
+                  @if (orderSubmitting()) {
+                    <span class="btn-spinner"></span>
+                    {{ t('publicOrder.submitting') }}
+                  } @else {
+                    {{ t('publicOrder.submitOrder') }} · {{ formatPrice(cartTotal()) }}
+                  }
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Order confirmation -->
+    @if (orderConfirmed(); as order) {
+      <div class="confirmation-overlay">
+        <div class="confirmation-card">
+          <div class="confirmation-icon">✅</div>
+          <h2 class="confirmation-title">{{ t('publicOrder.confirmationTitle') }}</h2>
+          <p class="confirmation-subtitle">{{ t('publicOrder.confirmationSubtitle') }}</p>
+          <div class="confirmation-number">
+            <span class="conf-label">{{ t('publicOrder.orderNumber') }}</span>
+            <span class="conf-value">{{ order.orderNumber }}</span>
+          </div>
+
+          @if (order.isGift && order.giftToken) {
+            <div class="qr-section">
+              <h3 class="qr-title">{{ t('publicOrder.giftQrTitle') }}</h3>
+              <p class="qr-desc">{{ t('publicOrder.giftQrDesc') }}</p>
+              <canvas id="qr-canvas" class="qr-canvas"></canvas>
+              <button class="btn-outline" (click)="downloadQr()" type="button">
+                ⬇ {{ t('publicOrder.downloadQr') }}
+              </button>
+            </div>
+          }
+
+          <button class="btn-primary" (click)="dismissConfirmation()" type="button">
+            {{ t('publicOrder.backToMenu') }}
+          </button>
+        </div>
+      </div>
+    }
+    </ng-container>
+  

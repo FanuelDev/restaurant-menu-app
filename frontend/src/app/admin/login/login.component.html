@@ -1,0 +1,129 @@
+﻿    <ng-container *transloco="let t">
+    <div class="auth-page">
+
+      <!-- Panneau gauche — visuel de marque -->
+      <div class="auth-visual" aria-hidden="true">
+        <div class="auth-visual-inner">
+          <div class="av-rings">
+            <div class="av-ring av-ring-1"></div>
+            <div class="av-ring av-ring-2"></div>
+            <div class="av-ring av-ring-3"></div>
+            <div class="av-icon-wrap">
+              <svg viewBox="0 0 40 40" fill="none" class="av-icon">
+                <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M5 31h30" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <h2 class="av-title">{{ t('auth.appName') }}</h2>
+          <p class="av-subtitle">{{ t('auth.tagline') }}</p>
+
+          <div class="av-testimonial">
+            <p class="av-quote">{{ t('auth.testimonial') }}</p>
+            <div class="av-author">
+              <div class="av-avatar">M</div>
+              <div>
+                <div class="av-author-name">{{ t('auth.testimonialAuthor') }}</div>
+                <div class="av-author-role">{{ t('auth.testimonialPlace') }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="av-stats">
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat1Value') }}</span><span class="av-stat-label">{{ t('auth.stat1Label') }}</span></div>
+            <div class="av-stat-divider"></div>
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat2Value') }}</span><span class="av-stat-label">{{ t('auth.stat2Label') }}</span></div>
+            <div class="av-stat-divider"></div>
+            <div class="av-stat"><span class="av-stat-val">{{ t('auth.stat3Value') }}</span><span class="av-stat-label">{{ t('auth.stat3Label') }}</span></div>
+          </div>
+        </div>
+
+        <div class="av-blob av-blob-1"></div>
+        <div class="av-blob av-blob-2"></div>
+        <div class="av-blob av-blob-3"></div>
+      </div>
+
+      <!-- Panneau droit — formulaire -->
+      <div class="auth-form-panel">
+        <div class="auth-form-wrap animate-right">
+
+          <div class="af-logo">
+            <svg width="20" height="20" viewBox="0 0 40 40" fill="none">
+              <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <h1 class="af-title">{{ t('auth.login.title') }}</h1>
+          <p class="af-sub">{{ t('auth.login.subtitle') }}</p>
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="email">{{ t('auth.login.email') }}</label>
+              <input
+                id="email" type="email" class="form-control"
+                formControlName="email" autocomplete="email"
+                [placeholder]="t('auth.login.emailPlaceholder')"
+                [class.is-invalid]="isFieldInvalid('email')"
+              />
+              @if (isFieldInvalid('email')) {
+                <span class="form-error" role="alert">{{ t('auth.login.emailInvalid') }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <div class="pw-label-row">
+                <label class="form-label" for="password">{{ t('auth.login.password') }}</label>
+                <a routerLink="/forgot-password" class="forgot-link">{{ t('auth.login.forgotPassword') }}</a>
+              </div>
+              <div class="pw-wrap">
+                <input
+                  id="password" [type]="showPassword() ? 'text' : 'password'" class="form-control"
+                  formControlName="password" autocomplete="current-password"
+                  [placeholder]="t('auth.login.passwordPlaceholder')"
+                  [class.is-invalid]="isFieldInvalid('password')"
+                />
+                <button type="button" class="pw-toggle" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? t('auth.login.password') : t('auth.login.password')">
+                  @if (showPassword()) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (isFieldInvalid('password')) {
+                <span class="form-error" role="alert">{{ t('auth.login.passwordMin') }}</span>
+              }
+            </div>
+
+            @if (apiError()) {
+              <div class="alert alert-error" role="alert" style="margin-bottom: var(--space-4)">{{ apiError() }}</div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading()" [attr.aria-busy]="loading()">
+              @if (loading()) { <span class="spinner"></span> {{ t('auth.login.submitting') }} }
+              @else { {{ t('auth.login.submit') }} }
+            </button>
+          </form>
+
+          <p class="af-footer">
+            {{ t('auth.login.noAccount') }}
+            <a routerLink="/register">{{ t('auth.login.freeTrial') }}</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+    </ng-container>
+  

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+﻿import { Component, inject } from '@angular/core'
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
@@ -7,84 +7,7 @@ import { AuthService } from '../../shared/services/auth.service'
   selector: 'app-super-admin-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule],
-  template: `
-    <ng-container *transloco="let t">
-    <div class="sa-shell">
-
-      <aside class="sa-sidebar">
-        <!-- Brand -->
-        <div class="sa-brand">
-          <div class="sa-logo">
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
-              <path d="M9 1l2.5 5.5L17 7.6l-4 3.9 1 5.5L9 14.5l-5 2.5 1-5.5L1 7.6l5.5-1.1z" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="sa-brand-text">
-            <span class="sa-brand-title">{{ t('superAdmin.layout.title') }}</span>
-            <span class="sa-brand-sub">Plateforme</span>
-          </div>
-        </div>
-
-        <!-- Nav -->
-        <nav class="sa-nav">
-          <a routerLink="/super-admin/dashboard" routerLinkActive="active" class="sa-link">
-            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
-              <rect x="1.5" y="1.5" width="6" height="6" rx="1.2"/>
-              <rect x="10.5" y="1.5" width="6" height="6" rx="1.2"/>
-              <rect x="1.5" y="10.5" width="6" height="6" rx="1.2"/>
-              <rect x="10.5" y="10.5" width="6" height="6" rx="1.2"/>
-            </svg>
-            <span>{{ t('superAdmin.layout.nav.dashboard') }}</span>
-          </a>
-          <a routerLink="/super-admin/restaurants" routerLinkActive="active" class="sa-link">
-            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
-              <path d="M2 16V8l7-5 7 5v8H2z" stroke-linejoin="round"/>
-              <rect x="6.5" y="11" width="5" height="5"/>
-            </svg>
-            <span>{{ t('superAdmin.layout.nav.restaurants') }}</span>
-          </a>
-          <a routerLink="/super-admin/plans" routerLinkActive="active" class="sa-link">
-            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
-              <rect x="1.5" y="4.5" width="15" height="10" rx="1.5"/>
-              <path d="M1.5 8h15" stroke-linecap="round"/>
-              <path d="M4.5 12h2.5" stroke-linecap="round"/>
-            </svg>
-            <span>{{ t('superAdmin.layout.nav.plans') }}</span>
-          </a>
-          <a routerLink="/super-admin/audit-logs" routerLinkActive="active" class="sa-link">
-            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6">
-              <path d="M14 2H4a1 1 0 00-1 1v12a1 1 0 001 1h10a1 1 0 001-1V3a1 1 0 00-1-1z"/>
-              <path d="M5.5 7h7M5.5 10h7M5.5 13h4" stroke-linecap="round"/>
-            </svg>
-            <span>{{ t('superAdmin.layout.nav.auditLogs') }}</span>
-          </a>
-        </nav>
-
-        <!-- Footer -->
-        <div class="sa-footer">
-          <div class="sa-user">
-            <div class="sa-avatar">{{ initials() }}</div>
-            <div class="sa-user-info">
-              <div class="sa-user-name">{{ authService.user()?.fullName }}</div>
-            </div>
-          </div>
-          <button class="sa-logout" (click)="authService.logout()">
-            <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>
-              <path d="M12 13l4-4-4-4" stroke-linejoin="round"/>
-              <path d="M16 9H7"/>
-            </svg>
-            {{ t('superAdmin.layout.logout') }}
-          </button>
-        </div>
-      </aside>
-
-      <main class="sa-content">
-        <router-outlet />
-      </main>
-    </div>
-    </ng-container>
-  `,
+  templateUrl: './super-admin-layout.component.html',
   styles: [`
     .sa-shell {
       display: flex;

@@ -1,0 +1,170 @@
+﻿    <ng-container *transloco="let t">
+    <div class="plans-page">
+
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('superAdmin.plans.title') }}</h1>
+          <p class="page-sub">{{ t('superAdmin.plans.subtitle') }}</p>
+        </div>
+        <button class="btn btn-primary" (click)="openCreate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          {{ t('superAdmin.plans.newPlan') }}
+        </button>
+      </header>
+
+      @if (loading()) {
+        <div class="plans-skeleton">
+          @for (i of [1,2,3]; track i) {
+            <div class="skeleton-card"></div>
+          }
+        </div>
+      } @else {
+        <div class="plans-grid">
+          @for (plan of plans(); track plan.id) {
+            <div class="plan-card" [class.plan-highlighted]="plan.isActive && plan.isPublic">
+              <div class="plan-head">
+                <div class="plan-identity">
+                  <div class="plan-name">{{ plan.name }}</div>
+                  <code class="plan-slug">{{ plan.slug }}</code>
+                </div>
+                <div class="plan-badges">
+                  @if (!plan.isActive) { <span class="badge badge-inactive">{{ t('common.inactive') }}</span> }
+                  @if (!plan.isPublic) { <span class="badge badge-private">{{ t('superAdmin.plans.fieldPublic') }}</span> }
+                  @if (plan.isActive && plan.isPublic) { <span class="badge badge-live">Live</span> }
+                </div>
+              </div>
+
+              @if (plan.description) {
+                <p class="plan-desc">{{ plan.description }}</p>
+              }
+
+              <div class="plan-prices">
+                <div class="price-item">
+                  <div class="price-amount">{{ formatCents(plan.priceMonthlyCents) }}</div>
+                  <div class="price-label">{{ t('superAdmin.plans.perMonth') }}</div>
+                </div>
+                <div class="price-sep"></div>
+                <div class="price-item">
+                  <div class="price-amount">{{ formatCents(plan.priceYearlyCents) }}</div>
+                  <div class="price-label">{{ t('superAdmin.plans.perYear') }}</div>
+                </div>
+              </div>
+
+              <div class="plan-limits">
+                <div class="limit-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  <span>{{ plan.maxCategories === -1 ? t('common.unlimited') : t('superAdmin.plans.limitCategories', { count: plan.maxCategories }) }}</span>
+                </div>
+                <div class="limit-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>{{ plan.maxMenuItems === -1 ? t('common.unlimited') : t('superAdmin.plans.limitItems', { count: plan.maxMenuItems }) }}</span>
+                </div>
+                <div class="limit-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <span>{{ plan.maxUsers === -1 ? t('common.unlimited') : t('superAdmin.plans.limitUsers', { count: plan.maxUsers }) }}</span>
+                </div>
+              </div>
+
+              <div class="plan-footer">
+                <button class="btn btn-ghost btn-sm" (click)="openEdit(plan)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  {{ t('common.edit') }}
+                </button>
+                <button class="btn-delete" (click)="deletePlan(plan)" [title]="t('common.delete')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (!plans().length) {
+            <div class="empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gray-300)"><rect x="1.5" y="4.5" width="21" height="15" rx="2"/><path d="M1.5 9h21" stroke-linecap="round"/><path d="M5 14h3" stroke-linecap="round"/></svg>
+              <p>{{ t('superAdmin.plans.title') }}</p>
+              <button class="btn btn-primary btn-sm" (click)="openCreate()">{{ t('superAdmin.plans.newPlan') }}</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (showModal()) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal modal-lg" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>{{ editingPlan() ? t('superAdmin.plans.modalTitleEdit') + ' « ' + editingPlan()!.name + ' »' : t('superAdmin.plans.modalTitleNew') }}</h3>
+            <button class="close-btn" (click)="closeModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldName') }} <span class="req">*</span></label>
+                <input [(ngModel)]="form.name" type="text" class="form-control" placeholder="Pro" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldSlug') }} <span class="req">*</span></label>
+                <input [(ngModel)]="form.slug" type="text" class="form-control" placeholder="pro" [disabled]="!!editingPlan()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ t('superAdmin.plans.fieldDescription') }}</label>
+              <input [(ngModel)]="form.description" type="text" class="form-control" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldPriceMonthly') }} <span class="form-hint">(centimes)</span></label>
+                <input [(ngModel)]="form.priceMonthlyCents" type="number" min="0" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldPriceYearly') }} <span class="form-hint">(centimes)</span></label>
+                <input [(ngModel)]="form.priceYearlyCents" type="number" min="0" class="form-control" />
+              </div>
+            </div>
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldMaxCategories') }} <span class="form-hint">(-1 = ∞)</span></label>
+                <input [(ngModel)]="form.maxCategories" type="number" min="-1" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldMaxItems') }} <span class="form-hint">(-1 = ∞)</span></label>
+                <input [(ngModel)]="form.maxMenuItems" type="number" min="-1" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ t('superAdmin.plans.fieldMaxUsers') }} <span class="form-hint">(-1 = ∞)</span></label>
+                <input [(ngModel)]="form.maxUsers" type="number" min="-1" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ t('superAdmin.plans.fieldFeatures') }} <span class="form-hint">(une par ligne · préfixe <code>- </code> pour désactiver)</span></label>
+              <textarea [(ngModel)]="featuresText" rows="5" class="form-control" placeholder="QR Code&#10;Badges &amp; disponibilités&#10;Journal d'audit&#10;- Accès API"></textarea>
+            </div>
+            <div class="form-toggles">
+              <label class="toggle-label">
+                <input type="checkbox" [(ngModel)]="form.isActive" class="toggle-checkbox" />
+                <span class="toggle-track"></span>
+                <span>{{ t('superAdmin.plans.fieldActive') }}</span>
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" [(ngModel)]="form.isPublic" class="toggle-checkbox" />
+                <span class="toggle-track"></span>
+                <span>{{ t('superAdmin.plans.fieldPublic') }}</span>
+              </label>
+            </div>
+            @if (modalError()) {
+              <div class="alert alert-error">{{ modalError() }}</div>
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="closeModal()">{{ t('common.cancel') }}</button>
+            <button class="btn btn-primary" (click)="submitModal()" [disabled]="modalLoading()">
+              @if (modalLoading()) { <span class="spinner"></span> }
+              {{ editingPlan() ? t('common.save') : t('superAdmin.plans.newPlan') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    </ng-container>
+  

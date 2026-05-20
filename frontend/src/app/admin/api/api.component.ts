@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core'
+﻿import { Component, inject, computed } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
@@ -7,40 +7,7 @@ import { AuthService } from '../../shared/services/auth.service'
   selector: 'app-api',
   standalone: true,
   imports: [RouterLink, TranslocoModule],
-  template: `
-    <ng-container *transloco="let t">
-    <div class="page-container">
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">{{ t('api.title') }}</h1>
-          <p class="page-subtitle">{{ t('api.subtitle') }}</p>
-        </div>
-      </header>
-
-      @if (!hasAccess()) {
-        <div class="upgrade-card">
-          <div class="upgrade-icon">⚡</div>
-          <h2 class="upgrade-title">{{ t('api.enterpriseFeature') }}</h2>
-          <p class="upgrade-desc">{{ t('api.enterpriseDescription') }}</p>
-          <a routerLink="/admin/subscription" class="btn btn-primary">{{ t('api.upgradeBtn') }}</a>
-        </div>
-      } @else {
-        <div class="api-panel">
-          <div class="api-section">
-            <h2 class="section-title">{{ t('api.keyTitle') }}</h2>
-            <p class="section-desc">{{ t('api.keyDescription') }}</p>
-            <div class="api-key-row">
-              <code class="api-key">••••••••••••••••••••••••••••••••</code>
-              <button class="btn btn-outline" disabled>{{ t('api.reveal') }}</button>
-              <button class="btn btn-outline" disabled>{{ t('api.regenerate') }}</button>
-            </div>
-            <p class="coming-note">🚧 {{ t('api.wip') }}</p>
-          </div>
-        </div>
-      }
-    </div>
-    </ng-container>
-  `,
+  templateUrl: './api.component.html',
   styles: [`
     .page-container { max-width: 800px; }
 

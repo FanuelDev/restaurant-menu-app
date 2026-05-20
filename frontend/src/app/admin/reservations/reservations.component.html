@@ -1,0 +1,217 @@
+﻿    <ng-container *transloco="let t">
+      <div class="res-page">
+
+        <!-- Enterprise locked banner -->
+        @if (!hasAccess()) {
+          <div class="locked-banner">
+            <div class="locked-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="locked-content">
+              <div class="locked-title">{{ t('reservations.lockedTitle') }}</div>
+              <div class="locked-desc">{{ t('reservations.lockedDesc') }}</div>
+              <a routerLink="/admin/subscription" class="locked-cta">
+                {{ t('reservations.lockedCta') }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- Full reservations management -->
+        @if (hasAccess()) {
+          <!-- Page header -->
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">{{ t('reservations.title') }}</h1>
+              <p class="page-sub">{{ t('reservations.subtitle') }}</p>
+            </div>
+          </div>
+
+          <!-- Alert banner for urgent reservations -->
+          @if (urgentCount() > 0) {
+            <div class="alert-banner" [class.alert-overdue]="overdueCount() > 0">
+              <span class="alert-icon">{{ overdueCount() > 0 ? '⚠️' : '⏰' }}</span>
+              <div class="alert-text">
+                @if (overdueCount() > 0) {
+                  <strong>{{ overdueCount() }} réservation{{ overdueCount() > 1 ? 's' : '' }} dépassée{{ overdueCount() > 1 ? 's' : '' }}</strong>
+                  @if (imminentCount() > 0) {
+                    &nbsp;· {{ imminentCount() }} imminente{{ imminentCount() > 1 ? 's' : '' }}
+                  }
+                } @else {
+                  <strong>{{ imminentCount() }} réservation{{ imminentCount() > 1 ? 's' : '' }} dans moins de 30 min</strong>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Filter bar -->
+          <div class="filter-bar">
+            <div class="filter-tabs">
+              <button class="tab" [class.tab-active]="activeTab() === 'all'" (click)="setTab('all')">
+                {{ t('reservations.tabAll') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'pending'" (click)="setTab('pending')">
+                {{ t('reservations.tabPending') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'confirmed'" (click)="setTab('confirmed')">
+                {{ t('reservations.tabConfirmed') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'cancelled'" (click)="setTab('cancelled')">
+                {{ t('reservations.tabCancelled') }}
+              </button>
+            </div>
+
+            <div class="date-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="date-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input
+                type="date"
+                class="date-input"
+                [(ngModel)]="dateFilter"
+                (change)="onDateChange()"
+              />
+            </div>
+          </div>
+
+          <!-- Loading skeleton -->
+          @if (loading()) {
+            <div class="res-list">
+              @for (_ of [1,2,3]; track $index) {
+                <div class="res-card skeleton-card">
+                  <div class="skeleton" style="height:16px;width:40%;margin-bottom:8px;border-radius:6px"></div>
+                  <div class="skeleton" style="height:12px;width:65%;border-radius:4px"></div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Reservations list -->
+          @if (!loading()) {
+            @if (reservations().length === 0) {
+              <div class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--text-secondary);opacity:.4"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <p>{{ t('reservations.emptyState') }}</p>
+              </div>
+            } @else {
+              <div class="res-list">
+                @for (res of reservations(); track res.id) {
+                  <div class="res-card"
+                    [class.card-overdue]="getUrgency(res) === 'overdue'"
+                    [class.card-imminent]="getUrgency(res) === 'imminent'">
+                    <!-- Card top -->
+                    <div class="res-card-top">
+                      <div class="res-datetime">
+                        <div class="res-date">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          {{ res.reservedDate | date:'dd/MM/yyyy' }} · {{ res.reservedTime }}
+                          @if (getUrgency(res) === 'overdue') {
+                            <span class="urgency-pill pill-overdue">⚠️ Dépassée</span>
+                          } @else if (getUrgency(res) === 'imminent') {
+                            <span class="urgency-pill pill-imminent">⏰ Dans {{ minutesUntil(res) }} min</span>
+                          }
+                        </div>
+                        <div class="res-guests">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                          {{ res.guestsCount }} {{ t('reservations.guests') }}
+                        </div>
+                      </div>
+                      <div class="status-badge" [style.color]="statusColor(res.status)" [style.background]="statusBg(res.status)">
+                        {{ t('reservations.status.' + res.status) }}
+                      </div>
+                    </div>
+
+                    <!-- Customer info -->
+                    <div class="res-customer">
+                      <div class="customer-name">{{ res.customerName }}</div>
+                      <div class="customer-contact">
+                        <a [href]="'tel:' + res.customerPhone" class="contact-link">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                          {{ res.customerPhone }}
+                        </a>
+                        @if (res.customerEmail) {
+                          <a [href]="'mailto:' + res.customerEmail" class="contact-link">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            {{ res.customerEmail }}
+                          </a>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Special requests -->
+                    @if (res.specialRequests) {
+                      <div class="special-requests">
+                        <div class="special-label">{{ t('reservations.specialRequests') }}</div>
+                        <p class="special-text">{{ res.specialRequests }}</p>
+                      </div>
+                    }
+
+                    <!-- Notes -->
+                    @if (res.notes) {
+                      <div class="res-notes">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {{ res.notes }}
+                      </div>
+                    }
+
+                    <!-- Action bar -->
+                    <div class="res-actions">
+                      @if (res.status === 'pending') {
+                        <button class="action-btn action-confirm" (click)="updateStatus(res, 'confirmed')" [disabled]="updatingId() === res.id">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          {{ t('reservations.confirm') }}
+                        </button>
+                        <button class="action-btn action-cancel" (click)="updateStatus(res, 'cancelled')" [disabled]="updatingId() === res.id">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          {{ t('reservations.cancel') }}
+                        </button>
+                      }
+                      @if (res.status === 'confirmed') {
+                        <button class="action-btn action-noshow" (click)="updateStatus(res, 'no_show')" [disabled]="updatingId() === res.id">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                          {{ t('reservations.noShow') }}
+                        </button>
+                        <button class="action-btn action-cancel" (click)="updateStatus(res, 'cancelled')" [disabled]="updatingId() === res.id">
+                          {{ t('reservations.cancel') }}
+                        </button>
+                      }
+
+                      <!-- Inline notes input -->
+                      <div class="notes-input-wrap">
+                        <input
+                          type="text"
+                          class="notes-input"
+                          [placeholder]="t('reservations.addNote')"
+                          [(ngModel)]="notesMap[res.id]"
+                          (keyup.enter)="saveNote(res)"
+                        />
+                        @if (notesMap[res.id]) {
+                          <button class="notes-save" (click)="saveNote(res)">
+                            {{ t('reservations.saveNote') }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Pagination -->
+              @if (meta().lastPage > 1) {
+                <div class="pagination">
+                  <button class="page-btn" [disabled]="meta().currentPage <= 1" (click)="prevPage()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    {{ t('reservations.prevPage') }}
+                  </button>
+                  <span class="page-info">{{ meta().currentPage }} / {{ meta().lastPage }}</span>
+                  <button class="page-btn" [disabled]="meta().currentPage >= meta().lastPage" (click)="nextPage()">
+                    {{ t('reservations.nextPage') }}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                </div>
+              }
+            }
+          }
+        }
+      </div>
+    </ng-container>
+  

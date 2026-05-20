@@ -1,4 +1,4 @@
-// frontend/src/app/public/category-tabs/category-tabs.component.ts
+﻿// frontend/src/app/public/category-tabs/category-tabs.component.ts
 import { Component, Input, Output, EventEmitter, OnChanges, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { TranslocoModule } from '@jsverse/transloco'
@@ -9,24 +9,7 @@ import type { Category } from '../../shared/models'
   standalone: true,
   imports: [CommonModule, TranslocoModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <ng-container *transloco="let t">
-    <nav class="cat-tabs" [attr.aria-label]="t('public.menu.catNavAriaLabel')" #tabsNav>
-      <div class="cat-tabs-inner container">
-        @for (cat of categories; track cat.id) {
-          <button
-            class="cat-tab"
-            [class.cat-tab-active]="activeCategoryId === cat.id"
-            (click)="select(cat.id)"
-            [attr.aria-current]="activeCategoryId === cat.id ? 'true' : null"
-          >
-            {{ cat.name }}
-          </button>
-        }
-      </div>
-    </nav>
-    </ng-container>
-  `,
+  templateUrl: './category-tabs.component.html',
   styles: [`
     .cat-tabs {
       background: var(--surface-1);

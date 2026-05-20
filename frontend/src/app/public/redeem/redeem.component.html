@@ -1,0 +1,165 @@
+﻿    <ng-container *transloco="let t">
+      <div class="redeem-page">
+        <div class="redeem-card">
+
+          <!-- Back to menu -->
+          <a routerLink="/menu" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            {{ t('publicOrder.redeemBackToMenu') }}
+          </a>
+
+          <!-- Loading state -->
+          @if (loading()) {
+            <div class="skeleton-wrap">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-sub"></div>
+              <div class="skeleton skeleton-block"></div>
+              <div class="skeleton skeleton-block"></div>
+            </div>
+          }
+
+          <!-- Error state -->
+          @if (!loading() && error()) {
+            <div class="state-icon state-icon-error">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <h2 class="state-title">{{ t('publicOrder.redeemErrorTitle') }}</h2>
+            <p class="state-desc">{{ error() }}</p>
+          }
+
+          <!-- Revoked state -->
+          @if (!loading() && isRevoked()) {
+            <div class="state-icon state-icon-error">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            </div>
+            <h2 class="state-title">{{ t('publicOrder.redeemRevokedTitle') }}</h2>
+            <p class="state-desc">{{ t('publicOrder.redeemRevokedDesc') }}</p>
+          }
+
+          <!-- Main content (order loaded, not revoked) -->
+          @if (!loading() && !error() && !isRevoked() && order()) {
+            <!-- Header -->
+            <div class="redeem-header">
+              <div class="restaurant-name">{{ restaurantName() }}</div>
+              <div class="gift-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                {{ t('publicOrder.redeemGiftBadge') }}
+              </div>
+            </div>
+
+            <!-- Gift message -->
+            @if (order()!.giftMessage) {
+              <div class="gift-message">
+                <div class="gift-message-label">{{ t('publicOrder.redeemGiftMessage') }}</div>
+                <p class="gift-message-text">"{{ order()!.giftMessage }}"</p>
+              </div>
+            }
+
+            <!-- Order items -->
+            <div class="order-items-section">
+              <div class="section-label">{{ t('publicOrder.redeemOrderItems') }}</div>
+              <div class="items-list">
+                @for (item of order()!.items; track item.id) {
+                  <div class="item-row">
+                    <div class="item-qty">×{{ item.quantity }}</div>
+                    <div class="item-info">
+                      <div class="item-name">{{ item.menuItemName }}</div>
+                      @if (item.specialInstructions) {
+                        <div class="item-note">{{ item.specialInstructions }}</div>
+                      }
+                    </div>
+                    <div class="item-price">{{ formatPrice(item.subtotal) }}</div>
+                  </div>
+                }
+              </div>
+              <div class="order-total">
+                <span>{{ t('publicOrder.redeemTotal') }}</span>
+                <span class="total-amount">{{ formatPrice(order()!.total) }}</span>
+              </div>
+            </div>
+
+            <!-- Already redeemed state -->
+            @if (alreadyRedeemed()) {
+              <div class="already-redeemed">
+                <div class="state-icon state-icon-success state-icon-inline">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                  <div class="redeemed-title">{{ t('publicOrder.redeemAlreadyRedeemedTitle') }}</div>
+                  @if (order()!.giftRedeemedAt) {
+                    <div class="redeemed-date">
+                      {{ t('publicOrder.redeemRedeemedOn') }} {{ order()!.giftRedeemedAt | date:'dd/MM/yyyy à HH:mm' }}
+                    </div>
+                  }
+                  @if (order()!.giftRedeemedBy) {
+                    <div class="redeemed-by">{{ t('publicOrder.redeemRedeemedBy') }} {{ order()!.giftRedeemedBy }}</div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Redeem form (not yet redeemed) -->
+            @if (!alreadyRedeemed() && !redeemSuccess()) {
+              <div class="redeem-form-section">
+                <div class="section-label">{{ t('publicOrder.redeemFormTitle') }}</div>
+                <p class="form-desc">{{ t('publicOrder.redeemFormDesc') }}</p>
+                <div class="form-field">
+                  <label class="form-label">{{ t('publicOrder.redeemNameLabel') }} *</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    [class.form-input-error]="submitted && !redeemerName"
+                    [(ngModel)]="redeemerName"
+                    [placeholder]="t('publicOrder.redeemNamePlaceholder')"
+                  />
+                  @if (submitted && !redeemerName) {
+                    <span class="field-error">{{ t('publicOrder.redeemFieldRequired') }}</span>
+                  }
+                </div>
+                <div class="form-field">
+                  <label class="form-label">{{ t('publicOrder.redeemContactLabel') }} *</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    [class.form-input-error]="submitted && !redeemerContact"
+                    [(ngModel)]="redeemerContact"
+                    [placeholder]="t('publicOrder.redeemContactPlaceholder')"
+                  />
+                  @if (submitted && !redeemerContact) {
+                    <span class="field-error">{{ t('publicOrder.redeemFieldRequired') }}</span>
+                  }
+                </div>
+                <button
+                  class="submit-btn"
+                  (click)="submitRedeem()"
+                  [disabled]="submitting()"
+                >
+                  @if (submitting()) {
+                    <span class="spinner"></span>
+                    {{ t('publicOrder.redeemSubmitting') }}
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {{ t('publicOrder.redeemSubmitBtn') }}
+                  }
+                </button>
+                @if (submitError()) {
+                  <div class="submit-error">{{ submitError() }}</div>
+                }
+              </div>
+            }
+
+            <!-- Success state after submit -->
+            @if (redeemSuccess()) {
+              <div class="success-state">
+                <div class="state-icon state-icon-success">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h3 class="state-title">{{ t('publicOrder.redeemSuccessTitle') }}</h3>
+                <p class="state-desc">{{ t('publicOrder.redeemSuccessDesc') }}</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </ng-container>
+  

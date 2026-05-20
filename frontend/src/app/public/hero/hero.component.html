@@ -1,0 +1,82 @@
+﻿    <ng-container *transloco="let t">
+    <section class="hero" [attr.aria-label]="t('public.menu.heroAriaLabel')">
+      <!-- Background photo (custom or default) -->
+      <div class="hero-bg" aria-hidden="true"
+           [style.background-image]="coverBg()"></div>
+      <div class="hero-gradient" aria-hidden="true"></div>
+
+      <!-- Main content -->
+      <div class="hero-body" @fadeUp>
+
+        <!-- Logo circle -->
+        @if (restaurant?.logoUrl) {
+          <img [src]="restaurant!.logoUrl" [alt]="restaurant!.name" class="hero-logo" />
+        } @else {
+          <div class="hero-logo-placeholder" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
+              <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        }
+
+        <h1 class="hero-name">{{ restaurant?.name || 'Notre Restaurant' }}</h1>
+
+        @if (restaurant?.slogan) {
+          <p class="hero-slogan">« {{ restaurant!.slogan }} »</p>
+        }
+
+        <!-- Contact row -->
+        @if (restaurant?.phone || restaurant?.address) {
+          <div class="hero-meta">
+            @if (restaurant?.phone) {
+              <a [href]="'tel:' + restaurant!.phone" class="hero-meta-chip">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                {{ restaurant!.phone }}
+              </a>
+            }
+            @if (restaurant?.address) {
+              <span class="hero-meta-chip">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ restaurant!.address }}
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Opening hours today -->
+        @if (todayStatus()) {
+          <div class="hero-status" [class.hero-status-open]="todayStatus()!.open" [class.hero-status-closed]="!todayStatus()!.open">
+            <span class="hero-status-dot"></span>
+            {{ todayStatus()!.label }}
+          </div>
+        }
+
+        <a href="#menu-content" class="hero-cta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          {{ t('public.menu.viewMenu') }}
+        </a>
+      </div>
+
+      <!-- Opening hours panel (bottom) -->
+      @if (openingHoursEntries().length) {
+        <div class="hero-hours">
+          <div class="hero-hours-inner">
+            @for (entry of openingHoursEntries(); track entry.day) {
+              <div class="hero-hours-day" [class.hero-hours-today]="entry.isToday" [class.hero-hours-closed]="entry.closed">
+                <span class="hero-hours-label">{{ entry.label }}</span>
+                <span class="hero-hours-time">{{ entry.closed ? t('public.menu.hoursClosedDay') : entry.open + '–' + entry.close }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Scroll hint -->
+      <div class="hero-scroll" aria-hidden="true">
+        <div class="hero-scroll-dot"></div>
+      </div>
+    </section>
+    </ng-container>
+  

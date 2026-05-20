@@ -1,0 +1,17 @@
+﻿    <ng-container *transloco="let t">
+    <nav class="cat-tabs" [attr.aria-label]="t('public.menu.catNavAriaLabel')" #tabsNav>
+      <div class="cat-tabs-inner container">
+        @for (cat of categories; track cat.id) {
+          <button
+            class="cat-tab"
+            [class.cat-tab-active]="activeCategoryId === cat.id"
+            (click)="select(cat.id)"
+            [attr.aria-current]="activeCategoryId === cat.id ? 'true' : null"
+          >
+            {{ cat.name }}
+          </button>
+        }
+      </div>
+    </nav>
+    </ng-container>
+  

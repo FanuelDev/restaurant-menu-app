@@ -1,0 +1,167 @@
+﻿  <div class="imm-root">
+
+    <!-- Progress bar -->
+    <div class="imm-progress-bar" [style.width.%]="progressPct()"></div>
+
+    <!-- Top bar -->
+    <div class="imm-topbar">
+      <button class="imm-menu-btn" (click)="drawerOpen.set(!drawerOpen())" type="button" aria-label="Catégories">
+        <span class="imm-menu-line"></span>
+        <span class="imm-menu-line" style="width:60%"></span>
+        <span class="imm-menu-line" style="width:80%"></span>
+      </button>
+      <span class="imm-topbar-name">{{ restaurant?.name }}</span>
+      @if (hasOrders) {
+        <button class="imm-cart-btn" (click)="openCart.emit()" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          @if (cartCount > 0) {
+            <span class="imm-cart-badge">{{ cartCount }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Main swipe track -->
+    @if (loading) {
+      <div class="imm-loading">
+        <div class="imm-spinner"></div>
+        <p>Chargement du menu…</p>
+      </div>
+    } @else if (flatDishes().length === 0) {
+      <div class="imm-empty">
+        <span>🍽️</span>
+        <p>Aucun plat disponible</p>
+      </div>
+    } @else {
+      <div class="imm-track" #track (scroll)="onScroll()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+        @for (fd of flatDishes(); track fd.item.id) {
+          <div class="imm-slide">
+            <!-- Background photo -->
+            <div class="imm-bg" [style.background-image]="fd.item.imageUrl ? 'url(' + fd.item.imageUrl + ')' : 'none'"
+                 [class.imm-bg-placeholder]="!fd.item.imageUrl">
+              @if (!fd.item.imageUrl) {
+                <div class="imm-bg-emoji">🍽️</div>
+              }
+            </div>
+
+            <!-- Gradient overlay -->
+            <div class="imm-gradient"></div>
+
+            <!-- Position indicator -->
+            <div class="imm-position">{{ fd.dishIdx + 1 }} / {{ fd.total }}</div>
+
+            <!-- Bottom overlay -->
+            <div class="imm-overlay">
+              <div class="imm-category-chip">{{ fd.catName }}</div>
+              @if (fd.item.badge) {
+                <span class="imm-badge imm-badge-{{ fd.item.badge }}">{{ fd.item.badge }}</span>
+              }
+              <h2 class="imm-dish-name">{{ fd.item.name }}</h2>
+              @if (fd.item.description) {
+                <p class="imm-dish-desc">{{ fd.item.description }}</p>
+              }
+              <div class="imm-overlay-foot">
+                <span class="imm-price">{{ fmt(fd.item) }}</span>
+                @if (hasOrders) {
+                  <div class="imm-qty-row">
+                    @if (qty(fd.item.id) > 0) {
+                      <button class="imm-qty-btn" (click)="removeFromCart.emit(fd.item.id)" type="button">−</button>
+                      <span class="imm-qty-val">{{ qty(fd.item.id) }}</span>
+                    }
+                    <button
+                      class="imm-add-btn"
+                      [class.imm-add-success]="addedId() === fd.item.id"
+                      (click)="onAdd(fd.item)"
+                      type="button"
+                    >
+                      @if (addedId() === fd.item.id) { ✓ } @else { + Ajouter }
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Swipe hint (first slide only) -->
+            @if (fd.dishIdx === 0 && fd.catIdx === 0 && showHint()) {
+              <div class="imm-swipe-hint">
+                <div class="imm-hint-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                </div>
+                <span>Swipez pour explorer</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Navigation arrows (desktop) -->
+      <button class="imm-nav imm-nav-up" (click)="navigate(-1)" type="button" aria-label="Précédent"
+              [style.opacity]="currentIdx() === 0 ? '0.3' : '1'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+      </button>
+      <button class="imm-nav imm-nav-down" (click)="navigate(1)" type="button" aria-label="Suivant"
+              [style.opacity]="currentIdx() === flatDishes().length - 1 ? '0.3' : '1'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    }
+
+    <!-- Category drawer backdrop -->
+    @if (drawerOpen()) {
+      <div class="imm-drawer-backdrop" (click)="drawerOpen.set(false)"></div>
+      <aside class="imm-drawer">
+        <div class="imm-drawer-header">
+          <div class="imm-drawer-logo">
+            @if (restaurant?.logoUrl) {
+              <img [src]="restaurant!.logoUrl" alt="Logo" class="imm-drawer-logo-img" />
+            } @else {
+              <span class="imm-drawer-logo-placeholder">🍽️</span>
+            }
+          </div>
+          <div>
+            <div class="imm-drawer-rname">{{ restaurant?.name }}</div>
+            <div class="imm-drawer-sub">Menu complet</div>
+          </div>
+          <button class="imm-drawer-close" (click)="drawerOpen.set(false)" type="button">✕</button>
+        </div>
+        <nav class="imm-drawer-nav">
+          @for (cat of categories; track cat.id; let i = $index) {
+            <button
+              class="imm-drawer-item"
+              [class.imm-drawer-active]="isActiveCat(cat.id)"
+              (click)="jumpToCategory(cat.id)"
+              type="button"
+              [style.animation-delay]="(i * 0.04) + 's'"
+            >
+              @if (cat.menuItems?.[0]?.imageUrl) {
+                <img [src]="cat.menuItems![0].imageUrl!" alt="{{ cat.name }}" class="imm-drawer-thumb" />
+              } @else {
+                <div class="imm-drawer-thumb-blank">🍽️</div>
+              }
+              <div class="imm-drawer-item-info">
+                <span class="imm-drawer-cat-name">{{ cat.name }}</span>
+                <span class="imm-drawer-cat-count">{{ cat.menuItems?.length ?? 0 }} plat{{ (cat.menuItems?.length ?? 0) > 1 ? 's' : '' }}</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          }
+        </nav>
+
+        @if (hoursEntries().length) {
+          <div class="imm-drawer-hours">
+            <div class="imm-dh-title">HORAIRES</div>
+            @for (e of hoursEntries(); track e.day) {
+              <div class="imm-dh-row" [class.imm-dh-today]="e.isToday" [class.imm-dh-closed]="e.closed">
+                <span class="imm-dh-day">{{ e.label }}</span>
+                <span class="imm-dh-time">{{ e.closed ? 'Fermé' : e.open + '–' + e.close }}</span>
+              </div>
+            }
+          </div>
+        }
+      </aside>
+    }
+
+  </div>
+  

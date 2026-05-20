@@ -1,0 +1,214 @@
+﻿  <div class="mag-wrap">
+
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <header class="mag-header">
+      <div class="mag-header-info">
+        @if (restaurant?.logoUrl) {
+          <img [src]="restaurant!.logoUrl" alt="Logo" class="mag-logo" />
+        }
+        <div class="mag-header-text">
+          <div class="mag-issue">Édition digitale</div>
+          <h1 class="mag-restaurant-name">{{ restaurant?.name }}</h1>
+          @if (restaurant?.slogan) {
+            <p class="mag-slogan">{{ restaurant!.slogan }}</p>
+          }
+        </div>
+      </div>
+      @if (restaurant?.coverImageUrl) {
+        <div class="mag-cover-wrap">
+          <img [src]="restaurant!.coverImageUrl!" alt="Cover" class="mag-cover-img" />
+          <div class="mag-cover-overlay"></div>
+        </div>
+      } @else {
+        <div class="mag-cover-wrap mag-cover-placeholder">
+          <div class="mag-cover-pattern"></div>
+        </div>
+      }
+    </header>
+
+    <!-- ── BODY ──────────────────────────────────────────── -->
+    <div class="mag-body">
+
+      <!-- Sidebar index -->
+      <nav class="mag-sidebar" aria-label="Sommaire">
+        <div class="mag-sidebar-label">SOMMAIRE</div>
+        @for (cat of categories; track cat.id; let i = $index) {
+          <button
+            class="mag-idx-btn"
+            [class.mag-idx-active]="activeCatId() === cat.id"
+            (click)="scrollTo(cat.id)"
+            type="button"
+          >
+            <span class="mag-idx-num">{{ pad(i + 1) }}</span>
+            <span class="mag-idx-name">{{ cat.name }}</span>
+          </button>
+        }
+
+        @if (hoursEntries().length) {
+          <div class="mag-sidebar-hours">
+            <div class="mag-sh-header">HORAIRES</div>
+            @for (e of hoursEntries(); track e.day) {
+              <div class="mag-sh-row" [class.mag-sh-today]="e.isToday" [class.mag-sh-closed]="e.closed">
+                <span class="mag-sh-day">{{ e.label }}</span>
+                <span class="mag-sh-time">{{ e.closed ? 'Fermé' : e.open + '–' + e.close }}</span>
+              </div>
+            }
+          </div>
+        }
+      </nav>
+
+      <!-- Main content -->
+      <main class="mag-main">
+
+        @if (loading) {
+          <div class="mag-skeleton-wrap">
+            @for (i of [1,2,3]; track i) {
+              <div class="mag-skeleton-hero"></div>
+              <div class="mag-skeleton-grid">
+                <div class="mag-skeleton-card"></div>
+                <div class="mag-skeleton-card"></div>
+                <div class="mag-skeleton-card"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          @for (cat of categories; track cat.id; let catIdx = $index) {
+            @if (cat.menuItems && cat.menuItems.length > 0) {
+              <section [id]="'mag-' + cat.id" class="mag-section">
+
+                <!-- Section head -->
+                <div class="mag-section-head">
+                  <span class="mag-chapter">Chapitre {{ pad(catIdx + 1) }}</span>
+                  <h2 class="mag-section-title">{{ cat.name }}</h2>
+                  @if (cat.description) {
+                    <p class="mag-section-quote">"{{ cat.description }}"</p>
+                  }
+                  <div class="mag-section-rule"></div>
+                </div>
+
+                <!-- Hero card (first dish) -->
+                <article class="mag-hero-card mag-reveal" (click)="openDish(cat.menuItems![0])">
+                  <div class="mag-hero-photo-wrap">
+                    @if (cat.menuItems![0].imageUrl) {
+                      <img [src]="cat.menuItems![0].imageUrl" alt="{{ cat.menuItems![0].name }}" class="mag-hero-photo mag-ken-burns" />
+                    } @else {
+                      <div class="mag-hero-photo-blank">🍽️</div>
+                    }
+                    @if (cat.menuItems![0].badge) {
+                      <span class="mag-badge mag-badge-{{ cat.menuItems![0].badge }}">{{ cat.menuItems![0].badge }}</span>
+                    }
+                  </div>
+                  <div class="mag-hero-body">
+                    <div class="mag-dish-num-bg">01</div>
+                    <h3 class="mag-hero-title">{{ cat.menuItems![0].name }}</h3>
+                    @if (cat.menuItems![0].description) {
+                      <p class="mag-hero-desc">{{ cat.menuItems![0].description }}</p>
+                    }
+                    <div class="mag-hero-foot">
+                      <span class="mag-price">{{ fmt(cat.menuItems![0]) }}</span>
+                      @if (hasOrders) {
+                        <div class="mag-qty" (click)="$event.stopPropagation()">
+                          @if (qty(cat.menuItems![0].id) > 0) {
+                            <button class="mag-qty-btn" (click)="removeFromCart.emit(cat.menuItems![0].id)" type="button">−</button>
+                            <span class="mag-qty-val">{{ qty(cat.menuItems![0].id) }}</span>
+                          }
+                          <button class="mag-add-btn" (click)="addToCart.emit(cat.menuItems![0])" type="button">
+                            {{ qty(cat.menuItems![0].id) > 0 ? '+' : '+ Ajouter' }}
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Grid (remaining dishes) -->
+                @if (cat.menuItems!.length > 1) {
+                  <div class="mag-grid">
+                    @for (item of cat.menuItems!.slice(1); track item.id; let idx = $index) {
+                      <article class="mag-card mag-reveal" [attr.data-delay]="idx % 3" (click)="openDish(item)">
+                        <div class="mag-card-photo-wrap">
+                          <div class="mag-card-num-bg">{{ pad(idx + 2) }}</div>
+                          @if (item.imageUrl) {
+                            <img [src]="item.imageUrl" alt="{{ item.name }}" class="mag-card-photo" />
+                          } @else {
+                            <div class="mag-card-photo-blank">🍽️</div>
+                          }
+                          @if (item.badge) {
+                            <span class="mag-card-badge mag-badge-{{ item.badge }}">{{ item.badge }}</span>
+                          }
+                        </div>
+                        <div class="mag-card-body">
+                          <h4 class="mag-card-name">{{ item.name }}</h4>
+                          <div class="mag-card-foot">
+                            <span class="mag-card-price">{{ fmt(item) }}</span>
+                            @if (hasOrders) {
+                              <div class="mag-qty-sm" (click)="$event.stopPropagation()">
+                                @if (qty(item.id) > 0) {
+                                  <button class="mag-qty-btn-sm" (click)="removeFromCart.emit(item.id)" type="button">−</button>
+                                  <span class="mag-qty-val-sm">{{ qty(item.id) }}</span>
+                                }
+                                <button class="mag-add-btn-sm" (click)="addToCart.emit(item)" type="button">+</button>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                }
+
+              </section>
+            }
+          }
+        }
+
+        <!-- Footer -->
+        <footer class="mag-footer">
+          @if (restaurant?.logoUrl) {
+            <img [src]="restaurant!.logoUrl" alt="Logo" class="mag-foot-logo" />
+          }
+          <span class="mag-foot-name">{{ restaurant?.name }}</span>
+          @if (restaurant?.address) { <span class="mag-foot-info">{{ restaurant!.address }}</span> }
+          @if (restaurant?.phone) { <a [href]="'tel:' + restaurant!.phone" class="mag-foot-info">{{ restaurant!.phone }}</a> }
+        </footer>
+
+      </main>
+    </div><!-- /.mag-body -->
+
+    <!-- ── DISH MODAL ───────────────────────────────────── -->
+    @if (selectedDish()) {
+      <div class="mag-modal-backdrop" (click)="selectedDish.set(null)">
+        <div class="mag-modal" (click)="$event.stopPropagation()">
+          <button class="mag-modal-close" (click)="selectedDish.set(null)" type="button">✕</button>
+          @if (selectedDish()!.imageUrl) {
+            <img [src]="selectedDish()!.imageUrl!" alt="{{ selectedDish()!.name }}" class="mag-modal-photo" />
+          }
+          <div class="mag-modal-body">
+            @if (selectedDish()!.badge) {
+              <span class="mag-badge mag-badge-{{ selectedDish()!.badge }} mag-modal-badge">{{ selectedDish()!.badge }}</span>
+            }
+            <h3 class="mag-modal-title">{{ selectedDish()!.name }}</h3>
+            @if (selectedDish()!.description) {
+              <p class="mag-modal-desc">{{ selectedDish()!.description }}</p>
+            }
+            <div class="mag-modal-foot">
+              <span class="mag-modal-price">{{ fmt(selectedDish()!) }}</span>
+              @if (hasOrders) {
+                <div class="mag-qty" (click)="$event.stopPropagation()">
+                  @if (qty(selectedDish()!.id) > 0) {
+                    <button class="mag-qty-btn" (click)="removeFromCart.emit(selectedDish()!.id)" type="button">−</button>
+                    <span class="mag-qty-val">{{ qty(selectedDish()!.id) }}</span>
+                  }
+                  <button class="mag-add-btn" (click)="addToCart.emit(selectedDish()!); selectedDish.set(null)" type="button">
+                    {{ qty(selectedDish()!.id) > 0 ? '+ Encore' : '+ Ajouter au panier' }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+  

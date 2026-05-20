@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core'
+﻿import { Component, computed, input } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 
@@ -6,43 +6,7 @@ import { TranslocoModule } from '@jsverse/transloco'
   selector: 'app-plan-limit-bar',
   standalone: true,
   imports: [RouterLink, TranslocoModule],
-  template: `
-    <ng-container *transloco="let t">
-    <div class="usage-block">
-      <div class="usage-header">
-        <span class="usage-label">{{ label() }}</span>
-        @if (max() === -1) {
-          <span class="usage-badge badge-ok">{{ t('common.unlimited') }}</span>
-        } @else {
-          <span class="usage-badge" [class.badge-ok]="pct() < 80" [class.badge-warn]="pct() >= 80 && !atLimit()" [class.badge-danger]="atLimit()">
-            {{ current() }}&thinsp;/&thinsp;{{ max() }}
-          </span>
-        }
-      </div>
-
-      @if (max() > -1) {
-        <div class="usage-track" [attr.aria-label]="current() + ' / ' + max()">
-          <div
-            class="usage-fill"
-            [class.fill-ok]="pct() < 80"
-            [class.fill-warn]="pct() >= 80 && !atLimit()"
-            [class.fill-danger]="atLimit()"
-            [style.width.%]="pct()"
-          ></div>
-        </div>
-
-        @if (atLimit()) {
-          <p class="usage-msg msg-danger">
-            {{ t('planLimit.atLimit') }}
-            <a routerLink="/admin/subscription" class="upgrade-link">{{ t('planLimit.upgrade') }} →</a>
-          </p>
-        } @else if (nearLimit()) {
-          <p class="usage-msg msg-warn">{{ t('planLimit.nearLimit') }}</p>
-        }
-      }
-    </div>
-    </ng-container>
-  `,
+  templateUrl: './plan-limit-bar.component.html',
   styles: [`
     .usage-block { display: flex; flex-direction: column; gap: 6px; }
 

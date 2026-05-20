@@ -1,0 +1,201 @@
+﻿    <ng-container *transloco="let t">
+    <div class="pricing-page">
+
+      <!-- Nav -->
+      <header class="pricing-nav">
+        <a routerLink="/" class="nav-brand">
+          <div class="nav-logo">
+            <svg width="16" height="16" viewBox="0 0 40 40" fill="none">
+              <path d="M8 17c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 17v14M20 17v14M32 17v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M5 31h30M9 35h22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          SaeMenus
+        </a>
+        <div class="nav-actions">
+          <a routerLink="/login" class="btn btn-ghost btn-sm">{{ t('public.pricing.navLogin') }}</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">{{ t('public.pricing.navRegister') }}</a>
+        </div>
+      </header>
+
+      <!-- Hero -->
+      <section class="pricing-hero">
+        <div class="hero-badge animate-fade">
+          <span class="hero-badge-dot"></span>
+          {{ t('public.pricing.noCreditCard') }}
+        </div>
+        <h1 class="hero-title animate-up">
+          {{ t('public.pricing.heroTitle') }}<br/>
+          <span class="hero-title-accent">{{ t('public.pricing.heroTitleAccent') }}</span>
+        </h1>
+        <p class="hero-sub animate-up delay-1">
+          {{ t('public.pricing.heroSub') }}
+        </p>
+
+        <div class="cycle-toggle animate-up delay-2">
+          <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">{{ t('public.pricing.monthly') }}</button>
+          <button [class.active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
+            {{ t('public.pricing.yearly') }}
+            @if (bestSavingPct() > 0) {
+              <span class="saving-pill">−{{ bestSavingPct() }}%</span>
+            }
+          </button>
+        </div>
+      </section>
+
+      <!-- Plans -->
+      @if (loading()) {
+        <section class="plans-section">
+          <div class="plans-grid" [style.--plan-cols]="3">
+            @for (_ of [1,2,3]; track $index) {
+              <div class="plan-card-skeleton">
+                <div class="skeleton" style="height:24px;width:60%;margin-bottom:12px"></div>
+                <div class="skeleton" style="height:14px;width:85%;margin-bottom:8px"></div>
+                <div class="skeleton" style="height:14px;width:70%;margin-bottom:32px"></div>
+                <div class="skeleton" style="height:48px;width:50%;margin-bottom:24px"></div>
+                <div class="skeleton" style="height:44px;border-radius:10px;margin-bottom:24px"></div>
+                @for (_ of [1,2,3,4]; track $index) {
+                  <div class="skeleton" style="height:12px;width:80%;margin-bottom:10px"></div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      } @else {
+        <section class="plans-section">
+          <div class="plans-grid" [style.--plan-cols]="plans().length">
+            @for (plan of plans(); track plan.id; let i = $index) {
+              <div class="plan-card animate-up"
+                   [class.plan-featured]="isFeatured(i)"
+                   [style.animation-delay]="(i * 80) + 'ms'">
+
+                @if (isFeatured(i)) {
+                  <div class="plan-popular">{{ t('public.pricing.popular') }}</div>
+                }
+
+                <div class="plan-top">
+                  <div class="plan-icon" [class.plan-icon-featured]="isFeatured(i)">
+                    <ng-container [ngTemplateOutlet]="planIcon" [ngTemplateOutletContext]="{ i: i, total: plans().length }"/>
+                  </div>
+                  <div>
+                    <h3 class="plan-name">{{ plan.name }}</h3>
+                    <p class="plan-desc">{{ plan.description }}</p>
+                  </div>
+                </div>
+
+                <div class="plan-price">
+                  @if (plan.priceMonthlyCents === 0) {
+                    <span class="price-main">{{ t('public.pricing.free') }}</span>
+                    <span class="price-forever">{{ t('public.pricing.forever') }}</span>
+                  } @else {
+                    <span class="price-main">{{ formatPrice(plan, cycle()) }}</span>
+                    <span class="price-period">{{ cycle() === 'monthly' ? t('public.pricing.perMonth') : t('public.pricing.perYear') }}</span>
+                    @if (cycle() === 'yearly' && savingPct(plan) > 0) {
+                      <span class="price-saving">{{ t('public.pricing.savePercent', { value: savingPct(plan) }) }}</span>
+                    }
+                  }
+                </div>
+
+
+                <a routerLink="/register" class="plan-cta" [class.plan-cta-featured]="isFeatured(i)">
+                  {{ plan.priceMonthlyCents === 0 ? t('public.pricing.choosePlan') : t('public.pricing.startTrial') }}
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+
+                <ul class="plan-features">
+                  @for (entry of featureEntries(plan); track entry.key) {
+                    <li [class.feature-disabled]="!entry.value">
+                      @if (entry.value) {
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <path d="M3 8l3.5 3.5 7-7" stroke-linejoin="round"/>
+                        </svg>
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <path d="M4 4l8 8M12 4l-8 8"/>
+                        </svg>
+                      }
+                      {{ entry.label }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Social proof -->
+      <section class="proof-section animate-up">
+        <div class="proof-inner">
+          <div class="proof-stat">
+            <span class="proof-num">1 200+</span>
+            <span class="proof-label">{{ t('public.pricing.proofRestaurants') }}</span>
+          </div>
+          <div class="proof-divider"></div>
+          <div class="proof-stat">
+            <span class="proof-num">14 pays</span>
+            <span class="proof-label">{{ t('public.pricing.proofPresence') }}</span>
+          </div>
+          <div class="proof-divider"></div>
+          <div class="proof-stat">
+            <span class="proof-num">4.9 ★</span>
+            <span class="proof-label">{{ t('public.pricing.proofRating') }}</span>
+          </div>
+          <div class="proof-divider"></div>
+          <div class="proof-stat">
+            <span class="proof-num">{{ t('public.pricing.proofPayment') }}</span>
+            <span class="proof-label">Orange · MTN · Wave</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="faq-section">
+        <h2 class="faq-title animate-up">{{ t('public.pricing.faqTitle') }}</h2>
+        <div class="faq-grid">
+          @for (i of [0,1,2,3]; track i; let idx = $index) {
+            <div class="faq-item animate-up" [style.animation-delay]="(idx * 60) + 'ms'">
+              <h4 class="faq-q">{{ t('public.pricing.faq' + i + 'q') }}</h4>
+              <p class="faq-a">{{ t('public.pricing.faq' + i + 'a') }}</p>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- CTA footer -->
+      <section class="cta-section animate-up">
+        <div class="cta-inner">
+          <h2 class="cta-title">{{ t('public.landing.ctaTitle') }}</h2>
+          <p class="cta-sub">{{ t('public.pricing.ctaSub') }}</p>
+          <a routerLink="/register" class="btn btn-primary btn-lg">{{ t('public.pricing.ctaCreate') }}</a>
+        </div>
+      </section>
+
+    </div>
+    </ng-container>
+
+    <!-- Icon templates by position -->
+    <ng-template #planIcon let-i="i" let-total="total">
+      @if (i === 0) {
+        <!-- First plan: starter / clock -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="10" cy="10" r="8"/>
+          <path d="M10 6v4l2.5 2.5"/>
+        </svg>
+      } @else if (i === total - 1 && total > 2) {
+        <!-- Last plan (3+): enterprise / chart -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M17 12l-5 5-4-4-5 3"/>
+          <path d="M14 12h3v3"/>
+        </svg>
+      } @else {
+        <!-- Middle / featured plan: star -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.3L10 14.5l-4.9 2.5.9-5.3L2 7.8l5.5-.8z" stroke-linejoin="round"/>
+        </svg>
+      }
+    </ng-template>
+  

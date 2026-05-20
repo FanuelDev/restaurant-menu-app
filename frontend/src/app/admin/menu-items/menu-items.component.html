@@ -1,0 +1,251 @@
+﻿    <ng-container *transloco="let t">
+    <div class="page-container">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('menuItems.title') }}</h1>
+          <p class="page-subtitle">{{ t('menuItems.subtitle', { count: menuItems().length }) }}</p>
+        </div>
+        <button
+          class="btn btn-primary"
+          (click)="openForm()"
+          [disabled]="atLimit()"
+          [title]="atLimit() ? t('menuItems.limitReached') : ''"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+          </svg>
+          {{ t('menuItems.newItem') }}
+        </button>
+      </header>
+
+      @if (usage()) {
+        <div class="usage-section">
+          <app-plan-limit-bar
+            [label]="t('menuItems.usageLabel')"
+            [current]="usage()!.current"
+            [max]="usage()!.max"
+          />
+        </div>
+      }
+
+      <div class="filter-bar">
+        <button
+          class="filter-tab"
+          [class.active]="!activeCategoryId()"
+          (click)="activeCategoryId.set(null)"
+        >{{ t('menuItems.filterAll') }}</button>
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="filter-tab"
+            [class.active]="activeCategoryId() === cat.id"
+            (click)="activeCategoryId.set(cat.id)"
+          >{{ cat.name }}</button>
+        }
+      </div>
+
+      <div class="items-grid">
+        @for (item of filteredByCategory(); track item.id) {
+          <div class="item-card" [class.item-card--unavailable]="!item.isAvailable">
+            <div class="item-card__image-wrap">
+              @if (item.imageUrl) {
+                <img [src]="item.imageUrl" [alt]="item.name" class="item-card__image" loading="lazy" />
+              } @else {
+                <div class="item-card__image-placeholder" aria-hidden="true">🍽️</div>
+              }
+              @if (item.badge) {
+                <span class="badge badge--{{ item.badge }}">{{ t(getBadgeKey(item.badge)) }}</span>
+              }
+              @if (hasTranslations(item)) {
+                <span class="tl-dot" [title]="t('common.translationsAvailable')">🌐</span>
+              }
+            </div>
+
+            <div class="item-card__body">
+              <div class="item-card__top">
+                <span class="item-card__name">{{ item.name }}</span>
+                <span class="item-card__price">{{ formatPrice(item.price) }}</span>
+              </div>
+              @if (item.description) {
+                <p class="item-card__desc">{{ item.description }}</p>
+              }
+              <div class="item-card__cat">{{ getCategoryName(item.categoryId) }}</div>
+            </div>
+
+            <div class="item-card__footer">
+              <label class="toggle" [attr.aria-label]="t('menuItems.availability', { name: item.name })">
+                <input type="checkbox" [checked]="item.isAvailable" (change)="toggleAvailability(item)" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="item-card__status">{{ item.isAvailable ? t('menuItems.statusAvailable') : t('menuItems.statusUnavailable') }}</span>
+
+              <div class="item-card__actions">
+                <button class="btn-icon" (click)="openForm(item)" [attr.aria-label]="t('menuItems.editAria', { name: item.name })">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-icon btn-icon--danger" (click)="confirmDelete(item)" [attr.aria-label]="t('menuItems.deleteAria', { name: item.name })">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>{{ t('menuItems.empty') }}</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (showForm()) {
+      <div class="modal-overlay" (click)="closeForm()" role="dialog" aria-modal="true">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal__header">
+            <h2 class="modal__title">{{ editTarget() ? t('menuItems.modalTitleEdit') : t('menuItems.modalTitleNew') }}</h2>
+            <button class="modal__close" (click)="closeForm()" [attr.aria-label]="t('common.cancel')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal__body" enctype="multipart/form-data">
+
+            <!-- Image -->
+            <div class="form-group">
+              <label class="form-label">{{ t('menuItems.imageLabel') }}</label>
+              <div class="image-upload-zone" (click)="fileInput.click()" role="button" tabindex="0" (keydown.enter)="fileInput.click()">
+                @if (imagePreview()) {
+                  <img [src]="imagePreview()" alt="Aperçu" class="image-preview" />
+                } @else if (editTarget()?.imageUrl) {
+                  <img [src]="editTarget()!.imageUrl" alt="Image actuelle" class="image-preview" />
+                } @else {
+                  <div class="image-upload-placeholder">
+                    <span aria-hidden="true">📷</span>
+                    <span>{{ t('menuItems.imageClick') }}</span>
+                    <small>{{ t('menuItems.imageHint') }}</small>
+                  </div>
+                }
+              </div>
+              <input #fileInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileChange($event)" [attr.aria-label]="t('menuItems.imageLabel')" />
+            </div>
+
+            <!-- Nom + Prix -->
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label class="form-label" for="item-name">{{ t('menuItems.fieldName') }} *</label>
+                <input id="item-name" type="text" class="form-control" formControlName="name" [placeholder]="t('menuItems.fieldNamePlaceholder')" />
+                @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldNameRequired') }}</span>
+                }
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label" for="item-price">{{ t('menuItems.fieldPrice') }} *</label>
+                <input id="item-price" type="number" step="0.01" min="0" class="form-control" formControlName="priceEuros" [placeholder]="t('menuItems.fieldPricePlaceholder')" />
+                @if (form.get('priceEuros')?.invalid && form.get('priceEuros')?.touched) {
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldPriceInvalid') }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label class="form-label" for="item-desc">{{ t('menuItems.fieldDescription') }}</label>
+              <textarea id="item-desc" class="form-control" formControlName="description" rows="3" [placeholder]="t('menuItems.fieldDescriptionPlaceholder')"></textarea>
+            </div>
+
+            <!-- Catégorie + Badge -->
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label" for="item-cat">{{ t('menuItems.fieldCategory') }} *</label>
+                <select id="item-cat" class="form-control" formControlName="categoryId">
+                  <option value="">{{ t('menuItems.fieldCategoryPlaceholder') }}</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+                @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
+                  <span class="form-error" role="alert">{{ t('menuItems.fieldCategoryRequired') }}</span>
+                }
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label" for="item-badge">{{ t('menuItems.fieldBadge') }}</label>
+                <select id="item-badge" class="form-control" formControlName="badge">
+                  <option value="">{{ t('menuItems.badgeNone') }}</option>
+                  <option value="new">{{ t('menuItems.badgeNew') }}</option>
+                  <option value="popular">{{ t('menuItems.badgePopular') }}</option>
+                  <option value="vegetarian">{{ t('menuItems.badgeVegetarian') }}</option>
+                  <option value="spicy">{{ t('menuItems.badgeSpicy') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Disponibilité -->
+            <div class="form-group">
+              <label class="form-label toggle-label">
+                {{ t('menuItems.fieldAvailable') }}
+                <label class="toggle">
+                  <input type="checkbox" formControlName="isAvailable" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </label>
+            </div>
+
+            <!-- Section traductions -->
+            <div class="tl-section">
+              <button type="button" class="tl-toggle" (click)="showTranslations.set(!showTranslations())">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                {{ t('common.translations') }}
+                @if (translationCount() > 0) {
+                  <span class="tl-badge">{{ translationCount() }}</span>
+                }
+                <svg class="tl-chevron" [class.tl-chevron-open]="showTranslations()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+
+              @if (showTranslations()) {
+                <div class="tl-body">
+                  <p class="tl-hint">{{ t('common.translationsHint') }}</p>
+
+                  <!-- Anglais -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇬🇧</span> {{ t('common.langEn') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameEn" placeholder="Name in English" />
+                      <textarea class="form-control" formControlName="descEn" rows="2" placeholder="Description in English"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Allemand -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇩🇪</span> {{ t('common.langDe') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameDe" placeholder="Name auf Deutsch" />
+                      <textarea class="form-control" formControlName="descDe" rows="2" placeholder="Beschreibung auf Deutsch"></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Chinois -->
+                  <div class="tl-lang-block">
+                    <div class="tl-lang-label"><span class="tl-flag">🇨🇳</span> {{ t('common.langZh') }}</div>
+                    <div class="tl-fields">
+                      <input class="form-control" formControlName="nameZh" placeholder="中文名称" />
+                      <textarea class="form-control" formControlName="descZh" rows="2" placeholder="中文描述"></textarea>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (formError()) {
+              <div class="alert-error" role="alert">{{ formError() }}</div>
+            }
+
+            <div class="modal__footer">
+              <button type="button" class="btn btn-outline" (click)="closeForm()">{{ t('common.cancel') }}</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                {{ saving() ? t('common.saving') : (editTarget() ? t('menuItems.submitEdit') : t('menuItems.submitCreate')) }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+    </ng-container>
+  

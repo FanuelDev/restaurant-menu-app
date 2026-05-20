@@ -1,0 +1,238 @@
+﻿  <div class="obs-root">
+
+    <!-- ── STICKY HEADER ─────────────────────────────── -->
+    <header class="obs-header" [class.obs-header-solid]="scrolled()">
+      <div class="obs-header-in">
+        <a class="obs-brand" href="#" (click)="$event.preventDefault()">
+          @if (restaurant?.logoUrl) {
+            <img [src]="restaurant!.logoUrl" alt="logo" class="obs-logo" />
+          }
+          <span class="obs-brand-name">{{ restaurant?.name }}</span>
+        </a>
+
+        <nav class="obs-cats-nav" aria-label="Catégories">
+          @for (cat of categories; track cat.id) {
+            <button
+              class="obs-cat-btn"
+              [class.obs-cat-active]="activeCatId() === cat.id"
+              (click)="scrollTo(cat.id)"
+              type="button"
+            >{{ cat.name }}</button>
+          }
+        </nav>
+
+        @if (hasOrders) {
+          <button class="obs-cart-pill" (click)="openCart.emit()" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            @if (cartCount > 0) {
+              <span class="obs-cart-count">{{ cartCount }}</span>
+            }
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- ── HERO ─────────────────────────────────────── -->
+    <section class="obs-hero">
+      <div class="obs-hero-bg"
+        [style.background-image]="restaurant?.coverImageUrl ? 'url(' + restaurant!.coverImageUrl! + ')' : null"
+        [class.obs-hero-fallback]="!restaurant?.coverImageUrl"
+      ></div>
+      <div class="obs-hero-mask"></div>
+      <div class="obs-hero-body">
+        <p class="obs-hero-eyebrow">Menu Digital</p>
+        <h1 class="obs-hero-name">{{ restaurant?.name }}</h1>
+        @if (restaurant?.slogan) {
+          <p class="obs-hero-slogan">{{ restaurant!.slogan }}</p>
+        }
+        <div class="obs-hero-accent"></div>
+      </div>
+      <div class="obs-hero-scroll-hint">
+        <div class="obs-scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ── HOURS BAND ────────────────────────────────── -->
+    @if (hoursEntries().length) {
+      <div class="obs-hours-band">
+        <div class="obs-hours-inner">
+          @for (e of hoursEntries(); track e.day) {
+            <div class="obs-hday" [class.obs-hday-today]="e.isToday" [class.obs-hday-closed]="e.closed">
+              <span class="obs-hday-lbl">{{ e.label }}</span>
+              <span class="obs-hday-time">{{ e.closed ? 'Fermé' : e.open + '–' + e.close }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── CONTENT ───────────────────────────────────── -->
+    <main class="obs-content">
+
+      @if (loading) {
+        <div class="obs-loader-wrap">
+          <div class="obs-spinner"></div>
+          <span>Chargement du menu…</span>
+        </div>
+      } @else {
+        @for (cat of categories; track cat.id; let ci = $index) {
+          @if (cat.menuItems && cat.menuItems.length > 0) {
+            <section [id]="'obs-' + cat.id" class="obs-section">
+
+              <header class="obs-sec-hd obs-enter">
+                <span class="obs-sec-num">{{ pad(ci + 1) }}</span>
+                <div class="obs-sec-text">
+                  <h2 class="obs-sec-title">{{ cat.name }}</h2>
+                  @if (cat.description) {
+                    <p class="obs-sec-sub">{{ cat.description }}</p>
+                  }
+                </div>
+                <div class="obs-sec-rule"></div>
+              </header>
+
+              <!-- Featured card (first dish) -->
+              <article class="obs-feat obs-enter" (click)="openSheet(cat.menuItems![0])">
+                <div class="obs-feat-photo">
+                  @if (cat.menuItems![0].imageUrl) {
+                    <img [src]="cat.menuItems![0].imageUrl" alt="{{ cat.menuItems![0].name }}" class="obs-feat-img" />
+                  } @else {
+                    <div class="obs-photo-blank obs-feat-blank">🍽️</div>
+                  }
+                  <div class="obs-feat-photo-grad"></div>
+                  @if (cat.menuItems![0].badge) {
+                    <span class="obs-badge obs-badge-{{ cat.menuItems![0].badge }}">{{ badgeLabel(cat.menuItems![0].badge!) }}</span>
+                  }
+                </div>
+                <div class="obs-feat-body">
+                  <div class="obs-feat-cat">{{ cat.name }}</div>
+                  <h3 class="obs-feat-name">{{ cat.menuItems![0].name }}</h3>
+                  @if (cat.menuItems![0].description) {
+                    <p class="obs-feat-desc">{{ cat.menuItems![0].description }}</p>
+                  }
+                  <div class="obs-feat-foot">
+                    <span class="obs-price">{{ fmt(cat.menuItems![0]) }}</span>
+                    @if (hasOrders) {
+                      <div class="obs-qty-row" (click)="$event.stopPropagation()">
+                        @if (qty(cat.menuItems![0].id) > 0) {
+                          <button class="obs-qty-btn" (click)="removeFromCart.emit(cat.menuItems![0].id)" type="button">−</button>
+                          <span class="obs-qty-val">{{ qty(cat.menuItems![0].id) }}</span>
+                        }
+                        <button class="obs-add-btn"
+                          [class.obs-add-ok]="addedId() === cat.menuItems![0].id"
+                          (click)="onAdd(cat.menuItems![0])"
+                          type="button">
+                          {{ addedId() === cat.menuItems![0].id ? '✓' : '+ Ajouter' }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </article>
+
+              <!-- Grid cards -->
+              @if (cat.menuItems!.length > 1) {
+                <div class="obs-grid">
+                  @for (item of cat.menuItems!.slice(1); track item.id; let idx = $index) {
+                    <article class="obs-card obs-enter" [attr.data-d]="idx % 4" (click)="openSheet(item)">
+                      <div class="obs-card-photo">
+                        @if (item.imageUrl) {
+                          <img [src]="item.imageUrl" alt="{{ item.name }}" class="obs-card-img" />
+                        } @else {
+                          <div class="obs-photo-blank">🍽️</div>
+                        }
+                        @if (item.badge) {
+                          <span class="obs-badge obs-badge-{{ item.badge }} obs-badge-sm">{{ badgeLabel(item.badge!) }}</span>
+                        }
+                      </div>
+                      <div class="obs-card-body">
+                        <h4 class="obs-card-name">{{ item.name }}</h4>
+                        <p class="obs-card-desc">{{ item.description }}</p>
+                        <div class="obs-card-foot">
+                          <span class="obs-card-price">{{ fmt(item) }}</span>
+                          @if (hasOrders) {
+                            <div class="obs-qty-row" (click)="$event.stopPropagation()">
+                              @if (qty(item.id) > 0) {
+                                <button class="obs-qty-btn obs-qty-btn-xs" (click)="removeFromCart.emit(item.id)" type="button">−</button>
+                                <span class="obs-qty-val obs-qty-val-xs">{{ qty(item.id) }}</span>
+                              }
+                              <button class="obs-add-xs"
+                                [class.obs-add-ok]="addedId() === item.id"
+                                (click)="onAdd(item)" type="button">
+                                {{ addedId() === item.id ? '✓' : '+' }}
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+
+            </section>
+          }
+        }
+      }
+
+    </main>
+
+    <!-- ── FOOTER ────────────────────────────────────── -->
+    <footer class="obs-footer">
+      <div class="obs-foot-logo-wrap">
+        @if (restaurant?.logoUrl) {
+          <img [src]="restaurant!.logoUrl" alt="logo" class="obs-foot-logo" />
+        }
+        <span class="obs-foot-name">{{ restaurant?.name }}</span>
+      </div>
+      @if (restaurant?.address) { <span class="obs-foot-detail">{{ restaurant!.address }}</span> }
+      @if (restaurant?.phone) { <a [href]="'tel:' + restaurant!.phone" class="obs-foot-detail">{{ restaurant!.phone }}</a> }
+    </footer>
+
+    <!-- ── DISH SHEET ─────────────────────────────────── -->
+    @if (sheetItem()) {
+      <div class="obs-sheet-bd" (click)="closeSheet()"></div>
+      <div class="obs-sheet" (click)="$event.stopPropagation()">
+        <div class="obs-sheet-handle"></div>
+        @if (sheetItem()!.imageUrl) {
+          <div class="obs-sheet-img-wrap">
+            <img [src]="sheetItem()!.imageUrl!" alt="{{ sheetItem()!.name }}" class="obs-sheet-img" />
+            <div class="obs-sheet-img-grad"></div>
+          </div>
+        }
+        <div class="obs-sheet-body">
+          <div class="obs-sheet-top">
+            @if (sheetItem()!.badge) {
+              <span class="obs-badge obs-badge-{{ sheetItem()!.badge }} obs-badge-inline">{{ badgeLabel(sheetItem()!.badge!) }}</span>
+            }
+            <span class="obs-sheet-price">{{ fmt(sheetItem()!) }}</span>
+          </div>
+          <h3 class="obs-sheet-name">{{ sheetItem()!.name }}</h3>
+          @if (sheetItem()!.description) {
+            <p class="obs-sheet-desc">{{ sheetItem()!.description }}</p>
+          }
+          @if (hasOrders) {
+            <div class="obs-sheet-actions">
+              @if (qty(sheetItem()!.id) > 0) {
+                <div class="obs-sheet-qty">
+                  <button class="obs-qty-lg" (click)="removeFromCart.emit(sheetItem()!.id)" type="button">−</button>
+                  <span class="obs-qty-lg-val">{{ qty(sheetItem()!.id) }}</span>
+                  <button class="obs-qty-lg" (click)="addToCart.emit(sheetItem()!)" type="button">+</button>
+                </div>
+              } @else {
+                <button class="obs-sheet-cta" (click)="addToCart.emit(sheetItem()!); closeSheet()" type="button">
+                  Ajouter au panier — {{ fmt(sheetItem()!) }}
+                </button>
+              }
+            </div>
+          }
+          <button class="obs-sheet-cancel" (click)="closeSheet()" type="button">Fermer</button>
+        </div>
+      </div>
+    }
+
+  </div>
+  

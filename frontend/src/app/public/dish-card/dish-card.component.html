@@ -1,0 +1,56 @@
+﻿    <ng-container *transloco="let t">
+    <article
+      class="dish-card"
+      [class.dish-card-unavailable]="!item.isAvailable"
+      @cardReveal
+      tabindex="0"
+      [attr.aria-label]="item.name + ' — ' + formatPrice(item.price)"
+    >
+      <div class="dish-image-wrap">
+        @if (item.imageUrl) {
+          <img [src]="item.imageUrl" [alt]="item.name" class="dish-image" loading="lazy" />
+        } @else {
+          <div class="dish-image-fallback" aria-hidden="true">🍽️</div>
+        }
+        @if (item.badge && getBadge(item.badge)) {
+          <span
+            class="dish-badge"
+            [ngClass]="getBadge(item.badge)!.cssClass"
+            [attr.aria-label]="t(getBadge(item.badge)!.key)"
+          >
+            {{ getBadge(item.badge)!.icon }} {{ t(getBadge(item.badge)!.key) }}
+          </span>
+        }
+        @if (!item.isAvailable) {
+          <div class="dish-unavailable-overlay" [attr.aria-label]="t('public.menu.unavailableOverlay')">
+            <span>{{ t('public.menu.unavailableOverlay') }}</span>
+          </div>
+        }
+      </div>
+      <div class="dish-body">
+        <div class="dish-top">
+          <h3 class="dish-name">{{ item.name }}</h3>
+          <span class="dish-price" aria-label="Prix">{{ formatPrice(item.price) }}</span>
+        </div>
+        @if (item.description) {
+          <p class="dish-desc">{{ item.description }}</p>
+        }
+        @if (cartEnabled && item.isAvailable) {
+          <div class="dish-cart-row">
+            @if (qty > 0) {
+              <div class="dish-qty-ctrl">
+                <button class="qty-btn" (click)="remove.emit()" type="button" aria-label="Remove one">−</button>
+                <span class="qty-val">{{ qty }}</span>
+                <button class="qty-btn" (click)="add.emit()" type="button" aria-label="Add one">+</button>
+              </div>
+            } @else {
+              <button class="dish-add-btn" (click)="add.emit()" type="button">
+                + {{ t('publicOrder.addToCart') }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </article>
+    </ng-container>
+  

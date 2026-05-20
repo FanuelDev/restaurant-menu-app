@@ -1,0 +1,397 @@
+﻿<div class="fn-page">
+
+  <!-- Header -->
+  <header class="fn-header">
+    <div class="fn-header-left">
+      <div class="fn-header-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 10C2 5.58 5.58 2 10 2s8 3.58 8 8-3.58 8-8 8-8-3.58-8-8z"/>
+          <path d="M10 6v4l2.5 2.5"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="fn-title">Gestion financière</h1>
+        <p class="fn-subtitle">Vue d'ensemble de vos revenus et dépenses</p>
+      </div>
+    </div>
+    <!-- Period selector -->
+    <div class="fn-periods">
+      @for (p of periods; track p) {
+        <button class="fn-period-btn" [class.fn-period-active]="period() === p" (click)="setPeriod(p)">
+          {{ periodLabel(p) }}
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="fn-skeleton">
+      @for (i of [1,2,3,4]; track i) { <div class="fn-skel-card"></div> }
+    </div>
+    <div class="fn-skel-charts">
+      <div class="fn-skel-big"></div>
+      <div class="fn-skel-small"></div>
+    </div>
+  } @else if (summary()) {
+
+    <!-- KPI Cards -->
+    <div class="fn-kpis">
+
+      <div class="fn-kpi fn-kpi-revenue">
+        <div class="fn-kpi-top">
+          <span class="fn-kpi-label">Revenus totaux</span>
+          <div class="fn-kpi-icon fn-icon-revenue">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M8 1v14M11 4H6.5a2.5 2.5 0 000 5h3a2.5 2.5 0 010 5H5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fn-kpi-value">{{ formatAmount(summary()!.totalRevenue) }}</div>
+        <div class="fn-kpi-detail">dont {{ formatAmount(summary()!.ordersRevenue) }} commandes</div>
+        <div class="fn-kpi-trend" [class.trend-up]="(summary()!.trends.revenue ?? 0) >= 0" [class.trend-down]="(summary()!.trends.revenue ?? 0) < 0">
+          @if (summary()!.trends.revenue !== null) {
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              @if ((summary()!.trends.revenue ?? 0) >= 0) {
+                <path d="M2 9L6 3l4 6"/>
+              } @else {
+                <path d="M2 3L6 9l4-6"/>
+              }
+            </svg>
+            {{ summary()!.trends.revenue! >= 0 ? '+' : '' }}{{ summary()!.trends.revenue }}%
+          } @else {
+            <span class="trend-neutral">— Première période</span>
+          }
+        </div>
+      </div>
+
+      <div class="fn-kpi fn-kpi-expenses">
+        <div class="fn-kpi-top">
+          <span class="fn-kpi-label">Dépenses totales</span>
+          <div class="fn-kpi-icon fn-icon-expenses">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M2 4h12M2 8h12M2 12h8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fn-kpi-value">{{ formatAmount(summary()!.totalExpenses) }}</div>
+        <div class="fn-kpi-detail">{{ expenseCategoryBreakdown() }}</div>
+        <div class="fn-kpi-trend" [class.trend-up]="(summary()!.trends.expenses ?? 0) < 0" [class.trend-down]="(summary()!.trends.expenses ?? 0) > 0">
+          @if (summary()!.trends.expenses !== null) {
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              @if ((summary()!.trends.expenses ?? 0) >= 0) {
+                <path d="M2 3L6 9l4-6"/>
+              } @else {
+                <path d="M2 9L6 3l4 6"/>
+              }
+            </svg>
+            {{ summary()!.trends.expenses! >= 0 ? '+' : '' }}{{ summary()!.trends.expenses }}% vs période préc.
+          } @else {
+            <span class="trend-neutral">— Première période</span>
+          }
+        </div>
+      </div>
+
+      <div class="fn-kpi fn-kpi-profit" [class.fn-kpi-loss]="summary()!.netProfit < 0">
+        <div class="fn-kpi-top">
+          <span class="fn-kpi-label">Bénéfice net</span>
+          <div class="fn-kpi-icon fn-icon-profit">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 12 5 7 9 10 15 3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fn-kpi-value">{{ formatAmount(summary()!.netProfit) }}</div>
+        <div class="fn-kpi-detail">{{ summary()!.netProfit >= 0 ? 'Bénéficiaire' : 'Déficitaire' }} sur la période</div>
+        <div class="fn-kpi-trend" [class.trend-up]="(summary()!.trends.net ?? 0) >= 0" [class.trend-down]="(summary()!.trends.net ?? 0) < 0">
+          @if (summary()!.trends.net !== null) {
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              @if ((summary()!.trends.net ?? 0) >= 0) {
+                <path d="M2 9L6 3l4 6"/>
+              } @else {
+                <path d="M2 3L6 9l4-6"/>
+              }
+            </svg>
+            {{ summary()!.trends.net! >= 0 ? '+' : '' }}{{ summary()!.trends.net }}% vs période préc.
+          } @else {
+            <span class="trend-neutral">— Première période</span>
+          }
+        </div>
+      </div>
+
+      <div class="fn-kpi fn-kpi-margin">
+        <div class="fn-kpi-top">
+          <span class="fn-kpi-label">Marge nette</span>
+          <div class="fn-kpi-icon fn-icon-margin">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="8" cy="8" r="6"/>
+              <path d="M5 11L11 5"/>
+              <circle cx="6" cy="6" r=".5" fill="currentColor" stroke="none"/>
+              <circle cx="10" cy="10" r=".5" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fn-kpi-value">{{ summary()!.marginPct }}%</div>
+        <div class="fn-kpi-detail">Rentabilité de l'activité</div>
+        <div class="fn-margin-bar">
+          <div class="fn-margin-fill" [style.width.%]="clamp(summary()!.marginPct, 0, 100)"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Charts row -->
+    <div class="fn-charts-row">
+
+      <!-- Bar chart -->
+      <div class="fn-chart-card fn-chart-main">
+        <div class="fn-chart-header">
+          <h2 class="fn-chart-title">Revenus vs Dépenses</h2>
+          <div class="fn-chart-legend">
+            <span class="fn-legend-dot" style="background:#10b981"></span><span>Revenus</span>
+            <span class="fn-legend-dot" style="background:#f59e0b"></span><span>Dépenses</span>
+            <span class="fn-legend-line"></span><span>Net</span>
+          </div>
+        </div>
+        @if (chartData()) {
+          <div class="fn-bar-wrap">
+            <svg [attr.viewBox]="'0 0 ' + svgW + ' ' + svgH" class="fn-bar-svg" [attr.aria-label]="'Graphe revenus vs dépenses'">
+              <!-- Y-axis lines & labels -->
+              @for (tick of yTicks(); track tick.y) {
+                <line [attr.x1]="padL" [attr.y1]="tick.y" [attr.x2]="svgW - padR" [attr.y2]="tick.y" stroke="#e5e7eb" stroke-width="1"/>
+                <text [attr.x]="padL - 6" [attr.y]="tick.y + 4" text-anchor="end" fill="#9ca3af" font-size="10">{{ tick.label }}</text>
+              }
+              <!-- Zero line -->
+              <line [attr.x1]="padL" [attr.y1]="zeroY()" [attr.x2]="svgW - padR" [attr.y2]="zeroY()" stroke="#d1d5db" stroke-width="1.5"/>
+              <!-- Bars -->
+              @for (pt of barPoints(); track pt.label) {
+                <!-- Revenue bar -->
+                <rect [attr.x]="pt.rx" [attr.y]="pt.ry" [attr.width]="pt.bw" [attr.height]="pt.rh" rx="3" fill="#10b981" opacity=".85"/>
+                <!-- Expenses bar -->
+                <rect [attr.x]="pt.ex" [attr.y]="pt.ey" [attr.width]="pt.bw" [attr.height]="pt.eh" rx="3" fill="#f59e0b" opacity=".85"/>
+                <!-- X label — only shown every N points -->
+                @if (pt.showLabel) {
+                  <text [attr.x]="pt.cx" [attr.y]="svgH - 5" text-anchor="middle" fill="#9ca3af" font-size="10">{{ pt.shortLabel }}</text>
+                }
+              }
+              <!-- Net line -->
+              @if (netLinePath()) {
+                <path [attr.d]="netLinePath()!" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                @for (pt of barPoints(); track pt.label) {
+                  <circle [attr.cx]="pt.cx" [attr.cy]="pt.ny" r="3" fill="#6366f1"/>
+                }
+              }
+            </svg>
+          </div>
+        }
+      </div>
+
+      <!-- Donut chart -->
+      <div class="fn-chart-card fn-chart-donut">
+        <div class="fn-chart-header">
+          <h2 class="fn-chart-title">Répartition dépenses</h2>
+        </div>
+        @if (summary() && summary()!.totalExpenses > 0) {
+          <div class="fn-donut-wrap">
+            <svg viewBox="0 0 140 140" class="fn-donut-svg">
+              @for (seg of donutSegments(); track seg.category) {
+                <circle
+                  cx="70" cy="70" [attr.r]="donutR"
+                  fill="none"
+                  [attr.stroke]="seg.color"
+                  stroke-width="22"
+                  [attr.stroke-dasharray]="seg.dashArray"
+                  [attr.stroke-dashoffset]="seg.dashOffset"
+                  stroke-linecap="butt"
+                  transform="rotate(-90 70 70)"
+                />
+              }
+              <text x="70" y="65" text-anchor="middle" fill="#374151" font-size="16" font-weight="700">
+                {{ formatAmountShort(summary()!.totalExpenses) }}
+              </text>
+              <text x="70" y="82" text-anchor="middle" fill="#9ca3af" font-size="9.5">Total dépenses</text>
+            </svg>
+            <div class="fn-donut-legend">
+              @for (cat of expenseCategories; track cat) {
+                <div class="fn-donut-item">
+                  <span class="fn-donut-dot" [style.background]="CATEGORY_COLORS[cat]"></span>
+                  <span class="fn-donut-lbl">{{ CATEGORY_LABELS[cat] }}</span>
+                  <span class="fn-donut-amt">{{ formatAmount(summary()!.byCategory[cat]) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="fn-empty-donut">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="30" stroke="#e5e7eb" stroke-width="14"/>
+              <text x="40" y="44" text-anchor="middle" fill="#d1d5db" font-size="11">0</text>
+            </svg>
+            <p>Aucune dépense sur la période</p>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Transactions -->
+    <div class="fn-transactions">
+
+      <div class="fn-tx-header">
+        <div class="fn-tabs">
+          <button class="fn-tab" [class.fn-tab-active]="activeTab() === 'expenses'" (click)="activeTab.set('expenses')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 3h12M1 7h12M1 11h7"/></svg>
+            Dépenses
+            @if (expenses().length) { <span class="fn-tab-badge">{{ expenses().length }}</span> }
+          </button>
+          <button class="fn-tab" [class.fn-tab-active]="activeTab() === 'incomes'" (click)="activeTab.set('incomes')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 1v12M3 5l4-4 4 4"/></svg>
+            Revenus manuels
+            @if (incomes().length) { <span class="fn-tab-badge">{{ incomes().length }}</span> }
+          </button>
+        </div>
+        <button class="fn-add-btn" (click)="openAdd()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
+          Ajouter {{ activeTab() === 'expenses' ? 'une dépense' : 'un revenu' }}
+        </button>
+      </div>
+
+      <!-- Expenses list -->
+      @if (activeTab() === 'expenses') {
+        @if (expenses().length === 0) {
+          <div class="fn-empty">
+            <div class="fn-empty-icon">💸</div>
+            <p>Aucune dépense enregistrée</p>
+            <button class="fn-empty-btn" (click)="openAdd()">Ajouter une dépense</button>
+          </div>
+        } @else {
+          <div class="fn-tx-list">
+            @for (exp of expenses(); track exp.id) {
+              <div class="fn-tx-item">
+                <div class="fn-tx-cat" [style.background]="catColor(exp.category) + '18'" [style.color]="catColor(exp.category)">
+                  {{ catIcon(exp.category) }}
+                </div>
+                <div class="fn-tx-info">
+                  <div class="fn-tx-label">{{ exp.label }}</div>
+                  <div class="fn-tx-meta">{{ catLabel(exp.category) }} · {{ exp.date }}</div>
+                </div>
+                @if (exp.notes) {
+                  <div class="fn-tx-notes">{{ exp.notes }}</div>
+                }
+                <div class="fn-tx-amount fn-tx-expense">−{{ formatAmount(exp.amount) }}</div>
+                <div class="fn-tx-actions">
+                  <button class="fn-icon-btn" (click)="editExpense(exp)" title="Modifier">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 2-7 7H3v-2l7-7z"/></svg>
+                  </button>
+                  <button class="fn-icon-btn fn-icon-del" (click)="deleteExpense(exp)" title="Supprimer">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 3h10M5 3V2h4v1M5.5 6v5M8.5 6v5"/><rect x="3" y="3" width="8" height="9" rx="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Incomes list -->
+      @if (activeTab() === 'incomes') {
+        @if (incomes().length === 0) {
+          <div class="fn-empty">
+            <div class="fn-empty-icon">💰</div>
+            <p>Aucun revenu manuel enregistré</p>
+            <button class="fn-empty-btn" (click)="openAdd()">Ajouter un revenu</button>
+          </div>
+        } @else {
+          <div class="fn-tx-list">
+            @for (inc of incomes(); track inc.id) {
+              <div class="fn-tx-item">
+                <div class="fn-tx-cat" style="background:#10b98118;color:#10b981">💰</div>
+                <div class="fn-tx-info">
+                  <div class="fn-tx-label">{{ inc.label }}</div>
+                  <div class="fn-tx-meta">Revenu manuel · {{ inc.date }}</div>
+                </div>
+                @if (inc.notes) {
+                  <div class="fn-tx-notes">{{ inc.notes }}</div>
+                }
+                <div class="fn-tx-amount fn-tx-income">+{{ formatAmount(inc.amount) }}</div>
+                <div class="fn-tx-actions">
+                  <button class="fn-icon-btn" (click)="editIncome(inc)" title="Modifier">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2l2 2-7 7H3v-2l7-7z"/></svg>
+                  </button>
+                  <button class="fn-icon-btn fn-icon-del" (click)="deleteIncome(inc)" title="Supprimer">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 3h10M5 3V2h4v1M5.5 6v5M8.5 6v5"/><rect x="3" y="3" width="8" height="9" rx="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+    </div>
+
+  }
+
+</div>
+
+<!-- Modal -->
+@if (modal()) {
+  <div class="fn-overlay" (click)="closeModal()">
+    <div class="fn-modal" (click)="$event.stopPropagation()">
+      <div class="fn-modal-header">
+        <h3>{{ modal()!.id ? 'Modifier' : 'Ajouter' }} {{ modal()!.mode === 'expense' ? 'une dépense' : 'un revenu' }}</h3>
+        <button class="fn-modal-close" (click)="closeModal()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l10 10M14 4L4 14"/></svg>
+        </button>
+      </div>
+
+      <div class="fn-modal-body">
+        @if (modal()!.mode === 'expense') {
+          <div class="fn-field">
+            <label class="fn-label">Catégorie</label>
+            <select class="fn-select" [(ngModel)]="form.category">
+              @for (cat of expenseCategories; track cat) {
+                <option [value]="cat">{{ CATEGORY_LABELS[cat] }}</option>
+              }
+            </select>
+          </div>
+        }
+        <div class="fn-field">
+          <label class="fn-label">Libellé *</label>
+          <input class="fn-input" type="text" [(ngModel)]="form.label" placeholder="{{ modal()!.mode === 'expense' ? 'Ex: Achat viandes, Location équipement...' : 'Ex: Vente traiteur, Commande spéciale...' }}" />
+        </div>
+        <div class="fn-row">
+          <div class="fn-field">
+            <label class="fn-label">Montant *</label>
+            <div class="fn-amount-wrap">
+              <input class="fn-input fn-input-amount" type="number" min="0" step="0.01" [(ngModel)]="form.amount" placeholder="0.00" />
+              <span class="fn-currency">{{ currency() }}</span>
+            </div>
+          </div>
+          <div class="fn-field">
+            <label class="fn-label">Date *</label>
+            <input class="fn-input" type="date" [(ngModel)]="form.date" />
+          </div>
+        </div>
+        <div class="fn-field">
+          <label class="fn-label">Notes <span class="fn-optional">(optionnel)</span></label>
+          <textarea class="fn-textarea" [(ngModel)]="form.notes" rows="3" placeholder="Informations complémentaires..."></textarea>
+        </div>
+      </div>
+
+      @if (formError()) {
+        <div class="fn-form-error">{{ formError() }}</div>
+      }
+
+      <div class="fn-modal-footer">
+        <button class="fn-btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="fn-btn-save" [disabled]="saving()" (click)="save()">
+          @if (saving()) {
+            <span class="fn-spinner"></span>
+          }
+          {{ modal()!.id ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+  

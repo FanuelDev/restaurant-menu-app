@@ -1,45 +1,11 @@
-import { Component, inject } from '@angular/core'
+﻿import { Component, inject } from '@angular/core'
 import { TranslocoService } from '@jsverse/transloco'
 import { toSignal } from '@angular/core/rxjs-interop'
 
 @Component({
   selector: 'app-lang-switcher',
   standalone: true,
-  template: `
-    <div class="lang-pill">
-      <button
-        class="lang-opt"
-        [class.lang-opt-active]="activeLang() === 'fr'"
-        (click)="set('fr')"
-        type="button"
-        title="Français"
-      >FR</button>
-      <span class="lang-sep">|</span>
-      <button
-        class="lang-opt"
-        [class.lang-opt-active]="activeLang() === 'en'"
-        (click)="set('en')"
-        type="button"
-        title="English"
-      >EN</button>
-      <span class="lang-sep">|</span>
-      <button
-        class="lang-opt"
-        [class.lang-opt-active]="activeLang() === 'de'"
-        (click)="set('de')"
-        type="button"
-        title="Deutsch"
-      >DE</button>
-      <span class="lang-sep">|</span>
-      <button
-        class="lang-opt"
-        [class.lang-opt-active]="activeLang() === 'zh'"
-        (click)="set('zh')"
-        type="button"
-        title="中文"
-      >中文</button>
-    </div>
-  `,
+  templateUrl: './lang-switcher.component.html',
   styles: [`
     .lang-pill {
       display: inline-flex;

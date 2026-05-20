@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed } from '@angular/core'
+﻿import { Component, signal, inject, OnInit, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { SubscriptionService, SubscriptionShowResponse } from '../../shared/services/subscription.service'
@@ -10,106 +10,7 @@ import { TranslocoModule } from '@jsverse/transloco'
   selector: 'app-subscription',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslocoModule],
-  template: `
-    <ng-container *transloco="let t">
-    <div class="subscription-page">
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">{{ t('subscription.title') }}</h1>
-          <p class="page-subtitle">{{ t('subscription.subtitle') }}</p>
-        </div>
-      </header>
-
-      @if (loading()) {
-        <div class="loading">{{ t('common.loading') }}</div>
-      } @else if (data()) {
-        <!-- Current status -->
-        <div class="status-card" [class]="'status-' + (data()!.restaurant.subscriptionStatus)">
-          <div class="status-icon">
-            {{ statusIcon(data()!.restaurant.subscriptionStatus) }}
-          </div>
-          <div class="status-info">
-            <div class="status-label">{{ t(statusLabel(data()!.restaurant.subscriptionStatus)) }}</div>
-            @if (data()!.restaurant.subscriptionStatus === 'trialing' && data()!.restaurant.trialEndsAt) {
-              <div class="status-detail">
-                {{ t('subscription.trialEnds', { date: data()!.restaurant.trialEndsAt | date:'dd/MM/yyyy' }) }}
-              </div>
-            }
-            @if (data()!.activeSubscription?.currentPeriodEnd) {
-              <div class="status-detail">
-                {{ t('subscription.renewsOn', { date: data()!.activeSubscription!.currentPeriodEnd | date:'dd/MM/yyyy' }) }}
-              </div>
-            }
-            @if (data()!.restaurant.plan) {
-              <div class="current-plan">{{ t('subscription.currentPlan', { name: data()!.restaurant.plan!.name }) }}</div>
-            }
-          </div>
-          @if (data()!.activeSubscription?.status === 'active') {
-            <button class="btn-danger-outline" (click)="showCancelConfirm.set(true)">{{ t('subscription.cancelSubscription') }}</button>
-          }
-        </div>
-
-        <!-- Cancel confirmation -->
-        @if (showCancelConfirm()) {
-          <div class="confirm-overlay">
-            <div class="confirm-box">
-              <h3>{{ t('subscription.cancelConfirmTitle') }}</h3>
-              <p>{{ t('subscription.cancelConfirmMessage') }}</p>
-              <div class="confirm-actions">
-                <button class="btn-outline" (click)="showCancelConfirm.set(false)">{{ t('common.cancel') }}</button>
-                <button class="btn-danger" (click)="cancelSubscription()" [disabled]="actionLoading()">
-                  {{ actionLoading() ? t('subscription.canceling') : t('subscription.cancelSubmit') }}
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- Available plans -->
-        <div class="plans-section">
-          <div class="plans-header">
-            <h2>{{ t('subscription.choosePlan') }}</h2>
-            <div class="cycle-toggle">
-              <button [class.active]="cycle() === 'monthly'" (click)="cycle.set('monthly')">{{ t('subscription.monthly') }}</button>
-              <button [class.active]="cycle() === 'yearly'" (click)="cycle.set('yearly')">
-                {{ t('subscription.yearly') }} <span class="discount">{{ t('subscription.yearlySavings') }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="plans-grid">
-            @for (plan of data()!.availablePlans; track plan.id) {
-              @if (plan.priceMonthlyCents > 0) {
-                <div class="plan-card" [class.current]="isCurrentPlan(plan)">
-                  <div class="plan-name">{{ plan.name }}</div>
-                  <div class="plan-price">
-                    <span class="amount">{{ formatPrice(plan, cycle()) }}</span>
-                    <span class="period">/ {{ cycle() === 'monthly' ? t('subscription.perMonth') : t('subscription.perYear') }}</span>
-                  </div>
-                  <ul class="features">
-                    @for (f of enabledFeatures(plan); track f) { <li>✓ {{ f }}</li> }
-                  </ul>
-                  @if (isCurrentPlan(plan)) {
-                    <div class="current-badge">{{ t('subscription.currentPlanBadge') }}</div>
-                  } @else {
-                    <button class="btn-subscribe" (click)="initPayment(plan)"
-                            [disabled]="actionLoading()">
-                      {{ actionLoading() && selectedPlan()?.id === plan.id ? t('subscription.redirecting') : t('subscription.selectPlan') }}
-                    </button>
-                  }
-                </div>
-              }
-            }
-          </div>
-        </div>
-
-        @if (error()) {
-          <div class="error-msg">{{ error() }}</div>
-        }
-      }
-    </div>
-    </ng-container>
-  `,
+  templateUrl: './subscription.component.html',
   styles: [`
     .subscription-page { max-width: 900px; }
 
