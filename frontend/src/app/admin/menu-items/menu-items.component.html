@@ -47,8 +47,9 @@
         @for (item of filteredByCategory(); track item.id) {
           <div class="item-card" [class.item-card--unavailable]="!item.isAvailable">
             <div class="item-card__image-wrap">
-              @if (item.imageUrl) {
-                <img [src]="item.imageUrl" [alt]="item.name" class="item-card__image" loading="lazy" />
+              @if (item.imageUrl && !failedImages().has(item.id)) {
+                <img [src]="item.imageUrl" [alt]="item.name" class="item-card__image" loading="lazy"
+                     (error)="onImageError(item.id)" />
               } @else {
                 <div class="item-card__image-placeholder" aria-hidden="true">🍽️</div>
               }

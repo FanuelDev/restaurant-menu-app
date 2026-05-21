@@ -7,8 +7,9 @@
       [attr.aria-label]="item.name + ' — ' + formatPrice(item.price)"
     >
       <div class="dish-image-wrap">
-        @if (item.imageUrl) {
-          <img [src]="item.imageUrl" [alt]="item.name" class="dish-image" loading="lazy" />
+        @if (item.imageUrl && !imgError) {
+          <img [src]="item.imageUrl" [alt]="item.name" class="dish-image" loading="lazy"
+               (error)="imgError = true" />
         } @else {
           <div class="dish-image-fallback" aria-hidden="true">🍽️</div>
         }

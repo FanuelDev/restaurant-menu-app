@@ -378,6 +378,8 @@ export class RestaurantComponent implements OnInit {
   readonly saving      = signal(false)
   readonly logoSaving  = signal(false)
   readonly coverSaving = signal(false)
+  readonly logoImgError  = signal(false)
+  readonly coverImgError = signal(false)
   readonly saveError   = signal<string | null>(null)
   readonly saveSuccess = signal(false)
   readonly logoPreview  = signal<string | null>(null)
@@ -449,6 +451,7 @@ export class RestaurantComponent implements OnInit {
     reader.onload = (e) => this.logoPreview.set(e.target?.result as string)
     reader.readAsDataURL(file)
 
+    this.logoImgError.set(false)
     this.logoSaving.set(true)
     this.restaurantService.uploadLogo(file).subscribe({
       next: () => this.logoSaving.set(false),
@@ -467,6 +470,7 @@ export class RestaurantComponent implements OnInit {
     reader.onload = (e) => this.coverPreview.set(e.target?.result as string)
     reader.readAsDataURL(file)
 
+    this.coverImgError.set(false)
     this.coverSaving.set(true)
     this.restaurantService.uploadCover(file).subscribe({
       next: () => { this.coverSaving.set(false) },

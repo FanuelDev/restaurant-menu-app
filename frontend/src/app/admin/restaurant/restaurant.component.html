@@ -16,8 +16,9 @@
               <div class="form-group">
                 <label class="form-label">{{ t('restaurant.logoLabel') }}</label>
                 <div class="logo-zone" (click)="logoInput.click()" role="button" tabindex="0" (keydown.enter)="logoInput.click()">
-                  @if (logoPreview() || restaurant()?.logoUrl) {
-                    <img [src]="logoPreview() || restaurant()!.logoUrl" alt="Logo" class="logo-preview" />
+                  @if ((logoPreview() || restaurant()?.logoUrl) && !logoImgError()) {
+                    <img [src]="logoPreview() || restaurant()!.logoUrl" alt="Logo" class="logo-preview"
+                         (error)="logoImgError.set(true)" />
                     <div class="logo-overlay">{{ t('restaurant.logoChange') }}</div>
                   } @else {
                     <div class="logo-placeholder">
@@ -35,8 +36,9 @@
               <div class="form-group">
                 <label class="form-label">{{ t('restaurant.coverLabel') }}</label>
                 <div class="cover-zone" (click)="coverInput.click()" role="button" tabindex="0" (keydown.enter)="coverInput.click()">
-                  @if (coverPreview() || restaurant()?.coverImageUrl) {
-                    <img [src]="coverPreview() || restaurant()!.coverImageUrl!" alt="Cover" class="cover-preview" />
+                  @if ((coverPreview() || restaurant()?.coverImageUrl) && !coverImgError()) {
+                    <img [src]="coverPreview() || restaurant()!.coverImageUrl!" alt="Cover" class="cover-preview"
+                         (error)="coverImgError.set(true)" />
                     <div class="cover-overlay">
                       <span>{{ t('restaurant.coverChange') }}</span>
                     </div>

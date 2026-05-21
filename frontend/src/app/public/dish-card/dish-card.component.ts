@@ -157,6 +157,7 @@ const BADGE_CONFIG: Record<string, { key: string; icon: string; cssClass: string
   `],
 })
 export class DishCardComponent {
+  imgError = false
   @Input({ required: true }) item!: MenuItem
   @Input() cartEnabled = false
   @Input() qty = 0

@@ -190,6 +190,7 @@ export class MenuItemsComponent implements OnInit {
 
   readonly categories = this.menuService.categories
   readonly menuItems = this.menuService.menuItems
+  readonly failedImages = signal<Set<number>>(new Set())
   readonly showForm = signal(false)
   readonly showTranslations = signal(false)
   readonly editTarget = signal<MenuItem | null>(null)
@@ -246,6 +247,10 @@ export class MenuItemsComponent implements OnInit {
     this.subscriptionService.getUsage().subscribe({
       next: (u) => this.usage.set(u.menuItems),
     })
+  }
+
+  onImageError(itemId: number): void {
+    this.failedImages.update(s => new Set([...s, itemId]))
   }
 
   getBadgeKey(badge: MenuItemBadge): string {

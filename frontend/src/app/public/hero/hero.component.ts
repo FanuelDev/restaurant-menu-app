@@ -190,7 +190,12 @@ export class HeroComponent {
 
   static readonly DEFAULT_COVER = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80'
 
-  @Input() set restaurant(r: Restaurant | null) { this._restaurant = r }
+  readonly logoFailed = signal(false)
+
+  @Input() set restaurant(r: Restaurant | null) {
+    this._restaurant = r
+    this.logoFailed.set(false)
+  }
   get restaurant() { return this._restaurant }
   private _restaurant: Restaurant | null = null
 

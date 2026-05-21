@@ -9,8 +9,9 @@
       <div class="hero-body" @fadeUp>
 
         <!-- Logo circle -->
-        @if (restaurant?.logoUrl) {
-          <img [src]="restaurant!.logoUrl" [alt]="restaurant!.name" class="hero-logo" />
+        @if (restaurant?.logoUrl && !logoFailed()) {
+          <img [src]="restaurant!.logoUrl" [alt]="restaurant!.name" class="hero-logo"
+               (error)="logoFailed.set(true)" />
         } @else {
           <div class="hero-logo-placeholder" aria-hidden="true">
             <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
