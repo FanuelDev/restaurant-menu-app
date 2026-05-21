@@ -28,6 +28,12 @@
                   }
                 </div>
                 <input #logoInput type="file" accept="image/*" class="file-input-hidden" (change)="onLogoChange($event)" />
+                @if (logoSizeError()) {
+                  <div class="image-size-error" role="alert">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {{ logoSizeError() }}
+                  </div>
+                }
                 @if (logoSaving()) {
                   <p class="uploading-hint">{{ t('common.uploadInProgress') }}</p>
                 }
@@ -51,6 +57,12 @@
                   }
                 </div>
                 <input #coverInput type="file" accept="image/*" class="file-input-hidden" (change)="onCoverChange($event)" />
+                @if (coverSizeError()) {
+                  <div class="image-size-error" role="alert">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {{ coverSizeError() }}
+                  </div>
+                }
                 <div class="cover-actions">
                   @if (coverSaving()) {
                     <span class="uploading-hint">{{ t('common.uploadInProgress') }}</span>

@@ -125,6 +125,12 @@ const DAYS: { key: string }[] = [
     .logo-placeholder span:first-child { font-size: 2rem; }
     .file-input-hidden { display: none; }
     .uploading-hint { font-size: 0.8125rem; color: var(--text-muted); margin-top: var(--space-1); }
+    .image-size-error {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
+      background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-md);
+      color: #dc2626; font-size: 0.875rem; font-weight: 500;
+    }
 
     .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error);   padding: var(--space-3); border-radius: var(--radius-md); font-size: .875rem; margin-bottom: var(--space-4); }
     .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); padding: var(--space-3); border-radius: var(--radius-md); font-size: .875rem; margin-bottom: var(--space-4); }
@@ -378,8 +384,12 @@ export class RestaurantComponent implements OnInit {
   readonly saving      = signal(false)
   readonly logoSaving  = signal(false)
   readonly coverSaving = signal(false)
-  readonly logoImgError  = signal(false)
-  readonly coverImgError = signal(false)
+  readonly logoImgError   = signal(false)
+  readonly coverImgError  = signal(false)
+  readonly logoSizeError  = signal<string | null>(null)
+  readonly coverSizeError = signal<string | null>(null)
+
+  private static readonly MAX_IMAGE_SIZE = 1.5 * 1024 * 1024 // 1.5 Mo
   readonly saveError   = signal<string | null>(null)
   readonly saveSuccess = signal(false)
   readonly logoPreview  = signal<string | null>(null)
@@ -444,9 +454,17 @@ export class RestaurantComponent implements OnInit {
   }
 
   onLogoChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0]
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
     if (!file) return
 
+    if (file.size > RestaurantComponent.MAX_IMAGE_SIZE) {
+      this.logoSizeError.set(`Logo trop lourd (${(file.size / (1024 * 1024)).toFixed(1)} Mo) — maximum 1,5 Mo.`)
+      input.value = ''
+      return
+    }
+
+    this.logoSizeError.set(null)
     const reader = new FileReader()
     reader.onload = (e) => this.logoPreview.set(e.target?.result as string)
     reader.readAsDataURL(file)
@@ -463,9 +481,17 @@ export class RestaurantComponent implements OnInit {
   }
 
   onCoverChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0]
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
     if (!file) return
 
+    if (file.size > RestaurantComponent.MAX_IMAGE_SIZE) {
+      this.coverSizeError.set(`Cover trop lourd (${(file.size / (1024 * 1024)).toFixed(1)} Mo) — maximum 1,5 Mo.`)
+      input.value = ''
+      return
+    }
+
+    this.coverSizeError.set(null)
     const reader = new FileReader()
     reader.onload = (e) => this.coverPreview.set(e.target?.result as string)
     reader.readAsDataURL(file)

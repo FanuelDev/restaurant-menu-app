@@ -143,6 +143,12 @@ const BADGE_KEYS: Record<string, string> = {
     .image-upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); color: var(--text-muted); font-size: 0.9rem; }
     .image-upload-placeholder span:first-child { font-size: 2rem; }
     .file-input-hidden { display: none; }
+    .image-size-error {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-2); padding: var(--space-2) var(--space-3);
+      background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-md);
+      color: #dc2626; font-size: 0.875rem; font-weight: 500;
+    }
 
     .btn {
       display: inline-flex; align-items: center; gap: var(--space-2);
@@ -198,7 +204,10 @@ export class MenuItemsComponent implements OnInit {
   readonly formError = signal<string | null>(null)
   readonly activeCategoryId = signal<number | null>(null)
   readonly imagePreview = signal<string | null>(null)
+  readonly imageError  = signal<string | null>(null)
   readonly usage = signal<ResourceUsage | null>(null)
+
+  private static readonly MAX_IMAGE_SIZE = 1.5 * 1024 * 1024 // 1.5 Mo
 
   readonly atLimit = computed(() => {
     const u = this.usage()
@@ -281,6 +290,7 @@ export class MenuItemsComponent implements OnInit {
     this.editTarget.set(item ?? null)
     this.formError.set(null)
     this.imagePreview.set(null)
+    this.imageError.set(null)
     this.selectedFile = null
 
     const nt = item?.nameTranslations ?? {}
@@ -318,6 +328,17 @@ export class MenuItemsComponent implements OnInit {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
+
+    if (file.size > MenuItemsComponent.MAX_IMAGE_SIZE) {
+      const sizeMo = (file.size / (1024 * 1024)).toFixed(1)
+      this.imageError.set(`Image trop lourde (${sizeMo} Mo) — maximum 1,5 Mo.`)
+      this.imagePreview.set(null)
+      this.selectedFile = null
+      input.value = ''
+      return
+    }
+
+    this.imageError.set(null)
     this.selectedFile = file
     const reader = new FileReader()
     reader.onload = (e) => this.imagePreview.set(e.target?.result as string)
