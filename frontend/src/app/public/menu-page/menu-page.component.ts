@@ -882,7 +882,16 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
     })
   }
 
-  formatPrice(euros: number): string {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(euros)
+  formatPrice(amount: number): string {
+    const currency = this.restaurant()?.currency ?? 'XOF'
+    try {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 0,
+      }).format(amount)
+    } catch {
+      return `${amount} ${currency}`
+    }
   }
 }

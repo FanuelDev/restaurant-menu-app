@@ -1,8 +1,9 @@
-﻿import { Component, inject, signal, computed } from '@angular/core'
+﻿import { Component, inject, signal, computed, OnInit } from '@angular/core'
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
+import { RestaurantService } from '../../shared/services/restaurant.service'
 
 @Component({
   selector: 'app-admin-layout',
@@ -155,8 +156,9 @@ import { AuthService } from '../../shared/services/auth.service'
     }
   `],
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
   private readonly authService = inject(AuthService)
+  private readonly restaurantService = inject(RestaurantService)
 
   readonly user       = this.authService.user
   readonly collapsed  = signal(false)
@@ -182,6 +184,16 @@ export class AdminLayoutComponent {
     const r = this.user()?.role
     return r === 'admin' ? 'Propriétaire' : r === 'cashier' ? 'Caissier' : r ?? ''
   })
+
+  ngOnInit(): void {
+    // Rafraîchit les données du restaurant (et donc le plan) depuis l'API
+    // afin que les guards de fonctionnalités (hasOrders, hasStats, …) soient
+    // toujours basés sur des données fraîches, même après un changement de plan.
+    this.restaurantService.loadAdmin().subscribe({
+      next: (r) => this.authService.updateRestaurant(r),
+      error: () => { /* silently ignore — stale data from localStorage still works */ },
+    })
+  }
 
   toggleCollapsed(): void { this.collapsed.update((v) => !v) }
   logout(): void { this.authService.logout() }
