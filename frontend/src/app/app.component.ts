@@ -14,7 +14,7 @@ import { LangSwitcherComponent } from './shared/components/lang-switcher/lang-sw
       position: fixed;
       top: 16px;
       right: 16px;
-      z-index: 10001;
+      z-index: 999;
     }
   `],
 })

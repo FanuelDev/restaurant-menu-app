@@ -491,7 +491,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
 
     /* ── Sheet ─────────────────────────────────────────── */
     .obs-sheet-bd {
-      position: fixed; inset: 0; z-index: 200;
+      position: fixed; inset: 0; z-index: 1000;
       background: rgba(0,0,0,.72);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -500,7 +500,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     @keyframes obs-bd-in { from { opacity: 0; } to { opacity: 1; } }
     .obs-sheet {
       position: fixed; bottom: 0; left: 0; right: 0;
-      z-index: 201; background: #151515;
+      z-index: 1001; background: #151515;
       border-radius: 24px 24px 0 0;
       border-top: 1px solid rgba(255,255,255,.09);
       max-height: 88vh; overflow-y: auto;

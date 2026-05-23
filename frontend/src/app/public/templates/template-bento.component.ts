@@ -405,7 +405,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
 
     /* ── Modal ──────────────────────────────────────────── */
     .lum-modal-bd {
-      position: fixed; inset: 0; z-index: 500;
+      position: fixed; inset: 0; z-index: 1000;
       background: rgba(26,24,20,.55);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);

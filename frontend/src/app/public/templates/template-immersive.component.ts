@@ -305,7 +305,7 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
 
     /* ─── Drawer ────────────────────────────────────── */
     .imm-drawer-backdrop {
-      position: absolute; inset: 0; z-index: 40;
+      position: absolute; inset: 0; z-index: 1000;
       background: rgba(0,0,0,.5);
       backdrop-filter: blur(4px);
     }
@@ -315,7 +315,7 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
       width: min(320px, 85vw);
       background: rgba(10,10,10,.92);
       backdrop-filter: blur(20px);
-      z-index: 41;
+      z-index: 1001;
       display: flex; flex-direction: column;
       animation: imm-drawer-in .3s cubic-bezier(0.22,1,0.36,1);
       border-right: 1px solid rgba(255,255,255,.08);

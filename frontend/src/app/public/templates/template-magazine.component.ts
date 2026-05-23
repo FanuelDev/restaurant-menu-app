@@ -465,7 +465,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       background: rgba(26,22,18,.55);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      z-index: 500;
+      z-index: 1000;
       display: flex; align-items: flex-end; justify-content: center;
       animation: mag-fade-in .22s ease;
     }

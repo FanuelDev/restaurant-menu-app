@@ -137,7 +137,7 @@ import QRCode from 'qrcode'
     .res-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.45);
-      z-index: 300;
+      z-index: 1000;
       animation: fadeIn 0.2s ease;
     }
 
@@ -147,7 +147,7 @@ import QRCode from 'qrcode'
       top: 0; left: 0; bottom: 0;
       width: min(440px, 100vw);
       background: var(--surface-1);
-      z-index: 301;
+      z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: 4px 0 32px rgba(0,0,0,.15);
       animation: slideInLeft 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
@@ -402,14 +402,14 @@ import QRCode from 'qrcode'
     .drawer-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.45);
-      z-index: 300;
+      z-index: 1000;
     }
     .cart-drawer {
       position: fixed;
       top: 0; right: 0; bottom: 0;
       width: min(400px, 100vw);
       background: white;
-      z-index: 301;
+      z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: -4px 0 32px rgba(0,0,0,.15);
     }
@@ -463,7 +463,7 @@ import QRCode from 'qrcode'
     .modal-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.5);
-      z-index: 400;
+      z-index: 1002;
       display: flex; align-items: flex-start; justify-content: center;
       padding: var(--space-6) var(--space-4);
       overflow-y: auto;
@@ -608,7 +608,7 @@ import QRCode from 'qrcode'
     .confirmation-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.6);
-      z-index: 500;
+      z-index: 1003;
       display: flex; align-items: center; justify-content: center;
       padding: var(--space-5);
     }
