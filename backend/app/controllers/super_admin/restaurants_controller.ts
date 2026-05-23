@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 import Restaurant from '#models/restaurant'
 import Plan from '#models/plan'
 import Subscription from '#models/subscription'
+import SaInvoice from '#models/sa_invoice'
 import AuditLog from '#models/audit_log'
 import AuditService from '#services/audit_service'
 
@@ -20,6 +21,7 @@ const assignPlanValidator = vine.compile(
     // Nombre de mois/années offerts (défaut 1)
     duration: vine.number().min(1).max(24).optional(),
     note: vine.string().trim().maxLength(500).optional(),
+    amountPaidCents: vine.number().min(0).optional(),
   })
 )
 
@@ -125,7 +127,7 @@ export default class SuperAdminRestaurantsController {
 
   /** POST /api/super-admin/restaurants/:id/assign-plan */
   async assignPlan({ params, request, response, auth }: HttpContext) {
-    const { planSlug, billingCycle, duration = 1, note } = await request.validateUsing(assignPlanValidator)
+    const { planSlug, billingCycle, duration = 1, note, amountPaidCents = 0 } = await request.validateUsing(assignPlanValidator)
 
     const restaurant = await Restaurant.findOrFail(params.id)
     const plan = await Plan.findByOrFail('slug', planSlug)
@@ -141,14 +143,14 @@ export default class SuperAdminRestaurantsController {
       .whereIn('status', ['active', 'pending', 'trialing'])
       .update({ status: 'canceled', canceled_at: now.toSQL({ includeOffset: false }) })
 
-    // Crée la nouvelle subscription offerte (montant 0)
-    await Subscription.create({
+    // Crée la nouvelle subscription
+    const subscription = await Subscription.create({
       restaurantId: restaurant.id,
       planId: plan.id,
       cinetpayTransactionId: `sa_grant_${Date.now()}`,
       billingCycle,
       status: 'active',
-      amountCents: 0,
+      amountCents: amountPaidCents,
       currency: restaurant.currency,
       currentPeriodStart: now,
       currentPeriodEnd: periodEnd,
@@ -161,6 +163,36 @@ export default class SuperAdminRestaurantsController {
     await restaurant.save()
 
     await restaurant.load('plan')
+
+    // Génère la facture
+    const year = now.year.toString()
+    const month = now.month.toString().padStart(2, '0')
+    const countResult = await SaInvoice.query().count('id as total')
+    const count = Number((countResult[0] as any).$extras.total) + 1
+
+    const invoiceNumber = `FAC-${year}${month}-${count.toString().padStart(5, '0')}`
+
+    const durationMonths = billingCycle === 'yearly' ? duration * 12 : duration
+    const originalPriceCents = billingCycle === 'yearly'
+      ? plan.priceYearlyCents * duration
+      : plan.priceMonthlyCents * duration
+
+    const invoice = await SaInvoice.create({
+      invoiceNumber,
+      restaurantId: restaurant.id,
+      subscriptionId: subscription.id,
+      grantedBy: auth.user!.id,
+      planName: plan.name,
+      planSlug: plan.slug,
+      billingCycle,
+      durationMonths,
+      amountPaidCents,
+      originalPriceCents,
+      currency: restaurant.currency,
+      notes: note ?? null,
+      periodStart: now,
+      periodEnd,
+    })
 
     await this.#auditService.log({
       ctx: { request } as never,
@@ -177,9 +209,11 @@ export default class SuperAdminRestaurantsController {
         periodEnd: periodEnd.toISODate(),
         grantedBy: auth.user!.email,
         note: note ?? null,
+        amountPaidCents,
+        invoiceNumber,
       },
     })
 
-    return response.ok({ message: `Plan ${plan.name} attribué jusqu'au ${periodEnd.toISODate()}.`, restaurant })
+    return response.ok({ message: `Plan ${plan.name} attribué jusqu'au ${periodEnd.toISODate()}.`, restaurant, invoice })
   }
 }

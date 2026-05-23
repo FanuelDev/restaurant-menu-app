@@ -154,6 +154,12 @@ export const routes: Routes = [
           import('./admin/finance/finance.component').then((m) => m.FinanceComponent),
         title: 'Gestion financière',
       },
+      {
+        path: 'invoices',
+        loadComponent: () =>
+          import('./admin/invoices/admin-invoices.component').then((m) => m.AdminInvoicesComponent),
+        title: 'Factures',
+      },
     ],
   },
 
@@ -194,6 +200,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./super-admin/audit-logs/sa-audit-logs.component').then((m) => m.SaAuditLogsComponent),
         title: 'Super Admin — Journal d\'audit',
+      },
+      {
+        path: 'invoices',
+        loadComponent: () =>
+          import('./super-admin/invoices/sa-invoices.component').then((m) => m.SaInvoicesComponent),
+        title: 'Super Admin — Factures',
       },
     ],
   },

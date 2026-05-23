@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog } from '../models'
+import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog, SaInvoice } from '../models'
 
 export interface RestaurantFilters {
   page?: number
@@ -61,10 +61,22 @@ export class SuperAdminService {
     billingCycle: 'monthly' | 'yearly'
     duration?: number
     note?: string
-  }): Observable<{ message: string; restaurant: Restaurant }> {
-    return this.http.post<{ message: string; restaurant: Restaurant }>(
+    amountPaidCents?: number
+  }): Observable<{ message: string; restaurant: Restaurant; invoice: SaInvoice }> {
+    return this.http.post<{ message: string; restaurant: Restaurant; invoice: SaInvoice }>(
       `${environment.apiUrl}/super-admin/restaurants/${restaurantId}/assign-plan`,
       payload
     )
+  }
+
+  getInvoices(params?: { restaurantId?: number; page?: number }): Observable<{ data: SaInvoice[]; meta: any }> {
+    let httpParams = new HttpParams()
+    if (params?.restaurantId) httpParams = httpParams.set('restaurantId', params.restaurantId)
+    if (params?.page) httpParams = httpParams.set('page', params.page)
+    return this.http.get<{ data: SaInvoice[]; meta: any }>(`${environment.apiUrl}/super-admin/invoices`, { params: httpParams })
+  }
+
+  getInvoice(id: number): Observable<SaInvoice> {
+    return this.http.get<SaInvoice>(`${environment.apiUrl}/super-admin/invoices/${id}`)
   }
 }

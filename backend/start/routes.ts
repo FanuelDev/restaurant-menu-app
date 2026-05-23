@@ -26,6 +26,10 @@ const FinanceController = () => import('#controllers/finance_controller')
 const SARestaurantsController = () => import('#controllers/super_admin/restaurants_controller')
 const SAPlansController = () => import('#controllers/super_admin/plans_controller')
 const SAStatsController = () => import('#controllers/super_admin/stats_controller')
+const SaInvoicesController = () => import('#controllers/super_admin/sa_invoices_controller')
+
+// Admin invoices
+const InvoicesController = () => import('#controllers/invoices_controller')
 
 // ─── Static / health ──────────────────────────────────────────────────────────
 router.get('/health', async ({ response }) => response.ok({ status: 'ok', timestamp: new Date().toISOString() }))
@@ -188,6 +192,12 @@ router
     router.delete('/menu-items/:id', [MenuItemsController, 'destroy'])
       .use(middleware.role(['admin']))
     router.patch('/menu-items/:id/toggle-availability', [MenuItemsController, 'toggleAvailability'])
+
+    // Invoices — admin only
+    router.get('/invoices', [InvoicesController, 'index'])
+      .use(middleware.role(['admin']))
+    router.get('/invoices/:id', [InvoicesController, 'show'])
+      .use(middleware.role(['admin']))
   })
   .prefix('/api/admin')
   .use([middleware.tenant(), middleware.auth()])
@@ -206,6 +216,8 @@ router
     router.post('/plans', [SAPlansController, 'store'])
     router.put('/plans/:id', [SAPlansController, 'update'])
     router.delete('/plans/:id', [SAPlansController, 'destroy'])
+    router.get('/invoices', [SaInvoicesController, 'index'])
+    router.get('/invoices/:id', [SaInvoicesController, 'show'])
   })
   .prefix('/api/super-admin')
   .use([middleware.auth(), middleware.role(['super_admin'])])

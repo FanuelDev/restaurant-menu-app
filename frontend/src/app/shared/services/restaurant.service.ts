@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable, tap } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Restaurant } from '../models'
+import type { Restaurant, SaInvoice } from '../models'
 
 @Injectable({ providedIn: 'root' })
 export class RestaurantService {
@@ -74,6 +74,14 @@ export class RestaurantService {
         if (current) this.restaurant.set({ ...current, coverImageUrl: null })
       })
     )
+  }
+
+  getInvoices(): Observable<SaInvoice[]> {
+    return this.http.get<SaInvoice[]>(`${environment.apiUrl}/admin/invoices`)
+  }
+
+  getInvoice(id: number): Observable<SaInvoice> {
+    return this.http.get<SaInvoice>(`${environment.apiUrl}/admin/invoices/${id}`)
   }
 
   /**

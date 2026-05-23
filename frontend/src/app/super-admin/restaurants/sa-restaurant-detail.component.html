@@ -1,4 +1,4 @@
-﻿    <ng-container *transloco="let t">
+    <ng-container *transloco="let t">
     <div class="detail-page">
 
       <!-- Nav -->
@@ -215,6 +215,28 @@
                 </div>
 
                 <div class="form-group">
+                  <label>Montant facturé <span class="opt">optionnel</span></label>
+                  <input
+                    type="number"
+                    [(ngModel)]="grantForm.amountPaidCents"
+                    min="0"
+                    step="100"
+                    class="form-input"
+                    placeholder="0 = Gratuit"
+                  />
+                  @if (grantForm.amountPaidCents === 0) {
+                    <span class="amount-badge badge-free">GRATUIT</span>
+                  } @else if (discountPct() > 0) {
+                    <span class="amount-badge badge-reduced">-{{ discountPct() }}% de réduction</span>
+                  } @else {
+                    <span class="amount-badge badge-full">Plein tarif</span>
+                  }
+                  @if (regularPrice()) {
+                    <div class="amount-hint">Prix normal : {{ regularPrice() }}</div>
+                  }
+                </div>
+
+                <div class="form-group">
                   <label>Note <span class="opt">optionnel</span></label>
                   <input type="text" [(ngModel)]="grantForm.note" class="form-input" placeholder="Raison de l'attribution gratuite..." />
                 </div>
@@ -239,4 +261,3 @@
       }
     </div>
     </ng-container>
-  

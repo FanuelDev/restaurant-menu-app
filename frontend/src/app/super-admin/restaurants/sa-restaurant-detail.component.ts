@@ -1,10 +1,10 @@
-﻿import { Component, signal, inject, OnInit } from '@angular/core'
+import { Component, signal, inject, OnInit, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
-import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/models'
+import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../shared/models'
 
 @Component({
   selector: 'app-sa-restaurant-detail',
@@ -18,8 +18,8 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
       display: inline-flex; align-items: center; gap: 6px;
       color: var(--text-muted); text-decoration: none; font-size: .8125rem; font-weight: 500;
       margin-bottom: var(--space-5); transition: color var(--t-fast);
-      &:hover { color: var(--brand); }
     }
+    .back-link:hover { color: var(--brand); }
 
     /* ── Skeleton ── */
     .skeleton { background: linear-gradient(90deg,var(--gray-100) 25%,var(--gray-50) 50%,var(--gray-100) 75%); background-size: 400% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius-lg); }
@@ -92,8 +92,8 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
       display: flex; align-items: center; justify-content: space-between;
       padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
       font-size: .875rem;
-      &:nth-child(odd) { background: var(--gray-50); }
     }
+    .info-row:nth-child(odd) { background: var(--gray-50); }
     .info-label { color: var(--text-muted); font-weight: 500; font-size: .8125rem; }
     .info-val { color: var(--text-primary); font-weight: 500; }
     .info-val.trial { color: var(--warning); font-weight: 600; }
@@ -119,31 +119,31 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
       color: white; border: none; border-radius: var(--radius-md);
       cursor: pointer; font-size: .875rem; font-weight: 600;
       transition: opacity var(--t-fast);
-      &:disabled { opacity: .6; cursor: not-allowed; }
     }
+    .btn-success:disabled { opacity: .6; cursor: not-allowed; }
     .btn-danger-outline {
       display: inline-flex; align-items: center; gap: var(--space-2);
       padding: .5rem var(--space-4); background: transparent;
       color: var(--error); border: 1.5px solid var(--error);
       border-radius: var(--radius-md); cursor: pointer; font-size: .875rem; font-weight: 600;
       transition: background var(--t-fast);
-      &:hover { background: #fff1f2; }
     }
+    .btn-danger-outline:hover { background: #fff1f2; }
     .block-form { margin-top: var(--space-4); }
     .block-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-3); }
     .btn-ghost {
       padding: .5rem var(--space-4); background: transparent;
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       cursor: pointer; font-size: .875rem; color: var(--text-secondary);
-      &:hover { border-color: var(--gray-400); }
     }
+    .btn-ghost:hover { border-color: var(--gray-400); }
     .btn-danger {
       display: inline-flex; align-items: center; gap: var(--space-2);
       padding: .5rem var(--space-4); background: var(--error);
       color: white; border: none; border-radius: var(--radius-md);
       cursor: pointer; font-size: .875rem; font-weight: 600;
-      &:disabled { opacity: .6; cursor: not-allowed; }
     }
+    .btn-danger:disabled { opacity: .6; cursor: not-allowed; }
     .required { color: var(--error); }
 
     /* ── Timeline logs ── */
@@ -155,8 +155,8 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
     .timeline-item {
       display: flex; gap: var(--space-3); padding: var(--space-3) 0;
       border-bottom: 1px solid var(--border);
-      &:last-child { border-bottom: none; }
     }
+    .timeline-item:last-child { border-bottom: none; }
     .timeline-dot {
       width: 8px; height: 8px; border-radius: 50%; background: var(--brand);
       flex-shrink: 0; margin-top: 5px;
@@ -180,14 +180,14 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
       border-radius: var(--radius-md); font-size: .875rem; background: white;
       color: var(--text-primary); box-sizing: border-box; font-family: var(--font-body);
       transition: border-color var(--t-fast), box-shadow var(--t-fast);
-      &:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-subtle); }
     }
+    .form-select:focus, .form-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-subtle); }
     .form-group textarea {
       width: 100%; padding: var(--space-3); border: 1.5px solid var(--border);
       border-radius: var(--radius-md); font-size: .875rem; resize: vertical;
       box-sizing: border-box; font-family: var(--font-body); color: var(--text-primary);
-      &:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-subtle); }
     }
+    .form-group textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-subtle); }
     .form-row { display: flex; gap: var(--space-3); }
     .form-row .form-group { flex: 1; }
     .duration-row { display: flex; align-items: center; gap: var(--space-2); }
@@ -239,10 +239,22 @@ import type { Restaurant, AuditLog, Plan, BillingCycle } from '../../shared/mode
       border-radius: var(--radius-md); padding: .7rem var(--space-4);
       font-size: .9375rem; font-weight: 700; cursor: pointer;
       transition: opacity var(--t-fast), transform var(--t-fast);
-      &:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
-      &:active:not(:disabled) { transform: translateY(0); }
-      &:disabled { opacity: .45; cursor: not-allowed; }
     }
+    .btn-grant:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .btn-grant:active:not(:disabled) { transform: translateY(0); }
+    .btn-grant:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Amount preview ── */
+    .amount-hint { font-size: .75rem; color: var(--text-muted); margin-top: var(--space-2); }
+    .amount-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: var(--radius-full);
+      font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+      margin-top: var(--space-2);
+    }
+    .badge-free { background: #dcfce7; color: #166534; }
+    .badge-reduced { background: #fef9c3; color: #854d0e; }
+    .badge-full { background: #f0fdf4; color: #166534; }
 
     /* ── Spinner ── */
     .spinner {
@@ -270,11 +282,50 @@ export class SaRestaurantDetailComponent implements OnInit {
   readonly grantLoading = signal(false)
   readonly grantError = signal<string | null>(null)
   readonly grantSuccess = signal<string | null>(null)
-  grantForm: { planSlug: string; billingCycle: BillingCycle; duration: number; note: string } = {
-    planSlug: '', billingCycle: 'monthly', duration: 1, note: '',
+  grantForm: { planSlug: string; billingCycle: BillingCycle; duration: number; note: string; amountPaidCents: number } = {
+    planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaidCents: 0,
   }
 
   blockReason = ''
+
+  readonly grantFormPreviewAmount = computed(() => {
+    const cents = this.grantForm.amountPaidCents
+    if (!cents || cents === 0) return 'Gratuit'
+    const currency = this.restaurant()?.currency ?? 'XOF'
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100)
+    } catch {
+      return `${cents / 100} ${currency}`
+    }
+  })
+
+  readonly selectedPlan = computed(() => {
+    return this.plans().find((p) => p.slug === this.grantForm.planSlug) ?? null
+  })
+
+  regularPrice = computed(() => {
+    const plan = this.selectedPlan()
+    if (!plan) return null
+    const currency = this.restaurant()?.currency ?? 'XOF'
+    const cents = this.grantForm.billingCycle === 'yearly'
+      ? plan.priceYearlyCents * this.grantForm.duration
+      : plan.priceMonthlyCents * this.grantForm.duration
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100)
+    } catch {
+      return `${cents / 100} ${currency}`
+    }
+  })
+
+  readonly discountPct = computed(() => {
+    const plan = this.selectedPlan()
+    if (!plan || !this.grantForm.amountPaidCents) return 0
+    const original = this.grantForm.billingCycle === 'yearly'
+      ? plan.priceYearlyCents * this.grantForm.duration
+      : plan.priceMonthlyCents * this.grantForm.duration
+    if (original === 0) return 0
+    return Math.round((1 - this.grantForm.amountPaidCents / original) * 100)
+  })
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.params['id'])
@@ -296,12 +347,13 @@ export class SaRestaurantDetailComponent implements OnInit {
       billingCycle: this.grantForm.billingCycle,
       duration: this.grantForm.duration,
       note: this.grantForm.note || undefined,
+      amountPaidCents: this.grantForm.amountPaidCents,
     }).subscribe({
       next: (res) => {
         this.grantLoading.set(false)
-        this.grantSuccess.set(res.message)
+        this.grantSuccess.set(`${res.message} — Facture ${res.invoice.invoiceNumber} émise.`)
         this.restaurant.set(res.restaurant)
-        this.grantForm = { planSlug: '', billingCycle: 'monthly', duration: 1, note: '' }
+        this.grantForm = { planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaidCents: 0 }
       },
       error: (err) => {
         this.grantLoading.set(false)

@@ -371,6 +371,28 @@ export interface FinanceChart {
   points: FinanceChartPoint[]
 }
 
+// ─── SA Invoices ─────────────────────────────────────────────────────────────
+export interface SaInvoice {
+  id: number
+  invoiceNumber: string
+  restaurantId: number
+  restaurant?: { id: number; name: string; slug: string }
+  subscriptionId: number | null
+  grantedBy: number | null
+  granter?: { id: number; email: string; fullName?: string }
+  planName: string
+  planSlug: string
+  billingCycle: 'monthly' | 'yearly'
+  durationMonths: number
+  amountPaidCents: number
+  originalPriceCents: number
+  currency: string
+  notes: string | null
+  periodStart: string
+  periodEnd: string
+  createdAt: string
+}
+
 // ─── Misc ────────────────────────────────────────────────────────────────────
 export interface ApiError {
   message: string
