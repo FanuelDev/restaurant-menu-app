@@ -35,6 +35,7 @@
         (addToCart)="addToCart($event)"
         (removeFromCart)="removeFromCart($event)"
         (openCart)="cartOpen.set(true)"
+        (openReservation)="reservationOpen.set(true)"
       />
     } @else if ((restaurant()?.templateId ?? 1) === 5) {
       <app-template-bento
@@ -47,6 +48,7 @@
         (addToCart)="addToCart($event)"
         (removeFromCart)="removeFromCart($event)"
         (openCart)="cartOpen.set(true)"
+        (openReservation)="reservationOpen.set(true)"
       />
     } @else {
     <div class="menu-page">
@@ -276,7 +278,7 @@
       </aside>
     }
 
-    <!-- Reservation FAB (templates 1 & 2 — template 3 a son bouton dans le drawer, 4/5 sans réservation) -->
+    <!-- Reservation FAB (templates 1 & 2 — templates 3/4/5 ont leur propre bouton intégré) -->
     @if (hasOrders() && (restaurant()?.templateId ?? 1) !== 3 && (restaurant()?.templateId ?? 1) !== 4 && (restaurant()?.templateId ?? 1) !== 5 && !reservationOpen() && !cartOpen() && !checkoutOpen() && !orderConfirmed()) {
       <button class="res-fab" (click)="reservationOpen.set(true)" type="button" aria-label="Réserver une table">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">

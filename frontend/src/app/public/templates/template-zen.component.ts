@@ -38,7 +38,9 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     }
     .obs-header-in {
       display: flex; align-items: center; gap: 1.25rem;
-      padding: 0 2.5rem; height: 62px;
+      /* padding-right élevé pour éviter le chevauchement avec le sélecteur de langue
+         fixé à top:16px / right:16px (~110px de large) */
+      padding: 0 8.5rem 0 2.5rem; height: 62px;
       max-width: 1440px; margin: 0 auto;
     }
     .obs-brand {
@@ -88,9 +90,24 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       color: white; padding: 0 4px;
     }
     @media (max-width: 680px) {
-      .obs-header-in { padding: 0 1.25rem; gap: .75rem; }
+      .obs-header-in { padding: 0 7rem 0 1.25rem; gap: .75rem; }
       .obs-brand-name { display: none; }
     }
+
+    /* ── Reservation button in header ──────────────────── */
+    .obs-res-btn {
+      flex-shrink: 0; display: flex; align-items: center; gap: .4rem;
+      padding: .4375rem .875rem;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 999px; color: white;
+      font-size: .8125rem; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .obs-res-btn:hover { background: var(--color-brand); border-color: var(--color-brand); }
+    @media (max-width: 680px) { .obs-res-btn span { display: none; } }
 
     /* ── Hero ──────────────────────────────────────────── */
     .obs-hero {
@@ -567,9 +584,10 @@ export class TemplateZenComponent implements AfterViewInit, OnDestroy {
   @Input() hasOrders = false
   @Input() loading = false
 
-  @Output() addToCart    = new EventEmitter<MenuItem>()
+  @Output() addToCart      = new EventEmitter<MenuItem>()
   @Output() removeFromCart = new EventEmitter<number>()
-  @Output() openCart     = new EventEmitter<void>()
+  @Output() openCart       = new EventEmitter<void>()
+  @Output() openReservation = new EventEmitter<void>()
 
   private readonly platformId = inject(PLATFORM_ID)
 

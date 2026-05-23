@@ -58,6 +58,29 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       position: relative; z-index: 2;
       display: flex; align-items: flex-start; justify-content: space-between;
       gap: 1.5rem; max-width: 1440px; margin: 0 auto;
+      padding-right: 6rem; /* leave room for fixed lang switcher (top:16px right:16px ~110px wide) */
+    }
+    @media (max-width: 680px) { .lum-hero-inner { padding-right: 5rem; } }
+
+    /* ── Hero action buttons ────────────────────────────── */
+    .lum-hero-actions {
+      display: flex; align-items: center; gap: .625rem; flex-shrink: 0;
+    }
+    .lum-hero-res-btn {
+      display: flex; align-items: center; gap: .4375rem;
+      padding: .5rem .875rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.9); cursor: pointer;
+      font-size: .8125rem; font-weight: 600;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .lum-hero-res-btn:hover { background: rgba(255,255,255,.2); }
+    @media (max-width: 480px) {
+      .lum-hero-res-btn span { display: none; }
+      .lum-hero-res-btn { padding: .5rem; border-radius: 10px; }
     }
     .lum-hero-logo-row { display: flex; align-items: center; gap: 1.25rem; }
     .lum-hero-logo {
@@ -476,9 +499,10 @@ export class TemplateBentoComponent implements AfterViewInit, OnDestroy {
   @Input() hasOrders = false
   @Input() loading = false
 
-  @Output() addToCart      = new EventEmitter<MenuItem>()
-  @Output() removeFromCart = new EventEmitter<number>()
-  @Output() openCart       = new EventEmitter<void>()
+  @Output() addToCart        = new EventEmitter<MenuItem>()
+  @Output() removeFromCart   = new EventEmitter<number>()
+  @Output() openCart         = new EventEmitter<void>()
+  @Output() openReservation  = new EventEmitter<void>()
 
   private readonly platformId = inject(PLATFORM_ID)
 
