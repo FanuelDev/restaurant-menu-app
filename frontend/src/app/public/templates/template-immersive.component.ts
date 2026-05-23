@@ -365,6 +365,31 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
     .imm-drawer-cat-count { font-size: .8125rem; color: rgba(255,255,255,.4); }
     .imm-drawer-item svg { color: rgba(255,255,255,.3); flex-shrink: 0; }
 
+    /* ── Drawer reservation button ──────────────────── */
+    .imm-drawer-actions {
+      padding: .75rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+    }
+    .imm-drawer-res-btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: .625rem;
+      padding: .75rem 1rem;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px;
+      color: rgba(255,255,255,.85);
+      font-size: .875rem; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    .imm-drawer-res-btn:hover {
+      background: var(--color-brand);
+      border-color: var(--color-brand);
+      color: white;
+    }
+    .imm-drawer-res-btn svg { flex-shrink: 0; }
+
     /* ── Drawer hours ────────────────────────────────── */
     .imm-drawer-hours {
       padding: .875rem 1.25rem 1.75rem;
@@ -393,7 +418,13 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
 })
 export class TemplateImmersiveComponent implements AfterViewInit, OnDestroy {
   @Input() restaurant: Restaurant | null = null
-  @Input() categories: Category[] = []
+
+  // categories doit passer par un signal interne pour que flatDishes (computed)
+  // soit réactif aux mises à jour de l'@Input.
+  private readonly _categories = signal<Category[]>([])
+  @Input() set categories(cats: Category[]) { this._categories.set(cats) }
+  get categories(): Category[] { return this._categories() }
+
   @Input() cart: CartItem[] = []
   @Input() cartCount = 0
   @Input() hasOrders = false
@@ -417,7 +448,8 @@ export class TemplateImmersiveComponent implements AfterViewInit, OnDestroy {
 
   readonly flatDishes = computed<FlatDish[]>(() => {
     const result: FlatDish[] = []
-    this.categories.forEach((cat, catIdx) => {
+    // Lit _categories() → signal → computed se recalcule quand les plats arrivent
+    this._categories().forEach((cat, catIdx) => {
       const items = cat.menuItems ?? []
       items.forEach((item, dishIdx) => {
         result.push({ item, catName: cat.name, catIdx, dishIdx, total: items.length })

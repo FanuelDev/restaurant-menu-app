@@ -149,6 +149,20 @@
           }
         </nav>
 
+        @if (hasOrders) {
+          <div class="imm-drawer-actions">
+            <button class="imm-drawer-res-btn" type="button"
+                    (click)="openReservation.emit(); drawerOpen.set(false)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+                <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+              </svg>
+              Réserver une table
+            </button>
+          </div>
+        }
+
         @if (hoursEntries().length) {
           <div class="imm-drawer-hours">
             <div class="imm-dh-title">HORAIRES</div>
