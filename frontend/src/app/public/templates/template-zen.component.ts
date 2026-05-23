@@ -38,9 +38,9 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
     }
     .obs-header-in {
       display: flex; align-items: center; gap: 1.25rem;
-      /* padding-right élevé pour éviter le chevauchement avec le sélecteur de langue
-         fixé à top:16px / right:16px (~110px de large) */
-      padding: 0 8.5rem 0 2.5rem; height: 62px;
+      /* padding-right large pour éviter le chevauchement avec le sélecteur de langue
+         fixé à top:16px / right:16px (pill ~155px → zone occupée jusqu'à ~171px du bord) */
+      padding: 0 12rem 0 2.5rem; height: 62px;
       max-width: 1440px; margin: 0 auto;
     }
     .obs-brand {
@@ -90,7 +90,7 @@ import type { Restaurant, Category, MenuItem, CartItem } from '../../shared/mode
       color: white; padding: 0 4px;
     }
     @media (max-width: 680px) {
-      .obs-header-in { padding: 0 7rem 0 1.25rem; gap: .75rem; }
+      .obs-header-in { padding: 0 9rem 0 1.25rem; gap: .75rem; }
       .obs-brand-name { display: none; }
     }
 

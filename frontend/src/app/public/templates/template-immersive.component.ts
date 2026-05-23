@@ -40,21 +40,39 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
       top: 0; left: 0; right: 0;
       height: 56px;
       display: flex; align-items: center;
-      padding: 0 1rem;
-      gap: 1rem;
+      /* padding-right large pour laisser la place au sélecteur de langue fixé
+         à top:16px/right:16px (pill ~155px → zone jusqu'à ~171px du bord) */
+      padding: 0 12rem 0 1rem;
+      gap: .75rem;
       z-index: 25;
       background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 100%);
     }
     .imm-menu-btn {
       display: flex; flex-direction: column; gap: 4px;
       padding: .5rem; background: none; border: none;
-      cursor: pointer;
+      cursor: pointer; flex-shrink: 0;
     }
     .imm-menu-line {
       display: block; height: 2px; width: 22px;
       background: white; border-radius: 2px;
       transition: opacity .2s;
     }
+    /* ─── Reservation button in topbar ─────────────── */
+    .imm-res-topbar-btn {
+      display: flex; align-items: center; gap: .375rem;
+      padding: .375rem .75rem;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      color: white; cursor: pointer;
+      font-size: .75rem; font-weight: 700;
+      white-space: nowrap; flex-shrink: 0;
+      backdrop-filter: blur(8px);
+      transition: background .2s;
+    }
+    .imm-res-topbar-btn:hover { background: rgba(255,255,255,.22); }
+    @media (max-width: 420px) { .imm-res-topbar-btn span { display: none; } }
+
     .imm-topbar-name {
       flex: 1;
       font-size: .9375rem; font-weight: 700;
@@ -69,7 +87,7 @@ interface FlatDish { item: MenuItem; catName: string; catIdx: number; dishIdx: n
       background: rgba(255,255,255,.15);
       border: 1px solid rgba(255,255,255,.25);
       border-radius: 50%;
-      color: white; cursor: pointer;
+      color: white; cursor: pointer; flex-shrink: 0;
       backdrop-filter: blur(8px);
       transition: background .2s;
     }

@@ -10,6 +10,16 @@
         <span class="imm-menu-line" style="width:60%"></span>
         <span class="imm-menu-line" style="width:80%"></span>
       </button>
+      @if (hasOrders) {
+        <button class="imm-res-topbar-btn" (click)="openReservation.emit()" type="button" aria-label="Réserver une table">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="4" width="18" height="18" rx="2.5"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+          </svg>
+          <span>Réserver</span>
+        </button>
+      }
       <span class="imm-topbar-name">{{ restaurant?.name }}</span>
       @if (hasOrders) {
         <button class="imm-cart-btn" (click)="openCart.emit()" type="button">

@@ -41,10 +41,10 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 }
 
 const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  ingredient: '#f59e0b',
-  tool:       '#6366f1',
-  accessory:  '#3b82f6',
-  other:      '#8b5cf6',
+  ingredient: '#f97316',  /* orange vif    */
+  tool:       '#10b981',  /* vert émeraude */
+  accessory:  '#3b82f6',  /* bleu franc    */
+  other:      '#f43f5e',  /* rose / rouge  */
 }
 
 const DONUT_R = 54
