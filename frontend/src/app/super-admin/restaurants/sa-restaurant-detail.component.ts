@@ -282,20 +282,22 @@ export class SaRestaurantDetailComponent implements OnInit {
   readonly grantLoading = signal(false)
   readonly grantError = signal<string | null>(null)
   readonly grantSuccess = signal<string | null>(null)
-  grantForm: { planSlug: string; billingCycle: BillingCycle; duration: number; note: string; amountPaidCents: number } = {
-    planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaidCents: 0,
+  // amountPaid : montant saisi par le super-admin en unité réelle (ex: 5000 XOF)
+  // La conversion ×100 vers les centimes se fait uniquement à l'envoi
+  grantForm: { planSlug: string; billingCycle: BillingCycle; duration: number; note: string; amountPaid: number } = {
+    planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaid: 0,
   }
 
   blockReason = ''
 
   readonly grantFormPreviewAmount = computed(() => {
-    const cents = this.grantForm.amountPaidCents
-    if (!cents || cents === 0) return 'Gratuit'
+    const amount = this.grantForm.amountPaid
+    if (!amount || amount === 0) return 'Gratuit'
     const currency = this.restaurant()?.currency ?? 'XOF'
     try {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100)
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 0 }).format(amount)
     } catch {
-      return `${cents / 100} ${currency}`
+      return `${amount} ${currency}`
     }
   })
 
@@ -319,12 +321,13 @@ export class SaRestaurantDetailComponent implements OnInit {
 
   readonly discountPct = computed(() => {
     const plan = this.selectedPlan()
-    if (!plan || !this.grantForm.amountPaidCents) return 0
-    const original = this.grantForm.billingCycle === 'yearly'
-      ? plan.priceYearlyCents * this.grantForm.duration
-      : plan.priceMonthlyCents * this.grantForm.duration
-    if (original === 0) return 0
-    return Math.round((1 - this.grantForm.amountPaidCents / original) * 100)
+    if (!plan || !this.grantForm.amountPaid) return 0
+    // originalPriceCents en centimes → converti en unité réelle pour comparer
+    const originalUnits = this.grantForm.billingCycle === 'yearly'
+      ? (plan.priceYearlyCents * this.grantForm.duration) / 100
+      : (plan.priceMonthlyCents * this.grantForm.duration) / 100
+    if (originalUnits === 0) return 0
+    return Math.round((1 - this.grantForm.amountPaid / originalUnits) * 100)
   })
 
   ngOnInit(): void {
@@ -347,13 +350,13 @@ export class SaRestaurantDetailComponent implements OnInit {
       billingCycle: this.grantForm.billingCycle,
       duration: this.grantForm.duration,
       note: this.grantForm.note || undefined,
-      amountPaidCents: this.grantForm.amountPaidCents,
+      amountPaidCents: Math.round(this.grantForm.amountPaid * 100), // conversion unité → centimes
     }).subscribe({
       next: (res) => {
         this.grantLoading.set(false)
         this.grantSuccess.set(`${res.message} — Facture ${res.invoice.invoiceNumber} émise.`)
         this.restaurant.set(res.restaurant)
-        this.grantForm = { planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaidCents: 0 }
+        this.grantForm = { planSlug: '', billingCycle: 'monthly', duration: 1, note: '', amountPaid: 0 }
       },
       error: (err) => {
         this.grantLoading.set(false)

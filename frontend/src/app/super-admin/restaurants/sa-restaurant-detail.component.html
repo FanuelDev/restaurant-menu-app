@@ -215,16 +215,16 @@
                 </div>
 
                 <div class="form-group">
-                  <label>Montant facturé <span class="opt">optionnel</span></label>
+                  <label>Montant facturé <span class="opt">en {{ restaurant()?.currency ?? 'XOF' }} — 0 = Gratuit</span></label>
                   <input
                     type="number"
-                    [(ngModel)]="grantForm.amountPaidCents"
+                    [(ngModel)]="grantForm.amountPaid"
                     min="0"
-                    step="100"
+                    step="1"
                     class="form-input"
-                    placeholder="0 = Gratuit"
+                    placeholder="Ex : 5000"
                   />
-                  @if (grantForm.amountPaidCents === 0) {
+                  @if (grantForm.amountPaid === 0) {
                     <span class="amount-badge badge-free">GRATUIT</span>
                   } @else if (discountPct() > 0) {
                     <span class="amount-badge badge-reduced">-{{ discountPct() }}% de réduction</span>
