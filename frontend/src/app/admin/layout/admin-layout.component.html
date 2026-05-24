@@ -104,85 +104,85 @@
               @if (!collapsed()) { <span>Factures</span> }
             </a>
 
-            <a
-              routerLink="/admin/stats"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasStats()"
-              [title]="collapsed() ? t('nav.stats') : (!hasStats() ? t('nav.statsLocked') : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="1.5 13.5 6.5 8.5 10 12 16.5 4.5"/>
-              </svg>
-              @if (!collapsed()) {
-                <span>{{ t('nav.stats') }}</span>
-                @if (!hasStats()) { <span class="sb-lock">Pro</span> }
-              }
-            </a>
+            @if (hasStats()) {
+              <a routerLink="/admin/stats" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.stats') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 13.5 6.5 8.5 10 12 16.5 4.5"/>
+                </svg>
+                @if (!collapsed()) { <span>{{ t('nav.stats') }}</span> }
+              </a>
+            } @else {
+              <button class="sb-link sb-link-locked sb-link-btn" (click)="showUpgradeToast(t('nav.stats'), 'Pro')" [title]="collapsed() ? t('nav.stats') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1.5 13.5 6.5 8.5 10 12 16.5 4.5"/>
+                </svg>
+                @if (!collapsed()) { <span>{{ t('nav.stats') }}</span><span class="sb-lock">Pro</span> }
+              </button>
+            }
 
-            <a
-              routerLink="/admin/orders"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasOrders()"
-              [title]="collapsed() ? t('nav.orders') : (!hasOrders() ? t('nav.ordersLocked') : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z"/><path d="M6 8v4M12 8v4"/></svg>
-              @if (!collapsed()) {
-                <span>{{ t('nav.orders') }}</span>
-                @if (!hasOrders()) { <span class="sb-lock">Enterprise</span> }
-              }
-            </a>
+            @if (hasOrders()) {
+              <a routerLink="/admin/orders" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.orders') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z"/><path d="M6 8v4M12 8v4"/></svg>
+                @if (!collapsed()) { <span>{{ t('nav.orders') }}</span> }
+              </a>
+            } @else {
+              <button class="sb-link sb-link-locked sb-link-btn" (click)="showUpgradeToast(t('nav.orders'), 'Pro')" [title]="collapsed() ? t('nav.orders') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L4 5H2l2 10h12L18 5h-2l-2-3z"/><path d="M6 8v4M12 8v4"/></svg>
+                @if (!collapsed()) { <span>{{ t('nav.orders') }}</span><span class="sb-lock">Pro</span> }
+              </button>
+            }
 
-            <a
-              routerLink="/admin/reservations"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasOrders()"
-              [title]="collapsed() ? t('nav.reservations') : (!hasOrders() ? t('nav.reservationsLocked') : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="14" height="13" rx="1.5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="2" y1="8" x2="16" y2="8"/></svg>
-              @if (!collapsed()) {
-                <span>{{ t('nav.reservations') }}</span>
-                @if (!hasOrders()) { <span class="sb-lock">Enterprise</span> }
-              }
-            </a>
+            @if (hasOrders()) {
+              <a routerLink="/admin/reservations" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.reservations') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="14" height="13" rx="1.5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="2" y1="8" x2="16" y2="8"/></svg>
+                @if (!collapsed()) { <span>{{ t('nav.reservations') }}</span> }
+              </a>
+            } @else {
+              <button class="sb-link sb-link-locked sb-link-btn" (click)="showUpgradeToast(t('nav.reservations'), 'Pro')" [title]="collapsed() ? t('nav.reservations') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="14" height="13" rx="1.5"/><line x1="6" y1="1" x2="6" y2="5"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="2" y1="8" x2="16" y2="8"/></svg>
+                @if (!collapsed()) { <span>{{ t('nav.reservations') }}</span><span class="sb-lock">Pro</span> }
+              </button>
+            }
 
-            <a
-              routerLink="/admin/finance"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasFinance()"
-              [title]="collapsed() ? 'Finance' : (!hasFinance() ? 'Réservé Enterprise' : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 14V8l5-5 5 5v6H2z"/>
-                <path d="M7 14v-4h4v4"/>
-                <path d="M1 14h16"/>
-              </svg>
-              @if (!collapsed()) {
-                <span>Finance</span>
-                @if (!hasFinance()) { <span class="sb-lock">Enterprise</span> }
-              }
-            </a>
+            @if (hasFinance()) {
+              <a routerLink="/admin/finance" routerLinkActive="active" class="sb-link" [title]="collapsed() ? 'Finance' : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 14V8l5-5 5 5v6H2z"/>
+                  <path d="M7 14v-4h4v4"/>
+                  <path d="M1 14h16"/>
+                </svg>
+                @if (!collapsed()) { <span>Finance</span> }
+              </a>
+            } @else {
+              <button class="sb-link sb-link-locked sb-link-btn" (click)="showUpgradeToast('Finance', 'Enterprise')" [title]="collapsed() ? 'Finance' : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 14V8l5-5 5 5v6H2z"/>
+                  <path d="M7 14v-4h4v4"/>
+                  <path d="M1 14h16"/>
+                </svg>
+                @if (!collapsed()) { <span>Finance</span><span class="sb-lock">Enterprise</span> }
+              </button>
+            }
 
-            <a
-              routerLink="/admin/api"
-              routerLinkActive="active"
-              class="sb-link"
-              [class.sb-link-locked]="!hasApi()"
-              [title]="collapsed() ? t('nav.api') : (!hasApi() ? t('nav.apiLocked') : '')"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="5 6 1.5 9 5 12"/>
-                <polyline points="13 6 16.5 9 13 12"/>
-                <line x1="10" y1="4" x2="8" y2="14"/>
-              </svg>
-              @if (!collapsed()) {
-                <span>{{ t('nav.api') }}</span>
-                @if (!hasApi()) { <span class="sb-lock">Enterprise</span> }
-              }
-            </a>
+            @if (hasApi()) {
+              <a routerLink="/admin/api" routerLinkActive="active" class="sb-link" [title]="collapsed() ? t('nav.api') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="5 6 1.5 9 5 12"/>
+                  <polyline points="13 6 16.5 9 13 12"/>
+                  <line x1="10" y1="4" x2="8" y2="14"/>
+                </svg>
+                @if (!collapsed()) { <span>{{ t('nav.api') }}</span> }
+              </a>
+            } @else {
+              <button class="sb-link sb-link-locked sb-link-btn" (click)="showUpgradeToast('API Développeur', 'Enterprise')" [title]="collapsed() ? t('nav.api') : ''">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="5 6 1.5 9 5 12"/>
+                  <polyline points="13 6 16.5 9 13 12"/>
+                  <line x1="10" y1="4" x2="8" y2="14"/>
+                </svg>
+                @if (!collapsed()) { <span>{{ t('nav.api') }}</span><span class="sb-lock">Enterprise</span> }
+              </button>
+            }
           }
         </nav>
 
@@ -228,6 +228,26 @@
       <main class="main-content">
         <router-outlet />
       </main>
+
+    <!-- Toast upgrade plan -->
+    @if (toast()) {
+      <div class="upgrade-toast" role="alert" aria-live="assertive">
+        <div class="ut-icon">🔒</div>
+        <div class="ut-body">
+          <div class="ut-title">{{ toast()!.label }}</div>
+          <p class="ut-msg">
+            Disponible à partir du plan <strong>{{ toast()!.plan }}</strong>.
+            Passez à un plan supérieur pour débloquer cette fonctionnalité.
+          </p>
+          <button class="ut-cta" (click)="goToPlans()">Voir les plans →</button>
+        </div>
+        <button class="ut-close" (click)="dismissToast()" aria-label="Fermer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    }
 
     </div>
     </ng-container>

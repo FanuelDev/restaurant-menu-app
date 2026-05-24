@@ -1,5 +1,5 @@
 ﻿import { Component, inject, signal, computed, OnInit } from '@angular/core'
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
@@ -105,6 +105,48 @@ import { RestaurantService } from '../../shared/services/restaurant.service'
       margin: var(--space-2) var(--space-2) var(--space-3);
     }
 
+    /* Locked button — same look as sb-link but rendered as <button> */
+    .sb-link-btn {
+      width: 100%; text-align: left; cursor: pointer;
+      background: none; border: none; font-family: inherit;
+    }
+
+    /* Upgrade toast */
+    .upgrade-toast {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      max-width: 360px; width: calc(100vw - 40px);
+      background: white; border: 1.5px solid #e2e8f0;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 12px 40px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 16px; animation: toastIn .22s ease;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .ut-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 1px; }
+    .ut-body { flex: 1; min-width: 0; }
+    .ut-title {
+      font-weight: 700; font-size: .9375rem; color: var(--text-primary);
+      margin: 0 0 4px;
+    }
+    .ut-msg {
+      margin: 0 0 10px; font-size: .8125rem; color: var(--text-secondary); line-height: 1.5;
+    }
+    .ut-cta {
+      background: #7c3aed; color: white; border: none; border-radius: var(--radius-md);
+      padding: 6px 12px; font-size: .8125rem; font-weight: 600; cursor: pointer;
+      transition: opacity var(--t-fast);
+    }
+    .ut-cta:hover { opacity: .88; }
+    .ut-close {
+      background: none; border: none; cursor: pointer; padding: 2px; flex-shrink: 0;
+      color: var(--text-muted); border-radius: var(--radius-sm);
+      display: flex; align-items: center;
+    }
+    .ut-close:hover { background: var(--gray-100); color: var(--text-secondary); }
+
     /* Vitrine */
     .sb-vitrine {
       padding: 0 var(--space-2) var(--space-2);
@@ -157,8 +199,9 @@ import { RestaurantService } from '../../shared/services/restaurant.service'
   `],
 })
 export class AdminLayoutComponent implements OnInit {
-  private readonly authService = inject(AuthService)
+  private readonly authService       = inject(AuthService)
   private readonly restaurantService = inject(RestaurantService)
+  private readonly router            = inject(Router)
 
   readonly user       = this.authService.user
   readonly collapsed  = signal(false)
@@ -174,6 +217,27 @@ export class AdminLayoutComponent implements OnInit {
     const plan = this.authService.restaurant()?.plan
     return plan?.slug === 'enterprise' || !!plan?.features?.['financial_management']
   })
+
+  // ── Upgrade toast ─────────────────────────────────────────────────────────
+  readonly toast = signal<{ label: string; plan: string } | null>(null)
+  private toastTimer: ReturnType<typeof setTimeout> | null = null
+
+  showUpgradeToast(label: string, plan: string): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer)
+    this.toast.set({ label, plan })
+    this.toastTimer = setTimeout(() => this.toast.set(null), 5000)
+  }
+
+  dismissToast(): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer)
+    this.toast.set(null)
+  }
+
+  goToPlans(): void {
+    this.dismissToast()
+    this.router.navigate(['/admin/subscription'])
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   readonly userInitials = computed(() => {
     const name = this.user()?.fullName || this.user()?.email || '?'
