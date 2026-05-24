@@ -13,11 +13,13 @@ const createValidator = vine.compile(
   })
 )
 
-/** Préfixe lisible : "saem_live_" + 12 premiers hex de l'aléa */
+/** Préfixe lisible : "saem_live_" + 8 premiers hex de l'aléa + "…"
+ *  Total : 10 + 8 + 1 = 19 chars — tient dans varchar(20)
+ */
 function makeKey(): { raw: string; prefix: string; hash: string } {
   const secret = randomBytes(32).toString('hex')      // 64 hex chars
   const raw    = `saem_live_${secret}`
-  const prefix = `saem_live_${secret.slice(0, 12)}…`  // affiché dans l'UI
+  const prefix = `saem_live_${secret.slice(0, 8)}…`  // affiché dans l'UI
   const hash   = createHash('sha256').update(raw).digest('hex')
   return { raw, prefix, hash }
 }
