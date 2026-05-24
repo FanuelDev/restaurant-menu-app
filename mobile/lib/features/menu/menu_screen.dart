@@ -1,6 +1,7 @@
 // lib/features/menu/menu_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 import 'templates/template_classic.dart';
@@ -48,7 +49,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
     final restaurant = state.restaurant!;
 
-    return switch (restaurant.templateId) {
+    final template = switch (restaurant.templateId) {
       2 => TemplateMagazine(
           restaurant: restaurant,
           categories: state.categories,
@@ -80,7 +81,137 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           onRefresh: _refresh,
         ),
     };
+
+    // Pas de bannière hors-ligne → affiche le template directement
+    if (!state.isOffline) return template;
+
+    // Bannière hors-ligne superposée en haut du template
+    return Stack(
+      children: [
+        template,
+        Positioned(
+          top: 0, left: 0, right: 0,
+          child: _OfflineBanner(cachedAt: state.cachedAt, onRetry: _refresh),
+        ),
+      ],
+    );
   }
+}
+
+// ── Offline banner ────────────────────────────────────────────────────────────
+
+class _OfflineBanner extends StatelessWidget {
+  final DateTime? cachedAt;
+  final VoidCallback onRetry;
+  const _OfflineBanner({this.cachedAt, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    final dateStr = cachedAt != null
+        ? DateFormat('d MMM, HH:mm', 'fr_FR').format(cachedAt!.toLocal())
+        : null;
+
+    return Material(
+      color: const Color(0xFF1C1917),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: topPadding > 0 ? 0 : 8,
+            bottom: 8,
+            left: 16,
+            right: 8,
+          ),
+          child: Row(
+            children: [
+              // Dot animé
+              _PulseDot(),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Mode hors ligne',
+                      style: TextStyle(
+                        color: Color(0xFFFBBF24),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                      ),
+                    ),
+                    if (dateStr != null)
+                      Text(
+                        'Données du $dateStr',
+                        style: const TextStyle(
+                          color: Color(0xFFFEF3C7),
+                          fontSize: 11,
+                          height: 1.3,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: onRetry,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFFBBF24),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Actualiser',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PulseDot extends StatefulWidget {
+  @override
+  State<_PulseDot> createState() => _PulseDotState();
+}
+
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(begin: 0.25, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+    opacity: _anim,
+    child: Container(
+      width: 8, height: 8,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF59E0B),
+        shape: BoxShape.circle,
+      ),
+    ),
+  );
 }
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────

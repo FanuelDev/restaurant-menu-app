@@ -8,6 +8,7 @@ import { MenuService } from '../../shared/services/menu.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { OrderService } from '../../shared/services/order.service'
 import { ReservationService } from '../../shared/services/reservation.service'
+import { OfflineService } from '../../shared/services/offline.service'
 import { HeroComponent } from '../hero/hero.component'
 import { CategoryTabsComponent } from '../category-tabs/category-tabs.component'
 import { DishCardComponent } from '../dish-card/dish-card.component'
@@ -24,6 +25,26 @@ import QRCode from 'qrcode'
   imports: [CommonModule, FormsModule, TranslocoModule, HeroComponent, CategoryTabsComponent, DishCardComponent, TemplateMagazineComponent, TemplateImmersiveComponent, TemplateZenComponent, TemplateBentoComponent],
   templateUrl: './menu-page.component.html',
   styles: [`
+    /* ─── Offline banner ─── */
+    .offline-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      background: #1c1917; color: #fef3c7;
+      font-size: .8125rem; font-weight: 500;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .offline-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #f59e0b; flex-shrink: 0;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .3; }
+    }
+    .offline-text { flex: 1; }
+    .offline-text strong { color: #fbbf24; }
+
     .menu-page { min-height: 100vh; background: var(--bg); }
     .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-5); }
 
@@ -649,6 +670,7 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly orderService = inject(OrderService)
   private readonly reservationService = inject(ReservationService)
   private readonly platformId = inject(PLATFORM_ID)
+  readonly offlineService = inject(OfflineService)
 
   readonly restaurant = this.restaurantService.restaurant
   readonly loading = this.menuService.loading

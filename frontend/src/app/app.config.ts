@@ -3,6 +3,7 @@ import { provideRouter, withComponentInputBinding, withViewTransitions } from '@
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http'
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
 import { provideTransloco, TranslocoLoader } from '@jsverse/transloco'
+import { provideServiceWorker } from '@angular/service-worker'
 import { routes } from './app.routes'
 import { authInterceptor } from './shared/interceptors/auth.interceptor'
 import { tenantInterceptor } from './shared/interceptors/tenant.interceptor'
@@ -32,6 +33,10 @@ export const appConfig: ApplicationConfig = {
         prodMode: !isDevMode(),
       },
       loader: HttpLoader,
+    }),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
 }

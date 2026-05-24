@@ -1,5 +1,15 @@
 ﻿    <ng-container *transloco="let t">
 
+    <!-- Bannière hors ligne -->
+    @if (!offlineService.isOnline()) {
+      <div class="offline-banner" role="alert">
+        <div class="offline-dot"></div>
+        <span class="offline-text">
+          <strong>Mode hors ligne</strong> — Vous consultez une version mise en cache du menu. Les informations peuvent ne pas être à jour.
+        </span>
+      </div>
+    }
+
     @if ((restaurant()?.templateId ?? 1) === 2) {
       <app-template-magazine
         [restaurant]="restaurant()"

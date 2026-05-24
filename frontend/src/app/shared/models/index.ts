@@ -376,10 +376,20 @@ export interface SaInvoice {
   id: number
   invoiceNumber: string
   restaurantId: number
-  restaurant?: { id: number; name: string; slug: string }
+  restaurant?: {
+    id: number
+    name: string
+    slug: string
+    address: string | null
+    phone: string | null
+    email: string | null
+    website: string | null
+    country: string
+    currency: string
+  }
   subscriptionId: number | null
   grantedBy: number | null
-  granter?: { id: number; email: string; fullName?: string }
+  granter?: { id: number; email: string; fullName?: string | null }
   planName: string
   planSlug: string
   billingCycle: 'monthly' | 'yearly'
@@ -391,6 +401,22 @@ export interface SaInvoice {
   periodStart: string
   periodEnd: string
   createdAt: string
+}
+
+// ─── API Keys ────────────────────────────────────────────────────────────────
+export interface ApiKeyItem {
+  id: number
+  name: string
+  keyPrefix: string
+  isActive: boolean
+  lastUsedAt: string | null
+  expiresAt: string | null
+  createdAt: string
+}
+
+export interface ApiKeyCreated extends ApiKeyItem {
+  /** Clé complète — affichée une seule fois à la création */
+  key: string
 }
 
 // ─── Misc ────────────────────────────────────────────────────────────────────

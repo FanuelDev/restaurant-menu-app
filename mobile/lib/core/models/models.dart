@@ -92,6 +92,21 @@ class Restaurant {
       return const Color(0xFFC0392B);
     }
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'slug': slug,
+    'name': name,
+    'slogan': slogan,
+    'brandColor': brandColor,
+    'templateId': templateId,
+    'logoUrl': logoUrl,
+    'coverImageUrl': coverImageUrl,
+    'address': address,
+    'phone': phone,
+    'email': email,
+    'currency': currency,
+  };
 }
 
 // ─── Features (subscription) ─────────────────────────────────────────────────
@@ -101,6 +116,7 @@ class RestaurantFeatures {
   const RestaurantFeatures({this.ordersAndReservations = false});
   factory RestaurantFeatures.fromJson(Map<String, dynamic> j) =>
       RestaurantFeatures(ordersAndReservations: j['ordersAndReservations'] ?? false);
+  Map<String, dynamic> toJson() => {'ordersAndReservations': ordersAndReservations};
 }
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
@@ -129,6 +145,14 @@ class Category {
             .map((e) => MenuItem.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'sortOrder': sortOrder,
+    'menuItems': menuItems.map((i) => i.toJson()).toList(),
+  };
 }
 
 class MenuItem {
@@ -168,6 +192,19 @@ class MenuItem {
         badge: j['badge']?.toString(),
         sortOrder: _toInt(j['sortOrder']),
       );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'categoryId': categoryId,
+    'name': name,
+    'description': description,
+    'price': price,
+    'priceFormatted': priceFormatted,
+    'imageUrl': imageUrl,
+    'isAvailable': isAvailable,
+    'badge': badge,
+    'sortOrder': sortOrder,
+  };
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

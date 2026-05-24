@@ -1,0 +1,56 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.svg",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(eot|svg|cur|jpg|jpeg|png|webp|gif|otf|ttf|woff|woff2|ani|ico)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "menu-api-fresh",
+      "urls": [
+        "/api/public/restaurant",
+        "/api/public/categories",
+        "/api/public/menu-items"
+      ],
+      "cacheConfig": {
+        "maxSize": 20,
+        "maxAge": "12h",
+        "timeout": "6s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "menu-api-assets",
+      "urls": ["/uploads/**"],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "7d",
+        "strategy": "performance"
+      }
+    }
+  ]
+}

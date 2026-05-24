@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
 import type { SaInvoice } from '../../shared/models'
+import { printInvoice } from '../../shared/utils/invoice-print'
 
 @Component({
   selector: 'app-sa-invoices',
@@ -333,101 +334,14 @@ export class SaInvoicesComponent implements OnInit {
   }
 
   downloadInvoice(invoice: SaInvoice): void {
-    const restaurantName = invoice.restaurant?.name ?? `Restaurant #${invoice.restaurantId}`
-    const cycleLabel = invoice.billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'
-    const formattedDate = new Date(invoice.createdAt).toLocaleDateString('fr-FR')
-    const periodStart = new Date(invoice.periodStart).toLocaleDateString('fr-FR')
-    const periodEnd = new Date(invoice.periodEnd).toLocaleDateString('fr-FR')
-
-    const formatAmt = (cents: number) => this.formatAmount(cents, invoice.currency)
-    const savings = this.getSavings(invoice)
-    const amountHtml = invoice.amountPaidCents === 0
-      ? '<span style="color:#16a34a;font-weight:700">GRATUIT</span>'
-      : formatAmt(invoice.amountPaidCents)
-
-    const originalRow = savings > 0 ? `
-      <tr>
-        <td colspan="2" style="padding:8px 16px; color:#999; font-size:13px">Prix normal</td>
-        <td style="padding:8px 16px; text-align:right; color:#999; text-decoration:line-through">${formatAmt(invoice.originalPriceCents)}</td>
-      </tr>
-      <tr>
-        <td colspan="2" style="padding:8px 16px; color:#16a34a; font-size:13px">Économie</td>
-        <td style="padding:8px 16px; text-align:right; color:#16a34a; font-weight:600">-${formatAmt(savings)}</td>
-      </tr>
-    ` : ''
-
-    const totalFooterHtml = invoice.amountPaidCents === 0
-      ? '<p style="color:#16a34a;font-size:14px;margin:4px 0 0">Abonnement offert</p>'
-      : savings > 0
-        ? `<p style="color:#16a34a;font-size:14px;margin:4px 0 0">Économie : ${formatAmt(savings)}</p>`
-        : ''
-
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8"/>
-  <title>Facture ${invoice.invoiceNumber}</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 0; font-family: Inter, -apple-system, sans-serif; background: white; }
-    @media print {
-      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    }
-  </style>
-</head>
-<body>
-<div style="font-family:Inter,sans-serif; max-width:700px; margin:0 auto; padding:40px; color:#1a1a1a">
-  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:40px">
-    <div>
-      <h1 style="font-size:28px; font-weight:800; color:#111; margin:0">FACTURE</h1>
-      <p style="color:#666; margin:4px 0 0">${invoice.invoiceNumber}</p>
-    </div>
-    <div style="text-align:right">
-      <p style="font-weight:700; font-size:18px; margin:0">${restaurantName}</p>
-      <p style="color:#666; margin:4px 0 0">${formattedDate}</p>
-    </div>
-  </div>
-  <hr style="border:none; border-top:2px solid #f0f0f0; margin:0 0 32px"/>
-  <table style="width:100%; border-collapse:collapse">
-    <thead>
-      <tr style="background:#f8f8f8">
-        <th style="text-align:left; padding:12px 16px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#666">Description</th>
-        <th style="text-align:center; padding:12px 16px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#666">Période</th>
-        <th style="text-align:right; padding:12px 16px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#666">Montant</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding:16px; border-bottom:1px solid #f0f0f0">
-          <p style="font-weight:600; margin:0">${invoice.planName} — ${cycleLabel}</p>
-          ${invoice.notes ? `<p style="color:#666; font-size:13px; margin:4px 0 0">${invoice.notes}</p>` : ''}
-        </td>
-        <td style="padding:16px; text-align:center; border-bottom:1px solid #f0f0f0; color:#555">
-          ${periodStart} → ${periodEnd}
-        </td>
-        <td style="padding:16px; text-align:right; border-bottom:1px solid #f0f0f0">
-          ${amountHtml}
-        </td>
-      </tr>
-      ${originalRow}
-    </tbody>
-  </table>
-  <div style="margin-top:24px; text-align:right">
-    <p style="font-size:22px; font-weight:800; margin:0">Total : ${invoice.amountPaidCents === 0 ? '<span style="color:#16a34a">0,00 ' + invoice.currency + '</span>' : formatAmt(invoice.amountPaidCents)}</p>
-    ${totalFooterHtml}
-  </div>
-  <div style="margin-top:48px; padding-top:24px; border-top:1px solid #f0f0f0; font-size:12px; color:#999; text-align:center">
-    <p>Ce document est émis par l'administration de la plateforme.</p>
-  </div>
-</div>
-<script>window.onload = function() { window.print(); }<\/script>
-</body>
-</html>`
-
-    const win = window.open('', '_blank')
-    if (win) {
-      win.document.write(html)
-      win.document.close()
-    }
+    printInvoice(invoice, {
+      name:    invoice.restaurant?.name    ?? `Restaurant #${invoice.restaurantId}`,
+      address: invoice.restaurant?.address ?? null,
+      phone:   invoice.restaurant?.phone   ?? null,
+      email:   invoice.restaurant?.email   ?? null,
+      website: invoice.restaurant?.website ?? null,
+      country: invoice.restaurant?.country,
+      currency: invoice.restaurant?.currency ?? invoice.currency,
+    })
   }
 }

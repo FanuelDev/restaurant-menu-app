@@ -31,6 +31,10 @@ const SaInvoicesController = () => import('#controllers/super_admin/sa_invoices_
 // Admin invoices
 const InvoicesController = () => import('#controllers/invoices_controller')
 
+// API keys (admin management) + External API v1
+const ApiKeysController    = () => import('#controllers/api_keys_controller')
+const ExternalApiController = () => import('#controllers/external_api_controller')
+
 // ─── Static / health ──────────────────────────────────────────────────────────
 router.get('/health', async ({ response }) => response.ok({ status: 'ok', timestamp: new Date().toISOString() }))
 router.get('/openapi.json', async ({ response }) => response.download(app.publicPath('openapi.json')))
@@ -198,9 +202,32 @@ router
       .use(middleware.role(['admin']))
     router.get('/invoices/:id', [InvoicesController, 'show'])
       .use(middleware.role(['admin']))
+
+    // API keys — Enterprise only
+    router.get('/api-keys',     [ApiKeysController, 'index'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.post('/api-keys',    [ApiKeysController, 'store'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
+    router.delete('/api-keys/:id', [ApiKeysController, 'destroy'])
+      .use([middleware.role(['admin']), middleware.financeGuard()])
   })
   .prefix('/api/admin')
   .use([middleware.tenant(), middleware.auth()])
+
+// ─── External REST API v1 (authentification par clé API) ─────────────────────
+router
+  .group(() => {
+    router.get('/restaurant',            [ExternalApiController, 'getRestaurant'])
+    router.get('/menu',                  [ExternalApiController, 'getMenu'])
+    router.get('/menu/items',            [ExternalApiController, 'getMenuItems'])
+    router.get('/orders',                [ExternalApiController, 'getOrders'])
+    router.get('/orders/:orderNumber',   [ExternalApiController, 'getOrder'])
+    router.post('/orders',               [ExternalApiController, 'createOrder'])
+    router.get('/reservations',          [ExternalApiController, 'getReservations'])
+    router.post('/reservations',         [ExternalApiController, 'createReservation'])
+  })
+  .prefix('/api/v1')
+  .use(middleware.apiKey())
 
 // ─── Super admin routes (no tenant, auth + role check) ───────────────────────
 router

@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable, tap } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Restaurant, SaInvoice } from '../models'
+import type { Restaurant, SaInvoice, ApiKeyItem, ApiKeyCreated } from '../models'
 
 @Injectable({ providedIn: 'root' })
 export class RestaurantService {
@@ -82,6 +82,19 @@ export class RestaurantService {
 
   getInvoice(id: number): Observable<SaInvoice> {
     return this.http.get<SaInvoice>(`${environment.apiUrl}/admin/invoices/${id}`)
+  }
+
+  // ── API Keys ───────────────────────────────────────────────────────────────
+  getApiKeys(): Observable<ApiKeyItem[]> {
+    return this.http.get<ApiKeyItem[]>(`${environment.apiUrl}/admin/api-keys`)
+  }
+
+  createApiKey(name: string): Observable<ApiKeyCreated> {
+    return this.http.post<ApiKeyCreated>(`${environment.apiUrl}/admin/api-keys`, { name })
+  }
+
+  revokeApiKey(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/admin/api-keys/${id}`)
   }
 
   /**
