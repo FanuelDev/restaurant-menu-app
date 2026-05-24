@@ -441,3 +441,39 @@ export interface SuperAdminStats {
   planStats: { planName: string; planSlug: string; count: number }[]
   recentSignups: { id: number; name: string; slug: string; subscriptionStatus: SubscriptionStatus; createdAt: string }[]
 }
+
+export interface SaRevenueStats {
+  totalRevenueCents: number
+  mrrCents: number
+  arrCents: number
+  avgRevenuePerRestaurantCents: number
+  revenueByPlan: {
+    planName: string
+    planSlug: string
+    revenueCents: number
+    invoiceCount: number
+    pct: number
+  }[]
+  months: {
+    month: string
+    label: string
+    revenueCents: number
+    invoiceCount: number
+    signupCount: number
+  }[]
+  conversion: {
+    total: number
+    active: number
+    trialing: number
+    canceled: number
+    suspended: number
+  }
+  topRestaurants: {
+    restaurantId: number
+    restaurantName: string
+    restaurantSlug: string
+    subscriptionStatus: string
+    totalCents: number
+    invoiceCount: number
+  }[]
+}

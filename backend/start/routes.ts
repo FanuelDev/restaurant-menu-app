@@ -27,6 +27,7 @@ const SARestaurantsController = () => import('#controllers/super_admin/restauran
 const SAPlansController = () => import('#controllers/super_admin/plans_controller')
 const SAStatsController = () => import('#controllers/super_admin/stats_controller')
 const SaInvoicesController = () => import('#controllers/super_admin/sa_invoices_controller')
+const SaRevenueController = () => import('#controllers/super_admin/revenue_controller')
 
 // Admin invoices
 const InvoicesController = () => import('#controllers/invoices_controller')
@@ -247,6 +248,7 @@ router
     router.delete('/plans/:id', [SAPlansController, 'destroy'])
     router.get('/invoices', [SaInvoicesController, 'index'])
     router.get('/invoices/:id', [SaInvoicesController, 'show'])
+    router.get('/revenue', [SaRevenueController, 'index'])
   })
   .prefix('/api/super-admin')
   .use([middleware.auth(), middleware.role(['super_admin'])])

@@ -212,6 +212,12 @@ export const routes: Routes = [
           import('./super-admin/invoices/sa-invoices.component').then((m) => m.SaInvoicesComponent),
         title: 'Super Admin — Factures',
       },
+      {
+        path: 'revenue',
+        loadComponent: () =>
+          import('./super-admin/revenue/sa-revenue.component').then((m) => m.SaRevenueComponent),
+        title: 'Super Admin — Revenus & Analytique',
+      },
     ],
   },
 
