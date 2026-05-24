@@ -129,6 +129,7 @@ jobs:
             cd "\$APP_DIR"
 
             echo "→ Pulling latest code..."
+            git checkout -- .
             git pull origin main
 
             SERVICES_TO_UP=""
