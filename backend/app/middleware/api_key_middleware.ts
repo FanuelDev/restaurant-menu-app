@@ -9,7 +9,6 @@ import { DateTime } from 'luxon'
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import ApiKey from '#models/api_key'
-import Restaurant from '#models/restaurant'
 
 function extractRawKey(ctx: HttpContext): string | null {
   const auth = ctx.request.header('authorization') ?? ''
