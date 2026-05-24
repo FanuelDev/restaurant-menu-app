@@ -57,6 +57,12 @@
         <div class="hero-blob-2"></div>
         <div class="hero-blob-3"></div>
       </div>
+      <div class="hero-food-floats" aria-hidden="true">
+        <span class="hff hff-1">🍷</span>
+        <span class="hff hff-2">🥩</span>
+        <span class="hff hff-3">🌿</span>
+        <span class="hff hff-4">🍜</span>
+      </div>
 
       <div class="lp-container hero-layout">
         <div class="hero-copy">
@@ -206,8 +212,11 @@
       <div class="lp-container">
         <span class="trusted-label">{{ t('public.landing.trustedLabel') }}</span>
         <div class="trusted-logos">
-          @for (name of trustedNames; track name) {
+          @for (name of trustedNames; track name; let last = $last) {
             <span class="trusted-name">{{ name }}</span>
+            @if (!last) {
+              <span class="trusted-sep" aria-hidden="true">✦</span>
+            }
           }
         </div>
       </div>
@@ -300,15 +309,16 @@
     <section class="lp-section lp-how" id="how">
       <div class="lp-container">
         <div class="section-head reveal">
-          <div class="section-tag">{{ t('public.landing.howTag') }}</div>
-          <h2 class="section-h2">{{ t('public.landing.howH2') }}</h2>
-          <p class="section-sub">{{ t('public.landing.howSub') }}</p>
+          <div class="section-tag section-tag-light">{{ t('public.landing.howTag') }}</div>
+          <h2 class="section-h2 section-h2-light">{{ t('public.landing.howH2') }}</h2>
+          <p class="section-sub section-sub-light">{{ t('public.landing.howSub') }}</p>
         </div>
 
         <div class="steps-layout">
           <div class="steps-connector" aria-hidden="true"></div>
           @for (num of steps; track num; let i = $index) {
             <div class="step-card reveal" [attr.data-delay]="i">
+              <span class="step-emoji" aria-hidden="true">{{ stepEmojis[i] }}</span>
               <div class="step-num">{{ num }}</div>
               <h3 class="step-title">{{ t('public.landing.step' + i + 'title') }}</h3>
               <p class="step-desc">{{ t('public.landing.step' + i + 'desc') }}</p>
@@ -321,6 +331,7 @@
 
     <!-- ── Stats ────────────────────────────────────────────── -->
     <section class="lp-stats">
+      <div class="stats-bg-word" aria-hidden="true">SAVEURS</div>
       <div class="lp-container stats-grid">
         <div class="stat-item reveal">
           <div class="stat-val">1 200+</div>
@@ -354,6 +365,7 @@
         <div class="testimonials-grid">
           @for (testi of testimonials; track testi.name; let i = $index) {
             <div class="testi-card reveal" [attr.data-delay]="i">
+              <div class="testi-stars" aria-label="5 étoiles">★★★★★</div>
               <div class="testi-quote-mark">"</div>
               <p class="testi-text">{{ t('public.landing.testi' + i + 'quote') }}</p>
               <div class="testi-author">
@@ -616,6 +628,12 @@
       <div class="lp-cta-bg" aria-hidden="true">
         <div class="cta-blob-1"></div>
         <div class="cta-blob-2"></div>
+      </div>
+      <div class="cta-food-bg" aria-hidden="true">
+        <span class="cta-food-item cfi-1">🍾</span>
+        <span class="cta-food-item cfi-2">🥂</span>
+        <span class="cta-food-item cfi-3">🍽️</span>
+        <span class="cta-food-item cfi-4">🌹</span>
       </div>
       <div class="lp-container lp-cta-inner reveal">
         <div class="cta-badge">
