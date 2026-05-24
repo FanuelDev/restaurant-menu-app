@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router'
-import { authGuard, superAdminGuard, adminGuard } from './shared/guards/auth.guard'
+import { authGuard, superAdminGuard, adminGuard, planGuard } from './shared/guards/auth.guard'
 
 export const routes: Routes = [
   // ─── Public pages ────────────────────────────────────────────────────────
@@ -126,30 +126,35 @@ export const routes: Routes = [
       },
       {
         path: 'stats',
+        canActivate: [planGuard('pro', 'enterprise')],
         loadComponent: () =>
           import('./admin/stats/stats.component').then((m) => m.StatsComponent),
         title: 'Statistiques',
       },
       {
         path: 'orders',
+        canActivate: [planGuard('pro', 'enterprise')],
         loadComponent: () =>
           import('./admin/orders/orders.component').then((m) => m.OrdersComponent),
         title: 'Commandes',
       },
       {
         path: 'reservations',
+        canActivate: [planGuard('pro', 'enterprise')],
         loadComponent: () =>
           import('./admin/reservations/reservations.component').then((m) => m.ReservationsComponent),
         title: 'Réservations',
       },
       {
         path: 'api',
+        canActivate: [planGuard('enterprise')],
         loadComponent: () =>
           import('./admin/api/api.component').then((m) => m.ApiComponent),
         title: 'API dédiée',
       },
       {
         path: 'finance',
+        canActivate: [planGuard('enterprise')],
         loadComponent: () =>
           import('./admin/finance/finance.component').then((m) => m.FinanceComponent),
         title: 'Gestion financière',
