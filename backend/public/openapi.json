@@ -23,7 +23,12 @@
     { "name": "Super Admin — Stats", "description": "Statistiques plateforme" },
     { "name": "Super Admin — Restaurants", "description": "Gestion des comptes restaurants" },
     { "name": "Super Admin — Plans", "description": "Gestion des plans tarifaires" },
-    { "name": "Webhooks", "description": "Callbacks tiers (CinetPay)" }
+    { "name": "Webhooks", "description": "Callbacks tiers (CinetPay)" },
+    { "name": "Admin — Clés API", "description": "Gestion des clés API (Enterprise, admin)" },
+    { "name": "API v1 — Restaurant", "description": "Informations publiques du restaurant (API externe)" },
+    { "name": "API v1 — Menu", "description": "Catalogue de plats via API externe" },
+    { "name": "API v1 — Commandes", "description": "Commandes clients via API externe" },
+    { "name": "API v1 — Réservations", "description": "Réservations clients via API externe" }
   ],
   "components": {
     "securitySchemes": {
@@ -32,6 +37,12 @@
         "scheme": "bearer",
         "bearerFormat": "opaque",
         "description": "Token obtenu via POST /api/auth/login"
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "Clé API Enterprise (format `saem_live_xxxx…`). Peut aussi être passée comme `Authorization: Bearer saem_live_xxxx…`"
       }
     },
     "parameters": {
@@ -424,6 +435,73 @@
           "isActive": { "type": "boolean", "default": true },
           "isPublic": { "type": "boolean", "default": true },
           "sortOrder": { "type": "integer", "default": 0 }
+        }
+      },
+      "ApiKeyItem": {
+        "type": "object",
+        "properties": {
+          "id":         { "type": "integer", "example": 1 },
+          "name":       { "type": "string", "example": "Production POS" },
+          "keyPrefix":  { "type": "string", "example": "saem_live_Ab3xCd7e…", "description": "Préfixe visible — la clé complète n'est disponible qu'à la création" },
+          "isActive":   { "type": "boolean", "example": true },
+          "lastUsedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "expiresAt":  { "type": "string", "format": "date-time", "nullable": true },
+          "createdAt":  { "type": "string", "format": "date-time" }
+        }
+      },
+      "ApiKeyCreated": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ApiKeyItem" },
+          {
+            "type": "object",
+            "properties": {
+              "key": { "type": "string", "example": "saem_live_Ab3xCd7e...", "description": "Clé complète — affichée UNE SEULE FOIS à la création. À stocker immédiatement." }
+            }
+          }
+        ]
+      },
+      "V1Order": {
+        "type": "object",
+        "properties": {
+          "id":            { "type": "integer" },
+          "orderNumber":   { "type": "string", "example": "ORD-1748000000-A1B2" },
+          "customerName":  { "type": "string", "example": "Kouamé Ange" },
+          "customerPhone": { "type": "string", "nullable": true, "example": "+225 07 00 00 00 00" },
+          "customerEmail": { "type": "string", "format": "email", "nullable": true },
+          "status":        { "type": "string", "enum": ["pending","confirmed","preparing","ready","delivered","cancelled"], "example": "pending" },
+          "total":         { "type": "number", "example": 35000 },
+          "notes":         { "type": "string", "nullable": true },
+          "createdAt":     { "type": "string", "format": "date-time" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id":                  { "type": "integer" },
+                "menuItemName":        { "type": "string", "example": "Tartare de thon" },
+                "menuItemPrice":       { "type": "number", "example": 17500 },
+                "quantity":            { "type": "integer", "example": 2 },
+                "subtotal":            { "type": "number", "example": 35000 },
+                "specialInstructions": { "type": "string", "nullable": true }
+              }
+            }
+          }
+        }
+      },
+      "V1Reservation": {
+        "type": "object",
+        "properties": {
+          "id":              { "type": "integer" },
+          "customerName":    { "type": "string", "example": "Kouamé Ange" },
+          "customerPhone":   { "type": "string", "example": "+225 07 00 00 00 00" },
+          "customerEmail":   { "type": "string", "format": "email", "nullable": true },
+          "reservedDate":    { "type": "string", "format": "date", "example": "2026-06-15" },
+          "reservedTime":    { "type": "string", "example": "19:30" },
+          "guestsCount":     { "type": "integer", "example": 4 },
+          "specialRequests": { "type": "string", "nullable": true },
+          "status":          { "type": "string", "enum": ["pending","confirmed","cancelled","no_show"], "example": "pending" },
+          "notes":           { "type": "string", "nullable": true },
+          "createdAt":       { "type": "string", "format": "date-time" }
         }
       },
       "ErrorResponse": {
@@ -1370,6 +1448,385 @@
               }
             }
           }
+        }
+      }
+    },
+
+    "/api/admin/api-keys": {
+      "get": {
+        "tags": ["Admin — Clés API"],
+        "summary": "Lister les clés API",
+        "description": "Retourne toutes les clés API du restaurant (actives ou révoquées). **Plan Enterprise requis.**",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "responses": {
+          "200": {
+            "description": "Liste des clés",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ApiKeyItem" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Clés API"],
+        "summary": "Créer une clé API",
+        "description": "Génère une nouvelle clé API. **La clé complète est retournée une seule fois — elle doit être copiée immédiatement.** Maximum 10 clés actives par restaurant.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantSlug" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1, "maxLength": 100, "example": "Production POS" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Clé créée — contient la clé complète (affichée une seule fois)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiKeyCreated" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+
+    "/api/admin/api-keys/{id}": {
+      "delete": {
+        "tags": ["Admin — Clés API"],
+        "summary": "Révoquer une clé API",
+        "description": "Désactive la clé sans la supprimer (historique conservé). Les requêtes utilisant cette clé seront immédiatement rejetées.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/TenantSlug" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clé révoquée",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "message": { "type": "string", "example": "API key revoked." } }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/v1/restaurant": {
+      "get": {
+        "tags": ["API v1 — Restaurant"],
+        "summary": "Informations du restaurant",
+        "description": "Retourne les informations publiques du restaurant associé à la clé API.",
+        "security": [{ "apiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Informations du restaurant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id":           { "type": "integer" },
+                    "slug":         { "type": "string", "example": "demo" },
+                    "name":         { "type": "string", "example": "Le Comptoir des Saveurs" },
+                    "slogan":       { "type": "string", "nullable": true },
+                    "address":      { "type": "string", "nullable": true },
+                    "phone":        { "type": "string", "nullable": true },
+                    "email":        { "type": "string", "format": "email", "nullable": true },
+                    "website":      { "type": "string", "format": "uri", "nullable": true },
+                    "country":      { "type": "string", "example": "CI" },
+                    "currency":     { "type": "string", "example": "XOF" },
+                    "brandColor":   { "type": "string", "example": "#C0392B" },
+                    "openingHours": { "type": "object", "nullable": true },
+                    "plan": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "name": { "type": "string", "example": "Enterprise" },
+                        "slug": { "type": "string", "example": "enterprise" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+
+    "/api/v1/menu": {
+      "get": {
+        "tags": ["API v1 — Menu"],
+        "summary": "Menu complet (catégories + plats)",
+        "description": "Retourne toutes les catégories visibles avec leurs plats disponibles, triés par `sortOrder`.",
+        "security": [{ "apiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Menu structuré par catégories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id":          { "type": "integer" },
+                      "name":        { "type": "string", "example": "Entrées" },
+                      "description": { "type": "string", "nullable": true },
+                      "sortOrder":   { "type": "integer" },
+                      "items":       { "type": "array", "items": { "$ref": "#/components/schemas/MenuItem" } }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+
+    "/api/v1/menu/items": {
+      "get": {
+        "tags": ["API v1 — Menu"],
+        "summary": "Liste de plats (filtre optionnel par catégorie)",
+        "description": "Retourne tous les plats disponibles. Filtrable par `categoryId`.",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "description": "Filtrer par ID de catégorie",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste de plats",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MenuItem" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+
+    "/api/v1/orders": {
+      "get": {
+        "tags": ["API v1 — Commandes"],
+        "summary": "Lister les commandes",
+        "description": "Retourne les commandes du restaurant, paginées et filtrables par statut.",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/PerPageQuery" },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filtrer par statut",
+            "schema": { "type": "string", "enum": ["pending","confirmed","preparing","ready","delivered","cancelled"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de commandes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/V1Order" } },
+                    "meta": { "$ref": "#/components/schemas/PaginatedMeta" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["API v1 — Commandes"],
+        "summary": "Créer une commande",
+        "description": "Crée une nouvelle commande. Les articles doivent appartenir au restaurant et être disponibles (`isAvailable: true`). Le total est calculé côté serveur.",
+        "security": [{ "apiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customerName", "items"],
+                "properties": {
+                  "customerName":  { "type": "string", "minLength": 1, "maxLength": 255, "example": "Kouamé Ange" },
+                  "customerPhone": { "type": "string", "maxLength": 50, "nullable": true, "example": "+225 07 00 00 00 00" },
+                  "customerEmail": { "type": "string", "format": "email", "nullable": true, "example": "ange@email.ci" },
+                  "notes":         { "type": "string", "maxLength": 1000, "nullable": true, "example": "Livraison à l'étage 2" },
+                  "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["menuItemId", "quantity"],
+                      "properties": {
+                        "menuItemId":          { "type": "integer", "example": 7 },
+                        "quantity":            { "type": "integer", "minimum": 1, "maximum": 100, "example": 2 },
+                        "specialInstructions": { "type": "string", "maxLength": 500, "nullable": true, "example": "Sans oignons" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Commande créée",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/V1Order" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+        }
+      }
+    },
+
+    "/api/v1/orders/{orderNumber}": {
+      "get": {
+        "tags": ["API v1 — Commandes"],
+        "summary": "Détail d'une commande",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          {
+            "name": "orderNumber",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "ORD-1748000000-A1B2"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commande",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/V1Order" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/v1/reservations": {
+      "get": {
+        "tags": ["API v1 — Réservations"],
+        "summary": "Lister les réservations",
+        "description": "Retourne les réservations du restaurant, paginées. Filtrables par statut et/ou date.",
+        "security": [{ "apiKeyAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PageQuery" },
+          { "$ref": "#/components/parameters/PerPageQuery" },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["pending","confirmed","cancelled","no_show"] }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Filtrer par date (format YYYY-MM-DD)",
+            "schema": { "type": "string", "format": "date", "example": "2026-06-15" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste paginée de réservations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/V1Reservation" } },
+                    "meta": { "$ref": "#/components/schemas/PaginatedMeta" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["API v1 — Réservations"],
+        "summary": "Créer une réservation",
+        "security": [{ "apiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["customerName", "customerPhone", "reservedDate", "reservedTime", "guestsCount"],
+                "properties": {
+                  "customerName":    { "type": "string", "minLength": 1, "maxLength": 255, "example": "Kouamé Ange" },
+                  "customerPhone":   { "type": "string", "minLength": 1, "maxLength": 50, "example": "+225 07 00 00 00 00" },
+                  "customerEmail":   { "type": "string", "format": "email", "nullable": true, "example": "ange@email.ci" },
+                  "reservedDate":    { "type": "string", "format": "date", "example": "2026-06-15" },
+                  "reservedTime":    { "type": "string", "pattern": "^\\d{2}:\\d{2}$", "example": "19:30" },
+                  "guestsCount":     { "type": "integer", "minimum": 1, "maximum": 500, "example": 4 },
+                  "specialRequests": { "type": "string", "maxLength": 1000, "nullable": true, "example": "Table près de la fenêtre" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Réservation créée",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/V1Reservation" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
         }
       }
     }
