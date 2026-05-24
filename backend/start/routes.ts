@@ -214,7 +214,9 @@ router
   .prefix('/api/admin')
   .use([middleware.tenant(), middleware.auth()])
 
-// ─── External REST API v1 (authentification par clé API) ─────────────────────
+// ─── External REST API v1 ─────────────────────────────────────────────────────
+// Préfixe /ext/v1 — complètement isolé du namespace interne /api/
+// Sécurité : ApiKeyMiddleware (auth + plan Enterprise + rate limit 300 req/min)
 router
   .group(() => {
     router.get('/restaurant',            [ExternalApiController, 'getRestaurant'])
@@ -226,7 +228,7 @@ router
     router.get('/reservations',          [ExternalApiController, 'getReservations'])
     router.post('/reservations',         [ExternalApiController, 'createReservation'])
   })
-  .prefix('/api/v1')
+  .prefix('/ext/v1')
   .use(middleware.apiKey())
 
 // ─── Super admin routes (no tenant, auth + role check) ───────────────────────

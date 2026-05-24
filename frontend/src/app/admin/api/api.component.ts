@@ -126,7 +126,7 @@ import type { ApiKeyItem, ApiKeyCreated } from '../../shared/models'
             <h2 class="doc-h2">Base URL</h2>
             <div class="code-block">
               <span class="cb-label">Production</span>
-              <code>https://backend.saemenus.com/api/v1</code>
+              <code>https://backend.saemenus.com/ext/v1</code>
             </div>
           </section>
 
@@ -166,13 +166,13 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/restaurant</code>
+                <code class="ep-path">/ext/v1/restaurant</code>
                 <span class="ep-desc">Infos du restaurant</span>
               </div>
               <div class="ep-body">
                 <div class="ep-ex">
                   <div class="ex-label">Requête</div>
-                  <pre class="ex-code">curl https://backend.saemenus.com/api/v1/restaurant \
+                  <pre class="ex-code">curl https://backend.saemenus.com/ext/v1/restaurant \
   -H "Authorization: Bearer saem_live_xxxx"</pre>
                 </div>
                 <div class="ep-ex">
@@ -191,7 +191,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/menu</code>
+                <code class="ep-path">/ext/v1/menu</code>
                 <span class="ep-desc">Menu complet (catégories + plats)</span>
               </div>
               <div class="ep-body">
@@ -214,7 +214,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/menu/items</code>
+                <code class="ep-path">/ext/v1/menu/items</code>
                 <span class="ep-desc">Plats disponibles (filtre optionnel)</span>
               </div>
               <div class="ep-body">
@@ -229,7 +229,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/orders</code>
+                <code class="ep-path">/ext/v1/orders</code>
                 <span class="ep-desc">Liste des commandes (paginée)</span>
               </div>
               <div class="ep-body">
@@ -257,7 +257,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method post">POST</span>
-                <code class="ep-path">/api/v1/orders</code>
+                <code class="ep-path">/ext/v1/orders</code>
                 <span class="ep-desc">Créer une commande</span>
               </div>
               <div class="ep-body">
@@ -280,13 +280,13 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/orders/:orderNumber</code>
+                <code class="ep-path">/ext/v1/orders/:orderNumber</code>
                 <span class="ep-desc">Détail d'une commande</span>
               </div>
               <div class="ep-body">
                 <div class="ep-ex">
                   <div class="ex-label">Exemple</div>
-                  <pre class="ex-code">GET /api/v1/orders/ORD-1716900000-A1B2</pre>
+                  <pre class="ex-code">GET /ext/v1/orders/ORD-1716900000-A1B2</pre>
                 </div>
               </div>
             </div>
@@ -295,7 +295,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method get">GET</span>
-                <code class="ep-path">/api/v1/reservations</code>
+                <code class="ep-path">/ext/v1/reservations</code>
                 <span class="ep-desc">Liste des réservations (paginée)</span>
               </div>
               <div class="ep-body">
@@ -313,7 +313,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
             <div class="endpoint-card">
               <div class="ep-header">
                 <span class="method post">POST</span>
-                <code class="ep-path">/api/v1/reservations</code>
+                <code class="ep-path">/ext/v1/reservations</code>
                 <span class="ep-desc">Créer une réservation</span>
               </div>
               <div class="ep-body">
@@ -355,7 +355,7 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
               <div class="code-block">
                 <span class="cb-label">JavaScript / Node.js</span>
                 <pre>const API_KEY = 'saem_live_xxxxxxxxxxxxxxxx';
-const BASE    = 'https://backend.saemenus.com/api/v1';
+const BASE    = 'https://backend.saemenus.com/ext/v1';
 const headers = &#123; 'Authorization': \`Bearer $&#123;API_KEY&#125;\` &#125;;
 
 // Récupérer le menu
@@ -378,7 +378,7 @@ const order = await fetch(\`$&#123;BASE&#125;/orders\`, &#123;
                 <pre>import requests
 
 API_KEY = 'saem_live_xxxxxxxxxxxxxxxx'
-BASE    = 'https://backend.saemenus.com/api/v1'
+BASE    = 'https://backend.saemenus.com/ext/v1'
 HDR     = &#123;'Authorization': f'Bearer &#123;API_KEY&#125;'&#125;
 
 menu  = requests.get(f'&#123;BASE&#125;/menu', headers=HDR).json()
@@ -393,7 +393,7 @@ order = requests.post(f'&#123;BASE&#125;/orders', headers=HDR, json=&#123;
               <div class="code-block">
                 <span class="cb-label">PHP (cURL)</span>
                 <pre>$key  = 'saem_live_xxxxxxxxxxxxxxxx';
-$base = 'https://backend.saemenus.com/api/v1';
+$base = 'https://backend.saemenus.com/ext/v1';
 
 function api_get(string $path, string $key, string $base): array &#123;
     $ch = curl_init("$base$path");

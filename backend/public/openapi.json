@@ -1537,7 +1537,7 @@
       }
     },
 
-    "/api/v1/restaurant": {
+    "/ext/v1/restaurant": {
       "get": {
         "tags": ["API v1 — Restaurant"],
         "summary": "Informations du restaurant",
@@ -1582,7 +1582,7 @@
       }
     },
 
-    "/api/v1/menu": {
+    "/ext/v1/menu": {
       "get": {
         "tags": ["API v1 — Menu"],
         "summary": "Menu complet (catégories + plats)",
@@ -1614,7 +1614,7 @@
       }
     },
 
-    "/api/v1/menu/items": {
+    "/ext/v1/menu/items": {
       "get": {
         "tags": ["API v1 — Menu"],
         "summary": "Liste de plats (filtre optionnel par catégorie)",
@@ -1643,7 +1643,7 @@
       }
     },
 
-    "/api/v1/orders": {
+    "/ext/v1/orders": {
       "get": {
         "tags": ["API v1 — Commandes"],
         "summary": "Lister les commandes",
@@ -1726,7 +1726,7 @@
       }
     },
 
-    "/api/v1/orders/{orderNumber}": {
+    "/ext/v1/orders/{orderNumber}": {
       "get": {
         "tags": ["API v1 — Commandes"],
         "summary": "Détail d'une commande",
@@ -1753,7 +1753,7 @@
       }
     },
 
-    "/api/v1/reservations": {
+    "/ext/v1/reservations": {
       "get": {
         "tags": ["API v1 — Réservations"],
         "summary": "Lister les réservations",
