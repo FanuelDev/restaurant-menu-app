@@ -356,13 +356,13 @@ X-Api-Key: saem_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre>
                 <span class="cb-label">JavaScript / Node.js</span>
                 <pre>const API_KEY = 'saem_live_xxxxxxxxxxxxxxxx';
 const BASE    = 'https://backend.saemenus.com/api/v1';
-const headers = &#123; 'Authorization': `Bearer $&#123;API_KEY&#125;` &#125;;
+const headers = &#123; 'Authorization': \`Bearer $&#123;API_KEY&#125;\` &#125;;
 
 // Récupérer le menu
-const menu = await fetch(`$&#123;BASE&#125;/menu`, &#123; headers &#125;).then(r => r.json());
+const menu = await fetch(\`$&#123;BASE&#125;/menu\`, &#123; headers &#125;).then(r => r.json());
 
 // Créer une commande
-const order = await fetch(`$&#123;BASE&#125;/orders`, &#123;
+const order = await fetch(\`$&#123;BASE&#125;/orders\`, &#123;
   method: 'POST',
   headers: &#123; ...headers, 'Content-Type': 'application/json' &#125;,
   body: JSON.stringify(&#123;
