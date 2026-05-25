@@ -9,9 +9,9 @@ export class OrderService {
   private readonly http = inject(HttpClient)
   private readonly base = environment.apiUrl
 
-  /** Check if restaurant has Enterprise orders feature */
-  checkFeature(): Observable<{ ordersAndReservations: boolean }> {
-    return this.http.get<{ ordersAndReservations: boolean }>(`${this.base}/public/features`)
+  /** Vérifie quelles fonctionnalités sont actives sur ce tenant */
+  checkFeature(): Observable<{ orders: boolean; reservations: boolean; ordersAndReservations: boolean }> {
+    return this.http.get<{ orders: boolean; reservations: boolean; ordersAndReservations: boolean }>(`${this.base}/public/features`)
   }
 
   /** Place an order (guest checkout) */

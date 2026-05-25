@@ -5,6 +5,17 @@ import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
 import type { Plan } from '../../shared/models'
 
+/** Toutes les features connues du système — source unique de vérité pour l'UI super admin */
+const KNOWN_FEATURES: Array<{ key: string; label: string; desc: string }> = [
+  { key: 'orders',              label: 'Commandes en ligne',    desc: 'Permet aux clients de passer des commandes depuis le menu public' },
+  { key: 'reservations',        label: 'Réservations de table', desc: 'Permet aux clients de réserver une table en ligne' },
+  { key: 'stats',               label: 'Statistiques avancées', desc: 'Accès aux statistiques de ventes et de trafic' },
+  { key: 'priority_support',    label: 'Support prioritaire',   desc: 'File prioritaire + SLA garanti' },
+  { key: 'gift_qr',             label: 'QR codes cadeaux',      desc: 'Création et gestion de commandes cadeaux avec QR code' },
+  { key: 'financial_management',label: 'Gestion financière',    desc: 'Module dépenses, revenus manuels, graphiques financiers' },
+  { key: 'api_access',          label: 'API développeur',       desc: "Accès à l'API REST externe avec clés d'API" },
+]
+
 @Component({
   selector: 'app-sa-plans',
   standalone: true,
@@ -114,12 +125,14 @@ import type { Plan } from '../../shared/models'
 export class SaPlansComponent implements OnInit {
   private readonly saService = inject(SuperAdminService)
 
-  readonly plans = signal<Plan[]>([])
-  readonly loading = signal(true)
-  readonly showModal = signal(false)
+  readonly plans       = signal<Plan[]>([])
+  readonly loading     = signal(true)
+  readonly showModal   = signal(false)
   readonly editingPlan = signal<Plan | null>(null)
   readonly modalLoading = signal(false)
-  readonly modalError = signal<string | null>(null)
+  readonly modalError  = signal<string | null>(null)
+
+  readonly knownFeatures = KNOWN_FEATURES
 
   form = {
     name: '', slug: '', description: '',
@@ -127,7 +140,8 @@ export class SaPlansComponent implements OnInit {
     maxCategories: -1, maxMenuItems: -1, maxUsers: -1,
     isActive: true, isPublic: true,
   }
-  featuresText = ''
+  /** État des toggles de features — clé = feature key, valeur = activée ou non */
+  featuresState: Record<string, boolean> = {}
 
   ngOnInit(): void {
     this.saService.getPlans().subscribe({ next: (p) => { this.plans.set(p); this.loading.set(false) } })
@@ -138,10 +152,17 @@ export class SaPlansComponent implements OnInit {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
   }
 
+  private initFeaturesState(plan?: Plan): void {
+    this.featuresState = {}
+    for (const f of KNOWN_FEATURES) {
+      this.featuresState[f.key] = plan ? !!(plan.features as Record<string, boolean>)?.[f.key] : false
+    }
+  }
+
   openCreate(): void {
     this.editingPlan.set(null)
     this.form = { name: '', slug: '', description: '', priceMonthlyCents: 0, priceYearlyCents: 0, maxCategories: -1, maxMenuItems: -1, maxUsers: -1, isActive: true, isPublic: true }
-    this.featuresText = ''
+    this.initFeaturesState()
     this.modalError.set(null)
     this.showModal.set(true)
   }
@@ -149,9 +170,7 @@ export class SaPlansComponent implements OnInit {
   openEdit(plan: Plan): void {
     this.editingPlan.set(plan)
     this.form = { name: plan.name, slug: plan.slug, description: plan.description ?? '', priceMonthlyCents: plan.priceMonthlyCents, priceYearlyCents: plan.priceYearlyCents, maxCategories: plan.maxCategories, maxMenuItems: plan.maxMenuItems, maxUsers: plan.maxUsers, isActive: plan.isActive, isPublic: plan.isPublic }
-    this.featuresText = plan.features
-      ? Object.entries(plan.features).map(([k, v]) => v ? k : `- ${k}`).join('\n')
-      : ''
+    this.initFeaturesState(plan)
     this.modalError.set(null)
     this.showModal.set(true)
   }
@@ -161,11 +180,11 @@ export class SaPlansComponent implements OnInit {
   submitModal(): void {
     this.modalLoading.set(true)
     this.modalError.set(null)
+    // Convertir l'état des toggles en objet features (uniquement les clés activées)
     const features: Record<string, boolean> = {}
-    this.featuresText.split('\n').map((l) => l.trim()).filter(Boolean).forEach((line) => {
-      if (line.startsWith('- ')) { features[line.slice(2).trim()] = false }
-      else { features[line] = true }
-    })
+    for (const [key, enabled] of Object.entries(this.featuresState)) {
+      if (enabled) features[key] = true
+    }
     const payload = { ...this.form, features }
     const editing = this.editingPlan()
     const op = editing ? this.saService.updatePlan(editing.id, payload) : this.saService.createPlan(payload)
@@ -177,6 +196,12 @@ export class SaPlansComponent implements OnInit {
       },
       error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'Erreur') },
     })
+  }
+
+  /** Retourne les labels des features actives d'un plan (pour l'affichage sur la carte) */
+  activeFeaturesOf(plan: Plan): string[] {
+    const f = (plan.features ?? {}) as Record<string, boolean>
+    return KNOWN_FEATURES.filter((kf) => f[kf.key] === true).map((kf) => kf.label)
   }
 
   deletePlan(plan: Plan): void {

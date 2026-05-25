@@ -12,9 +12,8 @@ export default class FinanceGuardMiddleware {
     await user.load('restaurant', (q) => q.preload('plan'))
     const plan = user.restaurant?.plan
 
-    const hasFeature =
-      plan?.slug === 'enterprise' ||
-      plan?.features?.['financial_management'] === true
+    const features = (plan?.features ?? {}) as Record<string, boolean>
+    const hasFeature = features['financial_management'] === true
 
     if (!hasFeature) {
       return response.forbidden({

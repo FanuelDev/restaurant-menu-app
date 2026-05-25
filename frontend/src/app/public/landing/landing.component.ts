@@ -968,17 +968,18 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
     label: (p: Plan) => string
     value: (p: Plan) => boolean
   }> = [
-    { key: 'qr',        label: () => 'Menu digital & QR code',                                                           value: () => true },
-    { key: 'cats',      label: (p) => p.maxCategories === -1 ? 'Catégories illimitées' : `${p.maxCategories} catégories de menu`, value: () => true },
-    { key: 'items',     label: (p) => p.maxMenuItems   === -1 ? 'Plats illimités'      : `${p.maxMenuItems} plats maximum`,       value: () => true },
-    { key: 'users',     label: (p) => p.maxUsers === -1 ? 'Caissiers illimités' : p.maxUsers <= 1 ? '1 utilisateur' : `${p.maxUsers} caissiers`, value: () => true },
-    { key: 'templates', label: () => '5 templates visuels',                                                               value: () => true },
-    { key: 'orders',    label: () => 'Commandes & réservations en ligne',                                                  value: (p) => !!(p.features?.['orders_and_reservations']) || p.slug === 'pro' || p.slug === 'enterprise' },
-    { key: 'stats',     label: () => 'Statistiques avancées',                                                              value: (p) => !!(p.features?.['stats']) || p.slug === 'pro' || p.slug === 'enterprise' },
-    { key: 'support',   label: (p) => p.slug === 'enterprise' ? 'Support 24/7 & SLA garanti' : 'Support prioritaire',    value: (p) => !!(p.features?.['priority_support']) || p.slug === 'pro' || p.slug === 'enterprise' },
-    { key: 'api',       label: () => 'API dédiée',                                                                        value: (p) => !!(p.features?.['api_access']) || p.slug === 'enterprise' },
-    { key: 'gift',      label: () => 'QR codes cadeaux',                                                                  value: (p) => !!(p.features?.['gift_qr']) || p.slug === 'enterprise' },
-    { key: 'finance',   label: () => 'Gestion financière complète',                                                       value: (p) => !!(p.features?.['financial_management']) || !!(p.features?.['api_access']) || p.slug === 'enterprise' },
+    { key: 'qr',           label: () => 'Menu digital & QR code',                                                                          value: () => true },
+    { key: 'cats',         label: (p) => p.maxCategories === -1 ? 'Catégories illimitées' : `${p.maxCategories} catégories de menu`,  value: () => true },
+    { key: 'items',        label: (p) => p.maxMenuItems === -1   ? 'Plats illimités'      : `${p.maxMenuItems} plats maximum`,        value: () => true },
+    { key: 'users',        label: (p) => p.maxUsers === -1 ? 'Caissiers illimités' : p.maxUsers <= 1 ? '1 utilisateur' : `${p.maxUsers} caissiers`, value: () => true },
+    { key: 'templates',    label: () => '5 templates visuels',                                                                        value: () => true },
+    { key: 'orders',       label: () => 'Commandes en ligne',                                                                         value: (p) => !!(p.features?.['orders']) },
+    { key: 'reservations', label: () => 'Réservations de table',                                                                      value: (p) => !!(p.features?.['reservations']) },
+    { key: 'stats',        label: () => 'Statistiques avancées',                                                                      value: (p) => !!(p.features?.['stats']) },
+    { key: 'support',      label: (p) => !!(p.features?.['api_access']) ? 'Support 24/7 & SLA garanti' : 'Support prioritaire',      value: (p) => !!(p.features?.['priority_support']) },
+    { key: 'gift',         label: () => 'QR codes cadeaux',                                                                           value: (p) => !!(p.features?.['gift_qr']) },
+    { key: 'finance',      label: () => 'Gestion financière complète',                                                                value: (p) => !!(p.features?.['financial_management']) },
+    { key: 'api',          label: () => 'API développeur',                                                                            value: (p) => !!(p.features?.['api_access']) },
   ]
 
   enabledFeatures(plan: Plan): string[] {

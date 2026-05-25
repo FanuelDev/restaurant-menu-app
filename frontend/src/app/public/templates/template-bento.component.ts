@@ -496,8 +496,9 @@ export class TemplateBentoComponent implements AfterViewInit, OnDestroy {
   @Input() categories: Category[] = []
   @Input() cart: CartItem[] = []
   @Input() cartCount = 0
-  @Input() hasOrders = false
-  @Input() loading = false
+  @Input() hasOrders       = false
+  @Input() hasReservations = false
+  @Input() loading         = false
 
   @Output() addToCart        = new EventEmitter<MenuItem>()
   @Output() removeFromCart   = new EventEmitter<number>()

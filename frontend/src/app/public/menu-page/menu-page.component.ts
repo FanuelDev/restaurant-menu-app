@@ -678,8 +678,9 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly categoriesWithItems = this.menuService.categoriesWithItems
   readonly activeCategoryId = signal<number | null>(null)
 
-  // Enterprise feature flag
-  readonly hasOrders = signal(false)
+  // Feature flags (lus depuis le plan actif du tenant)
+  readonly hasOrders       = signal(false)
+  readonly hasReservations = signal(false)
 
   // Cart state
   readonly cart = signal<CartItem[]>([])
@@ -732,8 +733,14 @@ export class MenuPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.restaurantService.loadPublic().subscribe()
     this.menuService.loadPublicMenu().subscribe()
     this.orderService.checkFeature().subscribe({
-      next: (res) => this.hasOrders.set(res.ordersAndReservations),
-      error: () => this.hasOrders.set(false),
+      next: (res) => {
+        this.hasOrders.set(res.orders)
+        this.hasReservations.set(res.reservations)
+      },
+      error: () => {
+        this.hasOrders.set(false)
+        this.hasReservations.set(false)
+      },
     })
   }
 

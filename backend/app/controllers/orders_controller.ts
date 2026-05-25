@@ -20,12 +20,12 @@ export default class OrdersController {
   /** GET /api/public/features */
   async featureCheck({ restaurant, response }: HttpContext) {
     await restaurant.load('plan')
-    const plan = restaurant.plan
+    const features = (restaurant.plan?.features ?? {}) as Record<string, boolean>
     return response.ok({
-      ordersAndReservations:
-        plan?.features?.['orders_and_reservations'] === true ||
-        plan?.slug === 'pro' ||
-        plan?.slug === 'enterprise',
+      orders:       features['orders']       === true,
+      reservations: features['reservations'] === true,
+      // Alias rétrocompatible (anciens clients)
+      ordersAndReservations: features['orders'] === true,
     })
   }
 

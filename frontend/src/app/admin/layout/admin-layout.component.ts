@@ -206,17 +206,14 @@ export class AdminLayoutComponent implements OnInit {
   readonly user       = this.authService.user
   readonly collapsed  = signal(false)
   readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
-  readonly planSlug   = computed(() => this.authService.restaurant()?.plan?.slug ?? null)
-  readonly hasStats   = computed(() => this.planSlug() === 'pro' || this.planSlug() === 'enterprise')
-  readonly hasOrders  = computed(() => {
-    const plan = this.authService.restaurant()?.plan
-    return plan?.slug === 'pro' || plan?.slug === 'enterprise' || !!plan?.features?.['orders_and_reservations']
-  })
-  readonly hasApi     = computed(() => this.planSlug() === 'enterprise')
-  readonly hasFinance = computed(() => {
-    const plan = this.authService.restaurant()?.plan
-    return plan?.slug === 'enterprise' || !!plan?.features?.['financial_management']
-  })
+
+  // Feature flags — lus uniquement depuis le JSON features du plan (source unique de vérité)
+  private feat = () => (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+  readonly hasOrders       = computed(() => this.feat()['orders'] === true)
+  readonly hasReservations = computed(() => this.feat()['reservations'] === true)
+  readonly hasStats        = computed(() => this.feat()['stats'] === true)
+  readonly hasFinance      = computed(() => this.feat()['financial_management'] === true)
+  readonly hasApi          = computed(() => this.feat()['api_access'] === true)
 
   // ── Upgrade toast ─────────────────────────────────────────────────────────
   readonly toast = signal<{ label: string; plan: string } | null>(null)

@@ -16,7 +16,8 @@ export const middleware = router.named({
   tenant: () => import('#middleware/tenant_middleware'),
   role: () => import('#middleware/role_middleware'),
   subscriptionGuard: () => import('#middleware/subscription_guard_middleware'),
-  enterpriseGuard: () => import('#middleware/enterprise_guard_middleware'),
-  financeGuard: () => import('#middleware/finance_guard_middleware'),
+  enterpriseGuard:    () => import('#middleware/enterprise_guard_middleware'),
+  reservationsGuard:  () => import('#middleware/reservations_guard_middleware'),
+  financeGuard:       () => import('#middleware/finance_guard_middleware'),
   apiKey: () => import('#middleware/api_key_middleware'),
 })
