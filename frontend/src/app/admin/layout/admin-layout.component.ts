@@ -1,7 +1,9 @@
-﻿import { Component, inject, signal, computed, OnInit } from '@angular/core'
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router'
+﻿import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core'
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router'
 import { CommonModule } from '@angular/common'
 import { TranslocoModule } from '@jsverse/transloco'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { filter } from 'rxjs'
 import { AuthService } from '../../shared/services/auth.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 
@@ -202,6 +204,7 @@ export class AdminLayoutComponent implements OnInit {
   private readonly authService       = inject(AuthService)
   private readonly restaurantService = inject(RestaurantService)
   private readonly router            = inject(Router)
+  private readonly destroyRef        = inject(DestroyRef)
 
   readonly user       = this.authService.user
   readonly collapsed  = signal(false)
@@ -249,9 +252,18 @@ export class AdminLayoutComponent implements OnInit {
   })
 
   ngOnInit(): void {
-    // Rafraîchit les données du restaurant (et donc le plan) depuis l'API
-    // afin que les guards de fonctionnalités (hasOrders, hasStats, …) soient
-    // toujours basés sur des données fraîches, même après un changement de plan.
+    // Chargement initial des features du plan
+    this.refreshPlan()
+
+    // Recharge les features à chaque navigation intra-admin (sans F5 nécessaire).
+    // Permet au restaurant de voir immédiatement un changement de plan fait par le SA.
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.refreshPlan())
+  }
+
+  private refreshPlan(): void {
     this.restaurantService.loadAdmin().subscribe({
       next: (r) => this.authService.updateRestaurant(r),
       error: () => { /* silently ignore — stale data from localStorage still works */ },
