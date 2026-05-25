@@ -460,11 +460,11 @@ const STATUS_BG: Record<ReservationStatus, string> = {
 
     /* Create drawer */
     .create-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300;
+      position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1000;
     }
     .create-drawer {
       position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
-      background: white; z-index: 301;
+      background: white; z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: -4px 0 32px rgba(0,0,0,.16);
       animation: slideIn .22s cubic-bezier(.16,1,.3,1);
