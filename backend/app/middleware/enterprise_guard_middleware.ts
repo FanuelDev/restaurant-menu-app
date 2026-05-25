@@ -10,7 +10,8 @@ export default class EnterpriseGuardMiddleware {
   async handle({ restaurant, response }: HttpContext, next: NextFn) {
     await restaurant.load('plan')
     const features = (restaurant.plan?.features ?? {}) as Record<string, boolean>
-    if (!features['orders']) {
+    // Compatibilité rétroactive avec l'ancienne clé 'orders_and_reservations' (avant migration 022)
+    if (!features['orders'] && !features['orders_and_reservations']) {
       return response.forbidden({ error: 'Pro plan required', upgradeUrl: '/pricing' })
     }
     return next()

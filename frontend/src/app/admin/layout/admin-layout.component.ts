@@ -207,9 +207,11 @@ export class AdminLayoutComponent implements OnInit {
   readonly collapsed  = signal(false)
   readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
 
-  // Feature flags — lus uniquement depuis le JSON features du plan (source unique de vérité)
+  // Feature flags — lus depuis le JSON features du plan (source de vérité)
+  // Compatibilité rétroactive : accepte l'ancienne clé 'orders_and_reservations' pour 'orders'
+  // jusqu'à ce que la migration 022 soit exécutée sur le serveur.
   private feat = () => (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
-  readonly hasOrders       = computed(() => this.feat()['orders'] === true)
+  readonly hasOrders       = computed(() => this.feat()['orders'] === true || this.feat()['orders_and_reservations'] === true)
   readonly hasReservations = computed(() => this.feat()['reservations'] === true)
   readonly hasStats        = computed(() => this.feat()['stats'] === true)
   readonly hasFinance      = computed(() => this.feat()['financial_management'] === true)

@@ -21,11 +21,12 @@ export default class OrdersController {
   async featureCheck({ restaurant, response }: HttpContext) {
     await restaurant.load('plan')
     const features = (restaurant.plan?.features ?? {}) as Record<string, boolean>
+    // Compatibilité rétroactive avec l'ancienne clé avant migration 022
+    const hasOrders = features['orders'] === true || features['orders_and_reservations'] === true
     return response.ok({
-      orders:       features['orders']       === true,
-      reservations: features['reservations'] === true,
-      // Alias rétrocompatible (anciens clients)
-      ordersAndReservations: features['orders'] === true,
+      orders:               hasOrders,
+      reservations:         features['reservations'] === true,
+      ordersAndReservations: hasOrders,
     })
   }
 
