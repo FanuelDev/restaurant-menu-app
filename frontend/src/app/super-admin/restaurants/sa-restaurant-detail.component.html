@@ -190,9 +190,7 @@
                   <select [(ngModel)]="grantForm.planSlug" class="form-select">
                     <option value="">— Sélectionner —</option>
                     @for (p of plans(); track p.id) {
-                      @if (p.priceMonthlyCents > 0) {
-                        <option [value]="p.slug">{{ p.name }}</option>
-                      }
+                      <option [value]="p.slug">{{ p.name }}</option>
                     }
                   </select>
                 </div>
