@@ -25,3 +25,28 @@ export const updateOrderStatusValidator = vine.compile(
     status: vine.enum(['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'] as const),
   })
 )
+
+/** Création d'une commande depuis le back-office (admin/caissier).
+ *  Différences vs. createOrderValidator :
+ *  - status initial configurable (défaut : confirmed)
+ *  - items non encore disponibles acceptés (admin force)
+ *  - pas de champ isGift (les commandes admin ne sont pas des cadeaux)
+ */
+export const adminCreateOrderValidator = vine.compile(
+  vine.object({
+    customerName:  vine.string().trim().minLength(2).maxLength(255),
+    customerPhone: vine.string().trim().maxLength(50).optional().nullable(),
+    customerEmail: vine.string().trim().email().maxLength(255).optional().nullable(),
+    notes:         vine.string().trim().maxLength(1000).optional().nullable(),
+    status:        vine.enum(['pending', 'confirmed', 'preparing', 'ready'] as const).optional(),
+    items: vine
+      .array(
+        vine.object({
+          menuItemId:          vine.number().positive(),
+          quantity:            vine.number().min(1).max(99),
+          specialInstructions: vine.string().trim().maxLength(500).optional().nullable(),
+        })
+      )
+      .minLength(1),
+  })
+)

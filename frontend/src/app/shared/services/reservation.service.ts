@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Reservation, CreateReservationPayload } from '../models'
+import type { Reservation, CreateReservationPayload, AdminCreateReservationPayload } from '../models'
 
 @Injectable({ providedIn: 'root' })
 export class ReservationService {
@@ -19,5 +19,10 @@ export class ReservationService {
 
   updateReservationStatus(id: number, status: string, notes?: string): Observable<Reservation> {
     return this.http.patch<Reservation>(`${this.base}/admin/reservations/${id}/status`, { status, notes })
+  }
+
+  /** Créer une réservation depuis le back-office (admin/caissier) */
+  adminCreateReservation(payload: AdminCreateReservationPayload): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.base}/admin/reservations`, payload)
   }
 }

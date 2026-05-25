@@ -141,19 +141,23 @@ router
 
     // Orders (Pro/Enterprise feature — garde les routes protégées côté backend)
     router.get('/orders', [OrdersController, 'adminIndex'])
-      .use([middleware.role(['admin']), middleware.enterpriseGuard()])
+      .use(middleware.enterpriseGuard())
+    router.post('/orders', [OrdersController, 'adminStore'])
+      .use(middleware.enterpriseGuard())
     router.get('/orders/scan/:token', [OrdersController, 'adminScanToken'])
       .use([middleware.role(['admin']), middleware.enterpriseGuard()])
     router.patch('/orders/:id/status', [OrdersController, 'adminUpdateStatus'])
-      .use([middleware.role(['admin']), middleware.enterpriseGuard()])
+      .use(middleware.enterpriseGuard())
     router.post('/orders/:id/revoke-gift', [OrdersController, 'adminRevokeGift'])
       .use([middleware.role(['admin']), middleware.enterpriseGuard()])
 
     // Reservations (Pro/Enterprise feature)
     router.get('/reservations', [ReservationsController, 'adminIndex'])
-      .use([middleware.role(['admin']), middleware.enterpriseGuard()])
+      .use(middleware.enterpriseGuard())
+    router.post('/reservations', [ReservationsController, 'adminStore'])
+      .use(middleware.enterpriseGuard())
     router.patch('/reservations/:id/status', [ReservationsController, 'adminUpdateStatus'])
-      .use([middleware.role(['admin']), middleware.enterpriseGuard()])
+      .use(middleware.enterpriseGuard())
 
     // Finance — Enterprise only
     router.get('/finance/summary', [FinanceController, 'summary'])

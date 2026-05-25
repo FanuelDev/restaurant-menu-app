@@ -21,11 +21,15 @@
         <!-- Full orders management -->
         @if (hasAccess()) {
           <!-- Page header -->
-          <div class="page-header">
+          <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
             <div>
               <h1 class="page-title">{{ t('orders.title') }}</h1>
               <p class="page-sub">{{ t('orders.subtitle') }}</p>
             </div>
+            <button class="create-btn" type="button" (click)="openCreateDrawer()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nouvelle commande
+            </button>
           </div>
 
           <!-- QR Scanner panel -->
@@ -359,6 +363,161 @@
               }
             }
           }
+          <!-- Create order drawer -->
+          @if (createDrawerOpen()) {
+            <div class="create-backdrop" (click)="closeCreateDrawer()"></div>
+            <aside class="create-drawer">
+              <div class="cd-header">
+                <span class="cd-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  Nouvelle commande
+                </span>
+                <button class="cd-close" type="button" (click)="closeCreateDrawer()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <div class="cd-body">
+
+                <!-- Section : Client -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Informations client</div>
+                  <div class="field-group">
+                    <div class="field">
+                      <label class="field-label">Nom <span class="req">*</span></label>
+                      <input class="field-input" type="text" [(ngModel)]="formCustomerName" placeholder="Nom du client" />
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label class="field-label">Téléphone</label>
+                        <input class="field-input" type="tel" [(ngModel)]="formCustomerPhone" placeholder="+221…" />
+                      </div>
+                      <div class="field">
+                        <label class="field-label">Email</label>
+                        <input class="field-input" type="email" [(ngModel)]="formCustomerEmail" placeholder="email@…" />
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Notes internes</label>
+                      <textarea class="field-textarea" [(ngModel)]="formNotes" placeholder="Instructions pour la cuisine, table, etc."></textarea>
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Statut initial</label>
+                      <select class="field-select" [(ngModel)]="formStatus">
+                        <option value="pending">En attente</option>
+                        <option value="confirmed">Confirmée</option>
+                        <option value="preparing">En préparation</option>
+                        <option value="ready">Prête</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section : Sélection des plats -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Ajouter des articles</div>
+                  <input
+                    class="menu-search"
+                    type="text"
+                    placeholder="Rechercher un plat ou une catégorie…"
+                    [ngModel]="menuSearchSig()"
+                    (ngModelChange)="menuSearchSig.set($event)"
+                  />
+                  @if (formMenuItems().length === 0) {
+                    <div class="cart-empty" style="padding:var(--space-6) 0">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:.3"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4"/><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>
+                      <p style="margin-top:8px">Chargement du menu…</p>
+                    </div>
+                  } @else if (menuByCategory().length === 0) {
+                    <div class="cart-empty">Aucun résultat pour « {{ menuSearchSig() }} »</div>
+                  } @else {
+                    @for (group of menuByCategory(); track group.cat) {
+                      <div class="menu-cat-title">{{ group.cat }}</div>
+                      @for (item of group.items; track item.id) {
+                        <div
+                          class="menu-item-row"
+                          [class.in-cart]="isInCart(item.id)"
+                          (click)="addToCart(item)"
+                        >
+                          <span class="mi-name">{{ item.name }}</span>
+                          <span class="mi-price">{{ formatPrice(item.price) }}</span>
+                          @if (isInCart(item.id)) {
+                            <span style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--success,#10B981);font-size:1rem">✓</span>
+                          } @else {
+                            <button class="mi-add" type="button" (click)="$event.stopPropagation(); addToCart(item)">+</button>
+                          }
+                        </div>
+                      }
+                    }
+                  }
+                </div>
+
+                <!-- Section : Panier -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Panier {{ cart().length > 0 ? '(' + cart().length + ')' : '' }}</div>
+                  @if (cart().length === 0) {
+                    <div class="cart-empty">Aucun article — ajoutez des plats ci-dessus.</div>
+                  } @else {
+                    @for (item of cart(); track item.menuItemId) {
+                      <div class="cart-item">
+                        <span class="cart-name">{{ item.name }}</span>
+                        <div class="cart-qty-ctrl">
+                          <button class="qty-btn" type="button" (click)="updateQty(item.menuItemId, -1)">−</button>
+                          <span class="qty-val">{{ item.quantity }}</span>
+                          <button class="qty-btn" type="button" (click)="updateQty(item.menuItemId, 1)">+</button>
+                        </div>
+                        <span class="cart-subtotal">{{ formatPrice(item.price * item.quantity) }}</span>
+                        <button
+                          class="qty-btn"
+                          type="button"
+                          title="Retirer"
+                          style="color:#EF4444;border-color:#FECACA"
+                          (click)="removeFromCart(item.menuItemId)"
+                        >×</button>
+                      </div>
+                      <div style="padding:0 0 var(--space-3)">
+                        <input
+                          class="cart-instr"
+                          type="text"
+                          [placeholder]="'Instructions pour ' + item.name + '…'"
+                          [ngModel]="item.specialInstructions"
+                          (ngModelChange)="updateInstructions(item.menuItemId, $event)"
+                        />
+                      </div>
+                    }
+                    <div class="cart-total-row">
+                      <span>Total commande</span>
+                      <span>{{ formatPrice(cartTotal()) }}</span>
+                    </div>
+                  }
+                </div>
+
+              </div><!-- /cd-body -->
+
+              @if (createError()) {
+                <div class="form-error" style="margin:0 var(--space-5) 0;border-radius:var(--radius-md) var(--radius-md) 0 0">{{ createError() }}</div>
+              }
+
+              <div class="cd-footer">
+                <button class="cd-cancel" type="button" (click)="closeCreateDrawer()">Annuler</button>
+                <button
+                  class="cd-submit"
+                  type="button"
+                  [disabled]="submitting() || !formCustomerName.trim() || cart().length === 0"
+                  (click)="submitCreate()"
+                >
+                  @if (submitting()) {
+                    <span class="spinner-sm"></span>
+                    Enregistrement…
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Enregistrer la commande
+                  }
+                </button>
+              </div>
+            </aside>
+          }
+
         }
       </div>
     </ng-container>

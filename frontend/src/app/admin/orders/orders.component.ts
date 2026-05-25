@@ -3,10 +3,20 @@ import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
+import { forkJoin } from 'rxjs'
 import { OrderService } from '../../shared/services/order.service'
 import { AuthService } from '../../shared/services/auth.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
-import type { Order, OrderStatus } from '../../shared/models'
+import { MenuService } from '../../shared/services/menu.service'
+import type { Order, OrderStatus, MenuItem, Category } from '../../shared/models'
+
+interface CartItem {
+  menuItemId: number
+  name: string
+  price: number
+  quantity: number
+  specialInstructions: string
+}
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending:   '#F59E0B',
@@ -549,12 +559,175 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .detail-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .action-btn-full { flex: 1; justify-content: center; font-size: .875rem; padding: var(--space-3) var(--space-4); }
     .revoke-full { width: 100%; margin-top: var(--space-3); justify-content: center; }
+
+    /* ── Create drawer ────────────────────────────────────────── */
+    .create-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300;
+    }
+    .create-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw);
+      background: white; z-index: 301;
+      display: flex; flex-direction: column;
+      box-shadow: -4px 0 32px rgba(0,0,0,.16);
+      animation: slideIn .22s cubic-bezier(.16,1,.3,1);
+    }
+    .cd-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      background: var(--gray-50); flex-shrink: 0;
+    }
+    .cd-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .cd-close {
+      width: 32px; height: 32px; border: none; background: var(--gray-200);
+      border-radius: 50%; cursor: pointer; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--t-fast);
+    }
+    .cd-close:hover { background: var(--gray-300); }
+
+    .cd-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+    .cd-section {
+      padding: var(--space-5); border-bottom: 1px solid var(--border);
+    }
+    .cd-section:last-child { border-bottom: none; }
+    .cd-section-title {
+      font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--space-4);
+    }
+
+    /* Form fields */
+    .field-group { display: flex; flex-direction: column; gap: var(--space-4); }
+    .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label { font-size: .8125rem; font-weight: 600; color: var(--text-secondary); }
+    .field-label .req { color: var(--error); margin-left: 2px; }
+    .field-input, .field-select, .field-textarea {
+      padding: var(--space-3) var(--space-4);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: .9rem; font-family: var(--font-body); color: var(--text-primary);
+      background: white; outline: none; width: 100%;
+      transition: border-color var(--t-fast);
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color: var(--brand);
+    }
+    .field-textarea { resize: vertical; min-height: 72px; }
+
+    /* Menu items picker */
+    .menu-search {
+      width: 100%; padding: var(--space-3) var(--space-4);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: .9rem; font-family: var(--font-body); outline: none;
+      margin-bottom: var(--space-4);
+    }
+    .menu-search:focus { border-color: var(--brand); }
+
+    .menu-cat-title {
+      font-size: .72rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-muted);
+      padding: var(--space-2) 0 var(--space-2); margin-top: var(--space-1);
+    }
+    .menu-item-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      margin-bottom: var(--space-2); background: white;
+      cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast);
+    }
+    .menu-item-row:hover { border-color: var(--brand); background: var(--brand-subtle); }
+    .menu-item-row.in-cart { border-color: var(--success); background: var(--success-bg); }
+    .mi-name  { flex: 1; font-size: .875rem; font-weight: 500; color: var(--text-primary); }
+    .mi-price { font-size: .875rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+    .mi-add   {
+      width: 26px; height: 26px; border-radius: 50%; border: none;
+      background: var(--brand); color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 1rem; line-height: 1;
+      transition: background var(--t-fast);
+    }
+    .mi-add:hover { background: var(--brand-dark, #a32218); }
+
+    /* Cart */
+    .cart-empty { text-align: center; padding: var(--space-4) 0; color: var(--text-muted); font-size: .875rem; }
+    .cart-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);
+    }
+    .cart-item:last-of-type { border-bottom: none; }
+    .cart-name { flex: 1; font-size: .875rem; font-weight: 500; color: var(--text-primary); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cart-qty-ctrl { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+    .qty-btn {
+      width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border);
+      background: white; cursor: pointer; font-size: .9rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--t-fast);
+    }
+    .qty-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .qty-val { min-width: 20px; text-align: center; font-size: .875rem; font-weight: 700; }
+    .cart-subtotal { font-size: .875rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; flex-shrink: 0; }
+    .cart-instr {
+      width: 100%; padding: 5px var(--space-3);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: .78rem; font-family: var(--font-body); outline: none;
+      background: var(--gray-50); color: var(--text-primary);
+      margin-top: 4px;
+    }
+
+    /* Cart total row */
+    .cart-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: var(--space-3); margin-top: var(--space-3);
+      border-top: 1.5px solid var(--border);
+      font-size: .9375rem; font-weight: 700; color: var(--text-primary);
+    }
+
+    /* Drawer footer */
+    .cd-footer {
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--border);
+      background: var(--gray-50); flex-shrink: 0;
+      display: flex; gap: var(--space-3);
+    }
+    .cd-cancel {
+      flex: 1; padding: var(--space-3); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); background: white;
+      font-size: .9rem; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+      color: var(--text-secondary); transition: all var(--t-fast);
+    }
+    .cd-cancel:hover { border-color: var(--text-muted); color: var(--text-primary); }
+    .cd-submit {
+      flex: 2; padding: var(--space-3); background: var(--brand);
+      border: none; border-radius: var(--radius-md);
+      font-size: .9rem; font-weight: 700; cursor: pointer; font-family: var(--font-body);
+      color: white; display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+      transition: background var(--t-fast);
+    }
+    .cd-submit:hover:not(:disabled) { background: var(--brand-dark, #a32218); }
+    .cd-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    .create-btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--brand); color: white; border: none;
+      border-radius: var(--radius-md); font-size: .9rem; font-weight: 700;
+      font-family: var(--font-body); cursor: pointer;
+      transition: background var(--t-fast), transform var(--t-fast);
+    }
+    .create-btn:hover { background: var(--brand-dark, #a32218); transform: translateY(-1px); }
+
+    .form-error {
+      margin-top: var(--space-3); padding: var(--space-3) var(--space-4);
+      background: var(--error-bg); color: var(--error);
+      border-radius: var(--radius-md); font-size: .875rem;
+    }
   `],
 })
 export class OrdersComponent implements OnInit {
-  private readonly orderService = inject(OrderService)
-  private readonly authService = inject(AuthService)
+  private readonly orderService    = inject(OrderService)
+  private readonly authService     = inject(AuthService)
   private readonly restaurantService = inject(RestaurantService)
+  private readonly menuService     = inject(MenuService)
 
   readonly loading = signal(true)
   readonly orders = signal<Order[]>([])
@@ -571,6 +744,47 @@ export class OrdersComponent implements OnInit {
 
   searchQuery = ''
   scanTokenValue = ''
+
+  // ── Create drawer ──────────────────────────────────────────────────────────
+  readonly createDrawerOpen = signal(false)
+  readonly formMenuItems    = signal<MenuItem[]>([])
+  readonly formCategories   = signal<Category[]>([])
+  readonly cart             = signal<CartItem[]>([])
+  readonly submitting       = signal(false)
+  readonly createError      = signal('')
+  readonly menuSearchSig    = signal('')
+
+  formCustomerName  = ''
+  formCustomerPhone = ''
+  formCustomerEmail = ''
+  formNotes         = ''
+  formStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' = 'confirmed'
+
+  readonly cartTotal = computed(() =>
+    this.cart().reduce((sum, i) => sum + i.price * i.quantity, 0)
+  )
+
+  readonly filteredMenuItems = computed(() => {
+    const q = this.menuSearchSig().toLowerCase().trim()
+    if (!q) return this.formMenuItems()
+    return this.formMenuItems().filter(i =>
+      i.name.toLowerCase().includes(q) ||
+      (i.category?.name ?? '').toLowerCase().includes(q)
+    )
+  })
+
+  readonly menuByCategory = computed(() => {
+    const cats = this.formCategories()
+    const items = this.filteredMenuItems()
+    return cats
+      .map(cat => ({ cat: cat.name, items: items.filter(i => i.categoryId === cat.id) }))
+      .filter(g => g.items.length > 0)
+  })
+
+  isInCart(menuItemId: number): boolean {
+    return this.cart().some(i => i.menuItemId === menuItemId)
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   private searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -695,6 +909,95 @@ export class OrdersComponent implements OnInit {
         const msg = err?.error?.message ?? 'Token introuvable.'
         this.scanError.set(msg)
         this.scanning.set(false)
+      },
+    })
+  }
+
+  // ── Create drawer methods ──────────────────────────────────────────────────
+
+  openCreateDrawer(): void {
+    this.cart.set([])
+    this.formCustomerName  = ''
+    this.formCustomerPhone = ''
+    this.formCustomerEmail = ''
+    this.formNotes         = ''
+    this.formStatus        = 'confirmed'
+    this.menuSearchSig.set('')
+    this.createError.set('')
+    this.createDrawerOpen.set(true)
+
+    if (this.formMenuItems().length === 0) {
+      forkJoin({
+        cats:  this.menuService.loadAdminCategories(),
+        items: this.menuService.loadAdminItems(),
+      }).subscribe({
+        next: ({ cats, items }) => {
+          this.formCategories.set(cats)
+          this.formMenuItems.set(
+            items.map(item => ({ ...item, category: cats.find(c => c.id === item.categoryId) }))
+          )
+        },
+      })
+    }
+  }
+
+  closeCreateDrawer(): void {
+    this.createDrawerOpen.set(false)
+  }
+
+  addToCart(item: MenuItem): void {
+    if (this.isInCart(item.id)) return
+    this.cart.update(list => [...list, {
+      menuItemId:           item.id,
+      name:                 item.name,
+      price:                item.price,
+      quantity:             1,
+      specialInstructions:  '',
+    }])
+  }
+
+  removeFromCart(menuItemId: number): void {
+    this.cart.update(list => list.filter(i => i.menuItemId !== menuItemId))
+  }
+
+  updateQty(menuItemId: number, delta: number): void {
+    this.cart.update(list => list.map(i => {
+      if (i.menuItemId !== menuItemId) return i
+      return { ...i, quantity: Math.max(1, Math.min(99, i.quantity + delta)) }
+    }))
+  }
+
+  updateInstructions(menuItemId: number, instr: string): void {
+    this.cart.update(list => list.map(i =>
+      i.menuItemId === menuItemId ? { ...i, specialInstructions: instr } : i
+    ))
+  }
+
+  submitCreate(): void {
+    if (!this.formCustomerName.trim() || this.cart().length === 0) return
+    this.submitting.set(true)
+    this.createError.set('')
+
+    this.orderService.adminCreateOrder({
+      customerName:  this.formCustomerName.trim(),
+      customerPhone: this.formCustomerPhone.trim() || null,
+      customerEmail: this.formCustomerEmail.trim() || null,
+      notes:         this.formNotes.trim() || null,
+      status:        this.formStatus,
+      items: this.cart().map(i => ({
+        menuItemId:          i.menuItemId,
+        quantity:            i.quantity,
+        specialInstructions: i.specialInstructions.trim() || null,
+      })),
+    }).subscribe({
+      next: () => {
+        this.submitting.set(false)
+        this.closeCreateDrawer()
+        this.loadOrders()
+      },
+      error: (err) => {
+        this.createError.set(err?.error?.message ?? 'Erreur lors de la création.')
+        this.submitting.set(false)
       },
     })
   }

@@ -8,6 +8,9 @@ import { AuthService } from '../../shared/services/auth.service'
 import { DesktopService } from '../../shared/services/desktop.service'
 import type { Reservation, ReservationStatus } from '../../shared/models'
 
+// Today's date in YYYY-MM-DD for default value
+const todayIso = () => new Date().toISOString().split('T')[0]
+
 const STATUS_COLORS: Record<ReservationStatus, string> = {
   pending:   '#F59E0B',
   confirmed: '#10B981',
@@ -433,6 +436,111 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     .page-btn:disabled { opacity: .4; cursor: not-allowed; }
     .page-btn:hover:not(:disabled) { background: var(--surface-1); }
     .page-info { font-size: .875rem; color: var(--text-secondary); }
+
+    /* Spinner */
+    .spinner-sm {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Create button */
+    .create-btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--brand); color: white; border: none;
+      border-radius: var(--radius-md); font-size: .9rem; font-weight: 700;
+      font-family: var(--font-body); cursor: pointer;
+      transition: background var(--t-fast), transform var(--t-fast);
+    }
+    .create-btn:hover { background: var(--brand-dark, #a32218); transform: translateY(-1px); }
+
+    /* Create drawer */
+    .create-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 300;
+    }
+    .create-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
+      background: white; z-index: 301;
+      display: flex; flex-direction: column;
+      box-shadow: -4px 0 32px rgba(0,0,0,.16);
+      animation: slideIn .22s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    .cd-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border);
+      background: var(--gray-50); flex-shrink: 0;
+    }
+    .cd-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .cd-close {
+      width: 32px; height: 32px; border: none; background: var(--gray-200);
+      border-radius: 50%; cursor: pointer; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background var(--t-fast);
+    }
+    .cd-close:hover { background: var(--gray-300); }
+
+    .cd-body { flex: 1; overflow-y: auto; }
+    .cd-section {
+      padding: var(--space-5); border-bottom: 1px solid var(--border);
+    }
+    .cd-section:last-child { border-bottom: none; }
+    .cd-section-title {
+      font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--space-4);
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: var(--space-4); }
+    .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label { font-size: .8125rem; font-weight: 600; color: var(--text-secondary); }
+    .field-label .req { color: var(--error); margin-left: 2px; }
+    .field-input, .field-select, .field-textarea {
+      padding: var(--space-3) var(--space-4);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: .9rem; font-family: var(--font-body); color: var(--text-primary);
+      background: white; outline: none; width: 100%;
+      transition: border-color var(--t-fast);
+    }
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      border-color: var(--color-brand);
+    }
+    .field-textarea { resize: vertical; min-height: 72px; }
+
+    .cd-footer {
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--border);
+      background: var(--gray-50); flex-shrink: 0;
+      display: flex; gap: var(--space-3);
+    }
+    .cd-cancel {
+      flex: 1; padding: var(--space-3); border: 1.5px solid var(--border);
+      border-radius: var(--radius-md); background: white;
+      font-size: .9rem; font-weight: 600; cursor: pointer; font-family: var(--font-body);
+      color: var(--text-secondary); transition: all var(--t-fast);
+    }
+    .cd-cancel:hover { border-color: var(--text-muted); color: var(--text-primary); }
+    .cd-submit {
+      flex: 2; padding: var(--space-3); background: var(--brand);
+      border: none; border-radius: var(--radius-md);
+      font-size: .9rem; font-weight: 700; cursor: pointer; font-family: var(--font-body);
+      color: white; display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+      transition: background var(--t-fast);
+    }
+    .cd-submit:hover:not(:disabled) { background: var(--brand-dark, #a32218); }
+    .cd-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    .form-error {
+      padding: var(--space-3) var(--space-4);
+      background: var(--error-bg); color: var(--error);
+      border-radius: var(--radius-md); font-size: .875rem;
+    }
   `],
 })
 export class ReservationsComponent implements OnInit, OnDestroy {
@@ -449,6 +557,30 @@ export class ReservationsComponent implements OnInit, OnDestroy {
 
   dateFilter = ''
   notesMap: Record<number, string> = {}
+
+  // ── Create drawer ──────────────────────────────────────────────────────────
+  readonly createDrawerOpen = signal(false)
+  readonly submitting       = signal(false)
+  readonly createError      = signal('')
+
+  formCustomerName     = ''
+  formCustomerPhone    = ''
+  formCustomerEmail    = ''
+  formReservedDate     = ''
+  formReservedTime     = ''
+  formGuestsCount      = 2
+  formSpecialRequests  = ''
+  formNotes            = ''
+  formStatus: 'pending' | 'confirmed' = 'confirmed'
+
+  readonly canSubmitCreate = computed(() =>
+    !!this.formCustomerName.trim() &&
+    !!this.formCustomerPhone.trim() &&
+    !!this.formReservedDate &&
+    !!this.formReservedTime &&
+    this.formGuestsCount >= 1
+  )
+  // ──────────────────────────────────────────────────────────────────────────
 
   private readonly now = signal(new Date())
   private tickInterval: ReturnType<typeof setInterval> | null = null
@@ -590,5 +722,54 @@ export class ReservationsComponent implements OnInit, OnDestroy {
         )
       }
     }
+  }
+
+  // ── Create drawer methods ──────────────────────────────────────────────────
+
+  openCreateDrawer(): void {
+    this.formCustomerName    = ''
+    this.formCustomerPhone   = ''
+    this.formCustomerEmail   = ''
+    this.formReservedDate    = todayIso()
+    this.formReservedTime    = ''
+    this.formGuestsCount     = 2
+    this.formSpecialRequests = ''
+    this.formNotes           = ''
+    this.formStatus          = 'confirmed'
+    this.createError.set('')
+    this.createDrawerOpen.set(true)
+  }
+
+  closeCreateDrawer(): void {
+    this.createDrawerOpen.set(false)
+  }
+
+  submitCreate(): void {
+    if (!this.formCustomerName.trim() || !this.formCustomerPhone.trim() ||
+        !this.formReservedDate || !this.formReservedTime || this.formGuestsCount < 1) return
+    this.submitting.set(true)
+    this.createError.set('')
+
+    this.reservationService.adminCreateReservation({
+      customerName:    this.formCustomerName.trim(),
+      customerPhone:   this.formCustomerPhone.trim(),
+      customerEmail:   this.formCustomerEmail.trim() || null,
+      reservedDate:    this.formReservedDate,
+      reservedTime:    this.formReservedTime,
+      guestsCount:     this.formGuestsCount,
+      specialRequests: this.formSpecialRequests.trim() || null,
+      notes:           this.formNotes.trim() || null,
+      status:          this.formStatus,
+    }).subscribe({
+      next: () => {
+        this.submitting.set(false)
+        this.closeCreateDrawer()
+        this.loadReservations()
+      },
+      error: (err) => {
+        this.createError.set(err?.error?.message ?? 'Erreur lors de la création.')
+        this.submitting.set(false)
+      },
+    })
   }
 }

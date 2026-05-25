@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Order, PlaceOrderPayload } from '../models'
+import type { Order, PlaceOrderPayload, AdminCreateOrderPayload } from '../models'
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -50,5 +50,10 @@ export class OrderService {
 
   scanToken(token: string): Observable<Order> {
     return this.http.get<Order>(`${this.base}/admin/orders/scan/${token}`)
+  }
+
+  /** Créer une commande depuis le back-office (admin/caissier) */
+  adminCreateOrder(payload: AdminCreateOrderPayload): Observable<Order> {
+    return this.http.post<Order>(`${this.base}/admin/orders`, payload)
   }
 }

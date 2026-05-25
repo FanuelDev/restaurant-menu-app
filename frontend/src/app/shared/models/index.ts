@@ -319,6 +319,27 @@ export interface CreateReservationPayload {
   specialRequests: string | null
 }
 
+export interface AdminCreateOrderPayload {
+  customerName:  string
+  customerPhone: string | null
+  customerEmail: string | null
+  notes:         string | null
+  status?:       'pending' | 'confirmed' | 'preparing' | 'ready'
+  items: { menuItemId: number; quantity: number; specialInstructions: string | null }[]
+}
+
+export interface AdminCreateReservationPayload {
+  customerName:    string
+  customerPhone:   string
+  customerEmail:   string | null
+  reservedDate:    string
+  reservedTime:    string
+  guestsCount:     number
+  specialRequests: string | null
+  notes:           string | null
+  status?:         'pending' | 'confirmed'
+}
+
 // ─── Finance ─────────────────────────────────────────────────────────────────
 export type ExpenseCategory = 'ingredient' | 'tool' | 'accessory' | 'other'
 export type FinancePeriod = 'day' | 'week' | 'month' | 'semester' | 'year'

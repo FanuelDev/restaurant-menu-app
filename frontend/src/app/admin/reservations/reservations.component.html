@@ -21,11 +21,15 @@
         <!-- Full reservations management -->
         @if (hasAccess()) {
           <!-- Page header -->
-          <div class="page-header">
+          <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
             <div>
               <h1 class="page-title">{{ t('reservations.title') }}</h1>
               <p class="page-sub">{{ t('reservations.subtitle') }}</p>
             </div>
+            <button class="create-btn" type="button" (click)="openCreateDrawer()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nouvelle réservation
+            </button>
           </div>
 
           <!-- Alert banner for urgent reservations -->
@@ -211,6 +215,112 @@
               }
             }
           }
+          <!-- Create reservation drawer -->
+          @if (createDrawerOpen()) {
+            <div class="create-backdrop" (click)="closeCreateDrawer()"></div>
+            <aside class="create-drawer">
+              <div class="cd-header">
+                <span class="cd-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Nouvelle réservation
+                </span>
+                <button class="cd-close" type="button" (click)="closeCreateDrawer()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <div class="cd-body">
+
+                <!-- Section : Client -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Informations client</div>
+                  <div class="field-group">
+                    <div class="field">
+                      <label class="field-label">Nom <span class="req">*</span></label>
+                      <input class="field-input" type="text" [(ngModel)]="formCustomerName" placeholder="Nom du client" />
+                    </div>
+                    <div class="field-row">
+                      <div class="field">
+                        <label class="field-label">Téléphone <span class="req">*</span></label>
+                        <input class="field-input" type="tel" [(ngModel)]="formCustomerPhone" placeholder="+221…" />
+                      </div>
+                      <div class="field">
+                        <label class="field-label">Email</label>
+                        <input class="field-input" type="email" [(ngModel)]="formCustomerEmail" placeholder="email@…" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section : Réservation -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Détails de la réservation</div>
+                  <div class="field-group">
+                    <div class="field-row">
+                      <div class="field">
+                        <label class="field-label">Date <span class="req">*</span></label>
+                        <input class="field-input" type="date" [(ngModel)]="formReservedDate" />
+                      </div>
+                      <div class="field">
+                        <label class="field-label">Heure <span class="req">*</span></label>
+                        <input class="field-input" type="time" [(ngModel)]="formReservedTime" />
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Nombre de couverts <span class="req">*</span></label>
+                      <input class="field-input" type="number" [(ngModel)]="formGuestsCount" min="1" max="999" />
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Statut initial</label>
+                      <select class="field-select" [(ngModel)]="formStatus">
+                        <option value="pending">En attente</option>
+                        <option value="confirmed">Confirmée</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section : Remarques -->
+                <div class="cd-section">
+                  <div class="cd-section-title">Remarques</div>
+                  <div class="field-group">
+                    <div class="field">
+                      <label class="field-label">Demandes spéciales du client</label>
+                      <textarea class="field-textarea" [(ngModel)]="formSpecialRequests" placeholder="Allergie, fauteuil roulant, chaise bébé…"></textarea>
+                    </div>
+                    <div class="field">
+                      <label class="field-label">Notes internes (non visibles par le client)</label>
+                      <textarea class="field-textarea" [(ngModel)]="formNotes" placeholder="Table préférée, VIP, etc."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /cd-body -->
+
+              @if (createError()) {
+                <div class="form-error" style="margin:0 var(--space-5) 0;border-radius:var(--radius-md) var(--radius-md) 0 0">{{ createError() }}</div>
+              }
+
+              <div class="cd-footer">
+                <button class="cd-cancel" type="button" (click)="closeCreateDrawer()">Annuler</button>
+                <button
+                  class="cd-submit"
+                  type="button"
+                  [disabled]="submitting() || !formCustomerName.trim() || !formCustomerPhone.trim() || !formReservedDate || !formReservedTime || formGuestsCount < 1"
+                  (click)="submitCreate()"
+                >
+                  @if (submitting()) {
+                    <span class="spinner-sm"></span>
+                    Enregistrement…
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Enregistrer la réservation
+                  }
+                </button>
+              </div>
+            </aside>
+          }
+
         }
       </div>
     </ng-container>

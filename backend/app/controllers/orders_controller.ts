@@ -5,7 +5,7 @@ import db from '@adonisjs/lucid/services/db'
 import Order from '#models/order'
 import OrderItem from '#models/order_item'
 import MenuItem from '#models/menu_item'
-import { createOrderValidator, updateOrderStatusValidator } from '#validators/order_validator'
+import { createOrderValidator, updateOrderStatusValidator, adminCreateOrderValidator } from '#validators/order_validator'
 import AuditService from '#services/audit_service'
 import vine from '@vinejs/vine'
 
@@ -166,6 +166,85 @@ export default class OrdersController {
     await order.save()
 
     return response.ok(order.serialize())
+  }
+
+  /** POST /api/admin/orders — création depuis le back-office (admin/caissier) */
+  async adminStore({ request, response, restaurant, auth }: HttpContext) {
+    const data = await request.validateUsing(adminCreateOrderValidator)
+
+    // Charger chaque plat (même indisponible — l'admin force la saisie)
+    const menuItems: MenuItem[] = []
+    for (const item of data.items) {
+      const menuItem = await MenuItem.query()
+        .where('id', item.menuItemId)
+        .where('restaurant_id', restaurant.id)
+        .first()
+
+      if (!menuItem) {
+        return response.unprocessableEntity({
+          error: `Menu item ${item.menuItemId} introuvable.`,
+        })
+      }
+      menuItems.push(menuItem)
+    }
+
+    let total = 0
+    const itemsData = data.items.map((item, index) => {
+      const menuItem = menuItems[index]
+      const subtotal = Math.round(menuItem.price * item.quantity * 100) / 100
+      total = Math.round((total + subtotal) * 100) / 100
+      return {
+        menuItemId:          menuItem.id,
+        menuItemName:        menuItem.name,
+        menuItemPrice:       menuItem.price,
+        quantity:            item.quantity,
+        specialInstructions: item.specialInstructions ?? null,
+        subtotal,
+      }
+    })
+
+    const orderNumber = `ORD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`
+
+    const order = await db.transaction(async (trx) => {
+      const newOrder = await Order.create(
+        {
+          restaurantId:  restaurant.id,
+          orderNumber,
+          customerName:  data.customerName,
+          customerPhone: data.customerPhone  ?? null,
+          customerEmail: data.customerEmail  ?? null,
+          notes:         data.notes          ?? null,
+          total,
+          isGift:        false,
+          status:        data.status ?? 'confirmed',
+        },
+        { client: trx }
+      )
+
+      for (const itemData of itemsData) {
+        const orderItem = new OrderItem()
+        orderItem.fill({ ...itemData, orderId: newOrder.id })
+        orderItem.useTransaction(trx)
+        await orderItem.save()
+      }
+
+      return newOrder
+    })
+
+    await order.load('items')
+
+    await new AuditService().log({
+      ctx: { request },
+      user:         auth.user!,
+      restaurantId: restaurant.id,
+      action:       'order.created_by_admin',
+      resourceType: 'order',
+      resourceId:   order.id,
+      resourceName: order.orderNumber,
+      newValues:    { status: order.status, total, items: itemsData.length },
+    })
+
+    return response.created(order.serialize())
   }
 
   /** GET /api/admin/orders */

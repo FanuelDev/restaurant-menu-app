@@ -3,6 +3,7 @@ import Reservation from '#models/reservation'
 import {
   createReservationValidator,
   updateReservationStatusValidator,
+  adminCreateReservationValidator,
 } from '#validators/reservation_validator'
 import AuditService from '#services/audit_service'
 
@@ -27,6 +28,42 @@ export default class ReservationsController {
       guestsCount: data.guestsCount,
       specialRequests: data.specialRequests ?? null,
       status: 'pending',
+    })
+
+    return response.created(reservation.serialize())
+  }
+
+  /** POST /api/admin/reservations — création depuis le back-office (admin/caissier) */
+  async adminStore({ request, response, restaurant, auth }: HttpContext) {
+    const data = await request.validateUsing(adminCreateReservationValidator)
+
+    const reservation = await Reservation.create({
+      restaurantId:    restaurant.id,
+      customerName:    data.customerName,
+      customerPhone:   data.customerPhone,
+      customerEmail:   data.customerEmail   ?? null,
+      reservedDate:    data.reservedDate,
+      reservedTime:    data.reservedTime,
+      guestsCount:     data.guestsCount,
+      specialRequests: data.specialRequests ?? null,
+      notes:           data.notes           ?? null,
+      status:          data.status          ?? 'confirmed',
+    })
+
+    await new AuditService().log({
+      ctx: { request },
+      user:         auth.user!,
+      restaurantId: restaurant.id,
+      action:       'reservation.created_by_admin',
+      resourceType: 'reservation',
+      resourceId:   reservation.id,
+      resourceName: reservation.customerName,
+      newValues: {
+        reservedDate: data.reservedDate,
+        reservedTime: data.reservedTime,
+        guestsCount:  data.guestsCount,
+        status:       reservation.status,
+      },
     })
 
     return response.created(reservation.serialize())
