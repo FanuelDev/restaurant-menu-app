@@ -210,19 +210,31 @@ export class AdminLayoutComponent implements OnInit {
   readonly collapsed  = signal(false)
   readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
 
-  // Feature flags — lus depuis le JSON features du plan (source de vérité)
-  // Compatibilité rétroactive à 3 niveaux :
-  //  • 'orders_and_reservations' → ancienne clé Pro/Enterprise (avant migration 022)
-  //  • 'api_access'              → clé exclusive Enterprise : si présente, toutes les
-  //                                features Enterprise sont accordées même si la DB est
-  //                                partiellement migrée (migration 023 pas encore jouée)
-  private feat = () => (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
-  private isEnterpriseLegacy = () => this.feat()['api_access'] === true
-  readonly hasOrders       = computed(() => this.feat()['orders'] === true || this.feat()['orders_and_reservations'] === true)
-  readonly hasReservations = computed(() => this.feat()['reservations'] === true || this.feat()['orders_and_reservations'] === true || this.isEnterpriseLegacy())
-  readonly hasStats        = computed(() => this.feat()['stats'] === true)
-  readonly hasFinance      = computed(() => this.feat()['financial_management'] === true || this.isEnterpriseLegacy())
-  readonly hasApi          = computed(() => this.feat()['api_access'] === true)
+  // Feature flags — lus depuis le JSON features du plan
+  // Compat rétroactive (supprimable après migration 023) :
+  //  • 'orders_and_reservations' → ancienne clé unique (avant migration 022)
+  //  • 'api_access' === true     → signal exclusif Enterprise : toutes les features
+  //                                Enterprise sont accordées si la DB est partiellement migrée
+  readonly hasOrders = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['orders'] === true || f['orders_and_reservations'] === true
+  })
+  readonly hasReservations = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['reservations'] === true || f['orders_and_reservations'] === true || f['api_access'] === true
+  })
+  readonly hasStats = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['stats'] === true
+  })
+  readonly hasFinance = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['financial_management'] === true || f['api_access'] === true
+  })
+  readonly hasApi = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['api_access'] === true
+  })
 
   // ── Upgrade toast ─────────────────────────────────────────────────────────
   readonly toast = signal<{ label: string; plan: string } | null>(null)
