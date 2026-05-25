@@ -12,7 +12,8 @@ const planValidator = vine.compile(
     maxCategories: vine.number().min(-1),
     maxMenuItems: vine.number().min(-1),
     maxUsers: vine.number().min(-1),
-    features: vine.array(vine.string()).optional(),
+    // Objet { key: boolean } — correspond au format envoyé par le SA UI avec toggles
+    features: vine.record(vine.boolean()).optional(),
     isActive: vine.boolean().optional(),
     isPublic: vine.boolean().optional(),
     sortOrder: vine.number().min(0).optional(),
@@ -44,7 +45,8 @@ export default class SuperAdminPlansController {
       maxCategories: data.maxCategories,
       maxMenuItems: data.maxMenuItems,
       maxUsers: data.maxUsers,
-      features: data.features ? Object.fromEntries(data.features.map((f) => [f, true])) : {},
+      // data.features est déjà un Record<string, boolean> — utilisation directe
+      features: data.features ?? {},
       isActive: data.isActive ?? true,
       isPublic: data.isPublic ?? true,
       sortOrder: data.sortOrder ?? 0,
@@ -66,7 +68,8 @@ export default class SuperAdminPlansController {
       maxCategories: data.maxCategories,
       maxMenuItems: data.maxMenuItems,
       maxUsers: data.maxUsers,
-      features: data.features ? Object.fromEntries(data.features.map((f) => [f, true])) : plan.features,
+      // data.features est undefined si non envoyé → conserve l'ancienne valeur
+      features: data.features !== undefined ? data.features : plan.features,
       isActive: data.isActive ?? plan.isActive,
       isPublic: data.isPublic ?? plan.isPublic,
       sortOrder: data.sortOrder ?? plan.sortOrder,
