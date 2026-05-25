@@ -31,6 +31,8 @@
               <option value="restaurant">{{ t('auditLogs.filterRestaurant') }}</option>
               <option value="order">{{ t('saAuditLogs.filterOrders') }}</option>
               <option value="reservation">{{ t('saAuditLogs.filterReservations') }}</option>
+              <option value="expense">{{ t('auditLogs.filterExpenses') }}</option>
+              <option value="income">{{ t('auditLogs.filterIncomes') }}</option>
             </select>
             <span class="select-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
           </div>
@@ -141,7 +143,9 @@
                 <div class="log-meta">
                   <span class="log-user">{{ log.userEmail }}</span>
                   <span class="role-pill" [class.role-admin]="log.userRole === 'admin'" [class.role-cashier]="log.userRole === 'cashier'">
-                    {{ log.userRole === 'admin' ? t('auditLogs.roleAdmin') : t('auditLogs.roleCashier') }}
+                    @if (log.userRole === 'admin') { {{ t('auditLogs.roleAdmin') }} }
+                    @else if (log.userRole === 'cashier') { {{ t('auditLogs.roleCashier') }} }
+                    @else { {{ log.userRole }} }
                   </span>
                   <span class="log-date">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px">

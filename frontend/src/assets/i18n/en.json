@@ -376,6 +376,8 @@
     "filterItems": "Items",
     "filterUsers": "Users",
     "filterRestaurant": "Restaurant",
+    "filterExpenses": "Expenses",
+    "filterIncomes": "Manual incomes",
     "roleAdmin": "Admin",
     "roleCashier": "Cashier",
     "before": "Before",
@@ -403,10 +405,18 @@
       "restaurant.unblocked": "Restaurant unblocked",
       "category.reordered": "Categories reordered",
       "order.created": "Order placed",
+      "order.created_by_admin": "Order created (admin)",
       "order.status_updated": "Order status changed",
       "order.gift_revoked": "Gift QR revoked",
       "reservation.created": "Reservation created",
-      "reservation.status_updated": "Reservation status changed"
+      "reservation.created_by_admin": "Reservation created (admin)",
+      "reservation.status_updated": "Reservation status changed",
+      "expense.created": "Expense added",
+      "expense.updated": "Expense updated",
+      "expense.deleted": "Expense deleted",
+      "income.created": "Income added",
+      "income.updated": "Income updated",
+      "income.deleted": "Income deleted"
     }
   },
   "planLimit": {

@@ -8,12 +8,15 @@ const VALID_ACTIONS = new Set([
   'restaurant.updated', 'restaurant.logo_uploaded',
   'subscription.created', 'subscription.canceled', 'subscription.granted',
   'restaurant.blocked', 'restaurant.unblocked',
-  'order.created', 'order.status_updated', 'order.gift_revoked',
-  'reservation.created', 'reservation.status_updated',
+  'order.created', 'order.created_by_admin', 'order.status_updated', 'order.gift_revoked',
+  'reservation.created', 'reservation.created_by_admin', 'reservation.status_updated',
+  'expense.created', 'expense.updated', 'expense.deleted',
+  'income.created', 'income.updated', 'income.deleted',
 ])
 
 const VALID_RESOURCE_TYPES = new Set([
   'category', 'menu_item', 'user', 'restaurant', 'subscription', 'order', 'reservation',
+  'expense', 'income',
 ])
 
 /** Validate a YYYY-MM-DD date string — returns null if invalid */

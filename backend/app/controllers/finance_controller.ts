@@ -4,6 +4,7 @@ import vine from '@vinejs/vine'
 import db from '@adonisjs/lucid/services/db'
 import FinanceExpense from '../models/finance_expense.js'
 import FinanceIncome from '../models/finance_income.js'
+import AuditService from '#services/audit_service'
 
 // ── Validators ──────────────────────────────────────────────────────────────
 
@@ -247,6 +248,16 @@ export default class FinanceController {
       restaurantId: auth.user!.restaurantId!,
       createdBy: auth.user!.id,
     })
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'expense.created',
+      resourceType: 'expense',
+      resourceId: expense.id,
+      resourceName: expense.label,
+      newValues: { label: expense.label, amount: expense.amount, category: expense.category, date: expense.date },
+    })
     return response.created(expense)
   }
 
@@ -255,17 +266,39 @@ export default class FinanceController {
       .where('id', params.id)
       .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
+    const oldValues = { label: expense.label, amount: expense.amount, category: expense.category, date: expense.date }
     const data = await request.validateUsing(expenseValidator)
     await expense.merge(data).save()
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'expense.updated',
+      resourceType: 'expense',
+      resourceId: expense.id,
+      resourceName: expense.label,
+      oldValues,
+      newValues: { label: expense.label, amount: expense.amount, category: expense.category, date: expense.date },
+    })
     return expense
   }
 
-  async deleteExpense({ auth, params, response }: HttpContext) {
+  async deleteExpense({ auth, params, request, response }: HttpContext) {
     const expense = await FinanceExpense.query()
       .where('id', params.id)
       .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     await expense.delete()
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'expense.deleted',
+      resourceType: 'expense',
+      resourceId: Number(params.id),
+      resourceName: expense.label,
+      oldValues: { label: expense.label, amount: expense.amount, category: expense.category, date: expense.date },
+    })
     return response.noContent()
   }
 
@@ -294,6 +327,16 @@ export default class FinanceController {
       restaurantId: auth.user!.restaurantId!,
       createdBy: auth.user!.id,
     })
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'income.created',
+      resourceType: 'income',
+      resourceId: income.id,
+      resourceName: income.label,
+      newValues: { label: income.label, amount: income.amount, date: income.date },
+    })
     return response.created(income)
   }
 
@@ -302,17 +345,39 @@ export default class FinanceController {
       .where('id', params.id)
       .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
+    const oldValues = { label: income.label, amount: income.amount, date: income.date }
     const data = await request.validateUsing(incomeValidator)
     await income.merge(data).save()
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'income.updated',
+      resourceType: 'income',
+      resourceId: income.id,
+      resourceName: income.label,
+      oldValues,
+      newValues: { label: income.label, amount: income.amount, date: income.date },
+    })
     return income
   }
 
-  async deleteIncome({ auth, params, response }: HttpContext) {
+  async deleteIncome({ auth, params, request, response }: HttpContext) {
     const income = await FinanceIncome.query()
       .where('id', params.id)
       .where('restaurant_id', auth.user!.restaurantId!)
       .firstOrFail()
     await income.delete()
+    await new AuditService().log({
+      ctx: { request },
+      user: auth.user!,
+      restaurantId: auth.user!.restaurantId!,
+      action: 'income.deleted',
+      resourceType: 'income',
+      resourceId: Number(params.id),
+      resourceName: income.label,
+      oldValues: { label: income.label, amount: income.amount, date: income.date },
+    })
     return response.noContent()
   }
 }

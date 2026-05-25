@@ -376,6 +376,8 @@
     "filterItems": "Plats",
     "filterUsers": "Utilisateurs",
     "filterRestaurant": "Restaurant",
+    "filterExpenses": "Dépenses",
+    "filterIncomes": "Revenus manuels",
     "roleAdmin": "Admin",
     "roleCashier": "Caissier",
     "before": "Avant",
@@ -403,10 +405,18 @@
       "restaurant.unblocked": "Restaurant débloqué",
       "category.reordered": "Catégories réordonnées",
       "order.created": "Commande passée",
+      "order.created_by_admin": "Commande créée (admin)",
       "order.status_updated": "Statut de commande modifié",
       "order.gift_revoked": "QR cadeau révoqué",
       "reservation.created": "Réservation créée",
-      "reservation.status_updated": "Statut de réservation modifié"
+      "reservation.created_by_admin": "Réservation créée (admin)",
+      "reservation.status_updated": "Statut de réservation modifié",
+      "expense.created": "Dépense ajoutée",
+      "expense.updated": "Dépense modifiée",
+      "expense.deleted": "Dépense supprimée",
+      "income.created": "Revenu ajouté",
+      "income.updated": "Revenu modifié",
+      "income.deleted": "Revenu supprimé"
     }
   },
   "planLimit": {

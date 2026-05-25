@@ -6,19 +6,20 @@ import { AuditService, AuditLogFilters } from '../../shared/services/audit.servi
 import type { AuditLog, PaginatedResponse } from '../../shared/models'
 
 const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
-  created:        { bg: '#dcfce7', color: '#16a34a' },
-  updated:        { bg: '#dbeafe', color: '#2563eb' },
-  status_updated: { bg: '#dbeafe', color: '#2563eb' },
-  deleted:        { bg: '#fee2e2', color: '#dc2626' },
-  toggled:        { bg: '#fef9c3', color: '#ca8a04' },
-  canceled:       { bg: '#fee2e2', color: '#dc2626' },
-  uploaded:       { bg: '#f3e8ff', color: '#9333ea' },
-  blocked:        { bg: '#fee2e2', color: '#dc2626' },
-  unblocked:      { bg: '#dcfce7', color: '#16a34a' },
-  granted:        { bg: '#dcfce7', color: '#16a34a' },
-  gift_revoked:   { bg: '#fee2e2', color: '#dc2626' },
-  reordered:      { bg: '#fef9c3', color: '#ca8a04' },
-  logo_uploaded:  { bg: '#f3e8ff', color: '#9333ea' },
+  created:           { bg: '#dcfce7', color: '#16a34a' },
+  created_by_admin:  { bg: '#d1fae5', color: '#059669' },
+  updated:           { bg: '#dbeafe', color: '#2563eb' },
+  status_updated:    { bg: '#dbeafe', color: '#2563eb' },
+  deleted:           { bg: '#fee2e2', color: '#dc2626' },
+  toggled:           { bg: '#fef9c3', color: '#ca8a04' },
+  canceled:          { bg: '#fee2e2', color: '#dc2626' },
+  uploaded:          { bg: '#f3e8ff', color: '#9333ea' },
+  blocked:           { bg: '#fee2e2', color: '#dc2626' },
+  unblocked:         { bg: '#dcfce7', color: '#16a34a' },
+  granted:           { bg: '#dcfce7', color: '#16a34a' },
+  gift_revoked:      { bg: '#fee2e2', color: '#dc2626' },
+  reordered:         { bg: '#fef9c3', color: '#ca8a04' },
+  logo_uploaded:     { bg: '#f3e8ff', color: '#9333ea' },
 }
 
 const ACTION_KEYS = [
@@ -28,8 +29,10 @@ const ACTION_KEYS = [
   'restaurant.updated', 'restaurant.logo_uploaded',
   'subscription.created', 'subscription.canceled', 'subscription.granted',
   'restaurant.blocked', 'restaurant.unblocked',
-  'order.created', 'order.status_updated', 'order.gift_revoked',
-  'reservation.created', 'reservation.status_updated',
+  'order.created', 'order.created_by_admin', 'order.status_updated', 'order.gift_revoked',
+  'reservation.created', 'reservation.created_by_admin', 'reservation.status_updated',
+  'expense.created', 'expense.updated', 'expense.deleted',
+  'income.created', 'income.updated', 'income.deleted',
 ]
 
 @Component({

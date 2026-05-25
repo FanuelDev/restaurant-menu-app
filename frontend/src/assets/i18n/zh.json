@@ -376,6 +376,8 @@
     "filterItems": "菜品",
     "filterUsers": "用户",
     "filterRestaurant": "餐厅",
+    "filterExpenses": "支出",
+    "filterIncomes": "手动收入",
     "roleAdmin": "管理员",
     "roleCashier": "收银员",
     "before": "操作前",
@@ -403,10 +405,18 @@
       "restaurant.unblocked": "餐厅已解封",
       "category.reordered": "已重新排序分类",
       "order.created": "已下订单",
+      "order.created_by_admin": "已创建订单（管理员）",
       "order.status_updated": "已更改订单状态",
       "order.gift_revoked": "礼品二维码已撤销",
       "reservation.created": "已创建预订",
-      "reservation.status_updated": "已更改预订状态"
+      "reservation.created_by_admin": "已创建预订（管理员）",
+      "reservation.status_updated": "已更改预订状态",
+      "expense.created": "已添加支出",
+      "expense.updated": "已更新支出",
+      "expense.deleted": "已删除支出",
+      "income.created": "已添加收入",
+      "income.updated": "已更新收入",
+      "income.deleted": "已删除收入"
     }
   },
   "planLimit": {

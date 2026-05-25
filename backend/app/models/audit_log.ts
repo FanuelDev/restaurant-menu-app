@@ -10,6 +10,8 @@ export type AuditAction =
   | 'restaurant.updated' | 'restaurant.logo_uploaded'
   | 'order.created' | 'order.created_by_admin' | 'order.status_updated' | 'order.gift_revoked'
   | 'reservation.created' | 'reservation.created_by_admin' | 'reservation.status_updated'
+  | 'expense.created' | 'expense.updated' | 'expense.deleted'
+  | 'income.created' | 'income.updated' | 'income.deleted'
   | 'user.created' | 'user.updated' | 'user.deleted'
   | 'subscription.created' | 'subscription.canceled' | 'subscription.granted'
   | 'restaurant.blocked' | 'restaurant.unblocked'

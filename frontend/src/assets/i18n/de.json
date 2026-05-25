@@ -376,6 +376,8 @@
     "filterItems": "Gerichte",
     "filterUsers": "Benutzer",
     "filterRestaurant": "Restaurant",
+    "filterExpenses": "Ausgaben",
+    "filterIncomes": "Manuelle Einnahmen",
     "roleAdmin": "Admin",
     "roleCashier": "Kassierer",
     "before": "Vorher",
@@ -403,10 +405,18 @@
       "restaurant.unblocked": "Restaurant entsperrt",
       "category.reordered": "Kategorien neu angeordnet",
       "order.created": "Bestellung aufgegeben",
+      "order.created_by_admin": "Bestellung erstellt (Admin)",
       "order.status_updated": "Bestellstatus geändert",
       "order.gift_revoked": "Geschenk-QR widerrufen",
       "reservation.created": "Reservierung erstellt",
-      "reservation.status_updated": "Reservierungsstatus geändert"
+      "reservation.created_by_admin": "Reservierung erstellt (Admin)",
+      "reservation.status_updated": "Reservierungsstatus geändert",
+      "expense.created": "Ausgabe hinzugefügt",
+      "expense.updated": "Ausgabe aktualisiert",
+      "expense.deleted": "Ausgabe gelöscht",
+      "income.created": "Einnahme hinzugefügt",
+      "income.updated": "Einnahme aktualisiert",
+      "income.deleted": "Einnahme gelöscht"
     }
   },
   "planLimit": {
