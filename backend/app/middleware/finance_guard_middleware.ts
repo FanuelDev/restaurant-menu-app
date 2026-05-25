@@ -3,8 +3,14 @@ import type { NextFn } from '@adonisjs/core/types/http'
 
 /**
  * Finance guard — Enterprise plan only.
- * Blocks access unless the restaurant's plan slug is exactly 'enterprise'
- * or the plan features include 'financial_management'.
+ *
+ * Compat rétroactive à 2 niveaux (supprimable après migration 023) :
+ *  1. features['financial_management'] → clé canonique (après mig. 022/023)
+ *  2. features['api_access']           → clé exclusive Enterprise ; si présente,
+ *     la migration n'a pas encore tourné mais le plan est bien Enterprise
+ *
+ * Note : charge le plan via le restaurant du middleware tenant si disponible,
+ * sinon via l'utilisateur (fallback pour les routes sans tenant middleware).
  */
 export default class FinanceGuardMiddleware {
   async handle({ auth, response }: HttpContext, next: NextFn) {
@@ -13,9 +19,11 @@ export default class FinanceGuardMiddleware {
     const plan = user.restaurant?.plan
 
     const features = (plan?.features ?? {}) as Record<string, boolean>
-    const hasFeature = features['financial_management'] === true
+    const allowed =
+      features['financial_management'] === true ||
+      features['api_access'] === true          // clé exclusive Enterprise
 
-    if (!hasFeature) {
+    if (!allowed) {
       return response.forbidden({
         error: 'Enterprise plan required',
         upgradeUrl: '/pricing',

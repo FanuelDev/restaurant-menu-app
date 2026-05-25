@@ -211,13 +211,17 @@ export class AdminLayoutComponent implements OnInit {
   readonly isAdmin    = computed(() => this.authService.user()?.role === 'admin')
 
   // Feature flags — lus depuis le JSON features du plan (source de vérité)
-  // Compatibilité rétroactive : accepte l'ancienne clé 'orders_and_reservations' pour 'orders'
-  // jusqu'à ce que la migration 022 soit exécutée sur le serveur.
+  // Compatibilité rétroactive à 3 niveaux :
+  //  • 'orders_and_reservations' → ancienne clé Pro/Enterprise (avant migration 022)
+  //  • 'api_access'              → clé exclusive Enterprise : si présente, toutes les
+  //                                features Enterprise sont accordées même si la DB est
+  //                                partiellement migrée (migration 023 pas encore jouée)
   private feat = () => (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+  private isEnterpriseLegacy = () => this.feat()['api_access'] === true
   readonly hasOrders       = computed(() => this.feat()['orders'] === true || this.feat()['orders_and_reservations'] === true)
-  readonly hasReservations = computed(() => this.feat()['reservations'] === true)
+  readonly hasReservations = computed(() => this.feat()['reservations'] === true || this.feat()['orders_and_reservations'] === true || this.isEnterpriseLegacy())
   readonly hasStats        = computed(() => this.feat()['stats'] === true)
-  readonly hasFinance      = computed(() => this.feat()['financial_management'] === true)
+  readonly hasFinance      = computed(() => this.feat()['financial_management'] === true || this.isEnterpriseLegacy())
   readonly hasApi          = computed(() => this.feat()['api_access'] === true)
 
   // ── Upgrade toast ─────────────────────────────────────────────────────────
