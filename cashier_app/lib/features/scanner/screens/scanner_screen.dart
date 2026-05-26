@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -388,7 +389,10 @@ class _GiftOrderResult extends ConsumerWidget {
     final orderAsync = ref.watch(giftOrderProvider(token));
 
     return orderAsync.when(
-      data: (order) => _GiftOrderView(order: order, onReset: onReset),
+      data: (order) {
+        final currency = ref.watch(currencyProvider);
+        return _GiftOrderView(order: order, onReset: onReset, currency: currency);
+      },
       loading: () => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -490,8 +494,9 @@ class _GiftOrderResult extends ConsumerWidget {
 class _GiftOrderView extends StatelessWidget {
   final Order order;
   final VoidCallback onReset;
+  final String currency;
 
-  const _GiftOrderView({required this.order, required this.onReset});
+  const _GiftOrderView({required this.order, required this.onReset, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -622,7 +627,7 @@ class _GiftOrderView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        CurrencyUtils.formatAmount(item.subtotal),
+                        CurrencyUtils.formatAmount(item.subtotal, currency: currency),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -645,7 +650,7 @@ class _GiftOrderView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  CurrencyUtils.formatAmount(order.total),
+                  CurrencyUtils.formatAmount(order.total, currency: currency),
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,

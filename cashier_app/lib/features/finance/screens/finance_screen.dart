@@ -1,4 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -246,42 +247,48 @@ class _SummarySection extends ConsumerWidget {
           ),
         ),
       ),
-      data: (summary) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                label: 'Recettes',
-                amount: summary.totalRevenue,
-                trend: summary.revenueTrend,
-                color: AppColors.emerald,
-                delay: 0,
+      data: (summary) {
+        final currency = ref.watch(currencyProvider);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Recettes',
+                  amount: summary.totalRevenue,
+                  trend: summary.revenueTrend,
+                  color: AppColors.emerald,
+                  delay: 0,
+                  currency: currency,
+                ),
               ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: _StatCard(
-                label: 'Dépenses',
-                amount: summary.totalExpenses,
-                trend: summary.expensesTrend,
-                color: AppColors.brand,
-                delay: 80,
+              const Gap(10),
+              Expanded(
+                child: _StatCard(
+                  label: 'Dépenses',
+                  amount: summary.totalExpenses,
+                  trend: summary.expensesTrend,
+                  color: AppColors.brand,
+                  delay: 80,
+                  currency: currency,
+                ),
               ),
-            ),
-            const Gap(10),
-            Expanded(
-              child: _StatCard(
-                label: 'Bénéfice net',
-                amount: summary.netProfit,
-                trend: summary.netTrend,
-                color: AppColors.info,
-                delay: 160,
+              const Gap(10),
+              Expanded(
+                child: _StatCard(
+                  label: 'Bénéfice net',
+                  amount: summary.netProfit,
+                  trend: summary.netTrend,
+                  color: AppColors.info,
+                  delay: 160,
+                  currency: currency,
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -292,6 +299,7 @@ class _StatCard extends StatelessWidget {
   final double trend;
   final Color color;
   final int delay;
+  final String currency;
 
   const _StatCard({
     required this.label,
@@ -299,6 +307,7 @@ class _StatCard extends StatelessWidget {
     required this.trend,
     required this.color,
     required this.delay,
+    required this.currency,
   });
 
   @override
@@ -343,7 +352,7 @@ class _StatCard extends StatelessWidget {
           ),
           const Gap(8),
           Text(
-            CurrencyUtils.formatAmount(amount),
+            CurrencyUtils.formatAmount(amount, currency: currency),
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -401,9 +410,10 @@ class _ChartSection extends ConsumerWidget {
       error: (e, _) => const SizedBox.shrink(),
       data: (chart) {
         if (chart.points.isEmpty) return const SizedBox.shrink();
+        final currency = ref.watch(currencyProvider);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: _FinanceLineChart(chart: chart),
+          child: _FinanceLineChart(chart: chart, currency: currency),
         ).animate().fadeIn(duration: 500.ms, delay: 200.ms);
       },
     );
@@ -412,8 +422,9 @@ class _ChartSection extends ConsumerWidget {
 
 class _FinanceLineChart extends StatefulWidget {
   final FinanceChart chart;
+  final String currency;
 
-  const _FinanceLineChart({required this.chart});
+  const _FinanceLineChart({required this.chart, required this.currency});
 
   @override
   State<_FinanceLineChart> createState() => _FinanceLineChartState();
@@ -536,7 +547,7 @@ class _FinanceLineChartState extends State<_FinanceLineChart> {
                                 : '';
                         final isRevenue = spot.barIndex == 0;
                         return LineTooltipItem(
-                          '${isRevenue ? '📈' : '📉'} $label\n${CurrencyUtils.formatAmount(spot.y)}',
+                          '${isRevenue ? '📈' : '📉'} $label\n${CurrencyUtils.formatAmount(spot.y, currency: widget.currency)}',
                           GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -715,6 +726,7 @@ class _ExpenseItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cat = expense.categoryEnum;
+    final currency = ref.watch(currencyProvider);
 
     return Dismissible(
       key: ValueKey('expense_${expense.id}'),
@@ -809,7 +821,7 @@ class _ExpenseItem extends ConsumerWidget {
               ),
             ),
             Text(
-              '- ${CurrencyUtils.formatAmount(expense.amount)}',
+              '- ${CurrencyUtils.formatAmount(expense.amount, currency: currency)}',
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -889,6 +901,7 @@ class _IncomeItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(currencyProvider);
     return Dismissible(
       key: ValueKey('income_${income.id}'),
       direction: DismissDirection.endToStart,
@@ -962,7 +975,7 @@ class _IncomeItem extends ConsumerWidget {
               ),
             ),
             Text(
-              '+ ${CurrencyUtils.formatAmount(income.amount)}',
+              '+ ${CurrencyUtils.formatAmount(income.amount, currency: currency)}',
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

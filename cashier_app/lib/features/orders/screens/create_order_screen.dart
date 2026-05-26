@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -149,6 +150,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen>
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final topPadding = MediaQuery.of(context).padding.top;
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -247,6 +249,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen>
                             onRemove: _removeItem,
                             total: _total,
                             itemCount: _itemCount,
+                            currency: currency,
                           )
                         : _Step3Summary(
                             key: const ValueKey(2),
@@ -254,6 +257,7 @@ class _CreateOrderScreenState extends ConsumerState<CreateOrderScreen>
                             total: _total,
                             customerName:
                                 _customerNameController.text.trim(),
+                            currency: currency,
                           ),
               ),
             ),
@@ -497,6 +501,7 @@ class _Step2Articles extends StatelessWidget {
   final void Function(MenuItem) onRemove;
   final num total;
   final int itemCount;
+  final String currency;
 
   const _Step2Articles({
     super.key,
@@ -506,6 +511,7 @@ class _Step2Articles extends StatelessWidget {
     required this.onRemove,
     required this.total,
     required this.itemCount,
+    required this.currency,
   });
 
   @override
@@ -529,7 +535,7 @@ class _Step2Articles extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  CurrencyUtils.formatAmount(total),
+                  CurrencyUtils.formatAmount(total, currency: currency),
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -557,6 +563,7 @@ class _Step2Articles extends StatelessWidget {
                               cart: cart,
                               onAdd: onAdd,
                               onRemove: onRemove,
+                              currency: currency,
                             ))
                         .toList(),
                   ),
@@ -577,12 +584,14 @@ class _Step3Summary extends StatelessWidget {
   final Map<int, CartItem> cart;
   final num total;
   final String customerName;
+  final String currency;
 
   const _Step3Summary({
     super.key,
     required this.cart,
     required this.total,
     required this.customerName,
+    required this.currency,
   });
 
   @override
@@ -663,7 +672,7 @@ class _Step3Summary extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        CurrencyUtils.formatAmount(item.subtotal),
+                        CurrencyUtils.formatAmount(item.subtotal, currency: currency),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -689,7 +698,7 @@ class _Step3Summary extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    CurrencyUtils.formatAmount(total),
+                    CurrencyUtils.formatAmount(total, currency: currency),
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -712,12 +721,14 @@ class _CategorySection extends StatelessWidget {
   final Map<int, CartItem> cart;
   final void Function(MenuItem) onAdd;
   final void Function(MenuItem) onRemove;
+  final String currency;
 
   const _CategorySection({
     required this.category,
     required this.cart,
     required this.onAdd,
     required this.onRemove,
+    required this.currency,
   });
 
   @override
@@ -751,6 +762,7 @@ class _CategorySection extends StatelessWidget {
                 quantity: cart[item.id]?.quantity ?? 0,
                 onAdd: () => onAdd(item),
                 onRemove: () => onRemove(item),
+                currency: currency,
               ),
             ),
           ],
@@ -765,12 +777,14 @@ class _MenuItemRow extends StatelessWidget {
   final int quantity;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final String currency;
 
   const _MenuItemRow({
     required this.item,
     required this.quantity,
     required this.onAdd,
     required this.onRemove,
+    required this.currency,
   });
 
   @override
@@ -792,7 +806,7 @@ class _MenuItemRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  CurrencyUtils.formatAmount(item.price),
+                  CurrencyUtils.formatAmount(item.price, currency: currency),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

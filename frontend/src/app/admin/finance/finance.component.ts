@@ -354,7 +354,7 @@ export class FinanceComponent implements OnInit {
   readonly saving    = signal(false)
   readonly formError = signal<string | null>(null)
 
-  readonly currency = computed(() => this.authService.restaurant()?.currency ?? 'FCFA')
+  readonly currency = computed(() => this.authService.restaurant()?.currency ?? 'XOF')
 
   form: FormState = this.emptyForm('expense')
 
@@ -587,7 +587,14 @@ export class FinanceComponent implements OnInit {
 
   formatAmount(v: number): string {
     const cur = this.currency()
-    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v) + ' ' + cur
+    try {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency', currency: cur,
+        minimumFractionDigits: 0, maximumFractionDigits: 0,
+      }).format(v)
+    } catch {
+      return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0 }).format(v) + ' ' + cur
+    }
   }
 
   formatAmountShort(v: number): string {

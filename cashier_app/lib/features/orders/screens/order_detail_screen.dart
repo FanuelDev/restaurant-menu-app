@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -58,6 +59,7 @@ class _OrderDetailView extends ConsumerWidget {
     final statusNotifier = ref.watch(orderStatusNotifierProvider.notifier);
     final statusState = ref.watch(orderStatusNotifierProvider);
     final headerColor = AppColors.statusColor(order.status.value);
+    final currency = ref.watch(currencyProvider);
 
     final steps = [
       OrderStatus.pending,
@@ -206,7 +208,7 @@ class _OrderDetailView extends ConsumerWidget {
                     icon: Icons.restaurant_rounded,
                     children: [
                       ...order.items
-                          .map((item) => _OrderItemRow(item: item)),
+                          .map((item) => _OrderItemRow(item: item, currency: currency)),
                       const Divider(color: AppColors.border, height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -220,7 +222,7 @@ class _OrderDetailView extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            CurrencyUtils.formatAmount(order.total),
+                            CurrencyUtils.formatAmount(order.total, currency: currency),
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
@@ -599,8 +601,9 @@ class _InfoRow extends StatelessWidget {
 
 class _OrderItemRow extends StatelessWidget {
   final OrderItem item;
+  final String currency;
 
-  const _OrderItemRow({required this.item});
+  const _OrderItemRow({required this.item, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -655,7 +658,7 @@ class _OrderItemRow extends StatelessWidget {
           ),
           const Gap(8),
           Text(
-            CurrencyUtils.formatAmount(item.subtotal),
+            CurrencyUtils.formatAmount(item.subtotal, currency: currency),
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,

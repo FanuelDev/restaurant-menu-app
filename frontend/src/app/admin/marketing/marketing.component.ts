@@ -12,6 +12,7 @@ import {
 } from '../../shared/services/marketing.service'
 import { MenuService } from '../../shared/services/menu.service'
 import { OrderService } from '../../shared/services/order.service'
+import { AuthService } from '../../shared/services/auth.service'
 import type { MenuItem, Category } from '../../shared/models'
 
 interface RedeemCartItem {
@@ -32,8 +33,15 @@ const EVENT_LABELS: Record<string, string> = {
   other:      '🎟 Autre',
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString('fr-FR') + ' FCFA'
+function fmtWithCurrency(n: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency', currency,
+      minimumFractionDigits: 0, maximumFractionDigits: 0,
+    }).format(n)
+  } catch {
+    return n.toLocaleString('fr-FR') + ' ' + currency
+  }
 }
 
 function today(): string {
@@ -275,7 +283,7 @@ function today(): string {
             </select>
           </div>
           <div class="form-group" style="flex:1">
-            <label class="form-label">Montant (FCFA) <span style="color:var(--error)">*</span></label>
+            <label class="form-label">Montant ({{ currency() }}) <span style="color:var(--error)">*</span></label>
             <input class="form-control" type="number" min="0" [(ngModel)]="form.amount" placeholder="5000" />
           </div>
         </div>
@@ -987,6 +995,9 @@ export class MarketingComponent implements OnInit {
   private readonly svc          = inject(MarketingService)
   private readonly menuService  = inject(MenuService)
   private readonly orderService = inject(OrderService)
+  private readonly authService  = inject(AuthService)
+
+  readonly currency = computed(() => this.authService.restaurant()?.currency ?? 'XOF')
 
   // ── State ──────────────────────────────────────────────────────────────────
   readonly stats        = signal<MarketingStats | null>(null)
@@ -1387,7 +1398,7 @@ export class MarketingComponent implements OnInit {
   }
 
   fmtAmount(n: number): string {
-    return fmt(n)
+    return fmtWithCurrency(n, this.currency())
   }
 
   formatDate(d: string): string {

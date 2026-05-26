@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -68,6 +69,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(ordersProvider);
     final topPadding = MediaQuery.of(context).padding.top;
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -227,7 +229,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         itemCount: paginated.data.length,
                         itemBuilder: (_, index) => Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: _OrderCard(order: paginated.data[index])
+                          child: _OrderCard(order: paginated.data[index], currency: currency)
                               .animate()
                               .fadeIn(
                                   duration: 350.ms,
@@ -254,8 +256,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
 class _OrderCard extends StatelessWidget {
   final Order order;
+  final String currency;
 
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +345,7 @@ class _OrderCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    CurrencyUtils.formatAmount(order.total),
+                    CurrencyUtils.formatAmount(order.total, currency: currency),
                     style: GoogleFonts.poppins(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,

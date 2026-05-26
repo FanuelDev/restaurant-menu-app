@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,6 +128,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
         (result['surplusPaid'] as num?)?.toDouble() ?? _surplus;
     final voucherUsed =
         (result['voucherAmountUsed'] as num?)?.toDouble() ?? _voucherUsed;
+    final currency = ref.read(currencyProvider);
 
     showModalBottomSheet(
       context: context,
@@ -140,6 +142,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
         voucherAmountUsed: voucherUsed,
         surplusPaid: surplusPaid,
         orderTotal: _total.toDouble(),
+        currency: currency,
         onDone: () {
           Navigator.of(ctx).pop();
           ref.invalidate(marketingVouchersProvider);
@@ -161,6 +164,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
     final topPadding = MediaQuery.of(context).padding.top;
     final voucher = widget.voucher;
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -227,7 +231,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
                               color: AppColors.emerald, size: 14),
                           const Gap(6),
                           Text(
-                            CurrencyUtils.formatAmount(voucher.amount),
+                            CurrencyUtils.formatAmount(voucher.amount, currency: currency),
                             style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -314,6 +318,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
                                   _cart[item.id]?.quantity ?? 0,
                               onAdd: () => _addItem(item),
                               onRemove: () => _removeItem(item),
+                              currency: currency,
                             )),
                         const Gap(4),
                       ],
@@ -342,6 +347,7 @@ class _VoucherOrderScreenState extends ConsumerState<VoucherOrderScreen> {
             canSubmit: _cart.isNotEmpty && !_isSubmitting,
             isSubmitting: _isSubmitting,
             onConfirm: _submit,
+            currency: currency,
           ),
         ],
       ),
@@ -356,12 +362,14 @@ class _MenuItemCard extends StatelessWidget {
   final int quantity;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final String currency;
 
   const _MenuItemCard({
     required this.item,
     required this.quantity,
     required this.onAdd,
     required this.onRemove,
+    required this.currency,
   });
 
   @override
@@ -411,7 +419,7 @@ class _MenuItemCard extends StatelessWidget {
                 const Gap(4),
                 Text(
                   CurrencyUtils.formatAmount(
-                      item.price.toDouble()),
+                      item.price.toDouble(), currency: currency),
                   style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -493,6 +501,7 @@ class _BottomSummary extends StatelessWidget {
   final bool canSubmit;
   final bool isSubmitting;
   final VoidCallback onConfirm;
+  final String currency;
 
   const _BottomSummary({
     required this.voucherAmount,
@@ -502,6 +511,7 @@ class _BottomSummary extends StatelessWidget {
     required this.canSubmit,
     required this.isSubmitting,
     required this.onConfirm,
+    required this.currency,
   });
 
   @override
@@ -528,7 +538,7 @@ class _BottomSummary extends StatelessWidget {
                       fontSize: 13,
                       color: AppColors.textSecondary)),
               Text(
-                CurrencyUtils.formatAmount(cartTotal),
+                CurrencyUtils.formatAmount(cartTotal, currency: currency),
                 style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -545,7 +555,7 @@ class _BottomSummary extends StatelessWidget {
                       fontSize: 13,
                       color: AppColors.textSecondary)),
               Text(
-                '- ${CurrencyUtils.formatAmount(voucherUsed)}',
+                '- ${CurrencyUtils.formatAmount(voucherUsed, currency: currency)}',
                 style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -566,7 +576,7 @@ class _BottomSummary extends StatelessWidget {
                       color: AppColors.amber),
                 ),
                 Text(
-                  CurrencyUtils.formatAmount(surplus),
+                  CurrencyUtils.formatAmount(surplus, currency: currency),
                   style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -626,6 +636,7 @@ class _SuccessSheet extends StatelessWidget {
   final double voucherAmountUsed;
   final double surplusPaid;
   final double orderTotal;
+  final String currency;
   final VoidCallback onDone;
 
   const _SuccessSheet({
@@ -633,6 +644,7 @@ class _SuccessSheet extends StatelessWidget {
     required this.voucherAmountUsed,
     required this.surplusPaid,
     required this.orderTotal,
+    required this.currency,
     required this.onDone,
   });
 
@@ -689,20 +701,19 @@ class _SuccessSheet extends StatelessWidget {
               children: [
                 _SummaryRow(
                     label: 'Total commande',
-                    value: CurrencyUtils.formatAmount(orderTotal),
+                    value: CurrencyUtils.formatAmount(orderTotal, currency: currency),
                     color: AppColors.textPrimary),
                 const Gap(8),
                 _SummaryRow(
                     label: 'Couvert par le bon',
                     value: CurrencyUtils.formatAmount(
-                        voucherAmountUsed),
+                        voucherAmountUsed, currency: currency),
                     color: AppColors.emerald),
                 if (surplusPaid > 0) ...[
                   const Gap(8),
                   _SummaryRow(
                       label: 'Surplus encaissé',
-                      value:
-                          CurrencyUtils.formatAmount(surplusPaid),
+                      value: CurrencyUtils.formatAmount(surplusPaid, currency: currency),
                       color: AppColors.amber),
                 ],
               ],

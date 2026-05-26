@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -30,6 +31,7 @@ class DashboardScreen extends ConsumerWidget {
     final hasOrders = authState?.restaurant.hasOrders ?? false;
     final hasReservations = authState?.restaurant.hasReservations ?? false;
     final topPadding = MediaQuery.of(context).padding.top;
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -224,7 +226,7 @@ class DashboardScreen extends ConsumerWidget {
                               children: List.generate(orders.length, (i) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 10),
-                                  child: _RecentOrderCard(order: orders[i])
+                                  child: _RecentOrderCard(order: orders[i], currency: currency)
                                       .animate()
                                       .fadeIn(
                                           duration: 400.ms,
@@ -528,8 +530,9 @@ class _QuickActionCard extends StatelessWidget {
 
 class _RecentOrderCard extends StatelessWidget {
   final Order order;
+  final String currency;
 
-  const _RecentOrderCard({required this.order});
+  const _RecentOrderCard({required this.order, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -592,7 +595,7 @@ class _RecentOrderCard extends StatelessWidget {
                   OrderStatusBadge(status: order.status, compact: true),
                   const Gap(6),
                   Text(
-                    CurrencyUtils.formatAmount(order.total),
+                    CurrencyUtils.formatAmount(order.total, currency: currency),
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

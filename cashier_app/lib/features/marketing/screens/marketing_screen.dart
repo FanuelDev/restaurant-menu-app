@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -28,6 +29,7 @@ class _MarketingScreenState extends ConsumerState<MarketingScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
     final statsAsync = ref.watch(marketingStatsProvider);
     final vouchersAsync = ref.watch(marketingVouchersProvider);
+    final currency = ref.watch(currencyProvider);
 
     return Column(
       children: [
@@ -169,6 +171,7 @@ class _MarketingScreenState extends ConsumerState<MarketingScreen> {
                                 child: _VoucherCard(
                                   voucher: entry.value,
                                   dateFormat: _dateDisplayFormat,
+                                  currency: currency,
                                 )
                                     .animate()
                                     .fadeIn(
@@ -425,8 +428,9 @@ class _FilterChip extends StatelessWidget {
 class _VoucherCard extends StatelessWidget {
   final MarketingVoucher voucher;
   final DateFormat dateFormat;
+  final String currency;
 
-  const _VoucherCard({required this.voucher, required this.dateFormat});
+  const _VoucherCard({required this.voucher, required this.dateFormat, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -523,7 +527,7 @@ class _VoucherCard extends StatelessWidget {
 
           // Amount
           Text(
-            CurrencyUtils.formatAmount(voucher.amount),
+            CurrencyUtils.formatAmount(voucher.amount, currency: currency),
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w800,

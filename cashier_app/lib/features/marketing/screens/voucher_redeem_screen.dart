@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -20,6 +21,7 @@ class VoucherRedeemScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final voucherAsync = ref.watch(scannedVoucherProvider(token));
     final topPadding = MediaQuery.of(context).padding.top;
+    final currency = ref.watch(currencyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -84,7 +86,7 @@ class VoucherRedeemScreen extends ConsumerWidget {
           // ── Body ──────────────────────────────────────────────────────────
           Expanded(
             child: voucherAsync.when(
-              data: (voucher) => _VoucherBody(voucher: voucher),
+              data: (voucher) => _VoucherBody(voucher: voucher, currency: currency),
               loading: () => Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -204,7 +206,8 @@ class _ErrorBody extends StatelessWidget {
 
 class _VoucherBody extends StatelessWidget {
   final MarketingVoucher voucher;
-  const _VoucherBody({required this.voucher});
+  final String currency;
+  const _VoucherBody({required this.voucher, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +302,7 @@ class _VoucherBody extends StatelessWidget {
                               color: AppColors.textMuted),
                         ),
                         Text(
-                          CurrencyUtils.formatAmount(voucher.amount),
+                          CurrencyUtils.formatAmount(voucher.amount, currency: currency),
                           style: GoogleFonts.poppins(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
