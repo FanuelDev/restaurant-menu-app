@@ -160,6 +160,13 @@ export const routes: Routes = [
         title: 'Gestion financière',
       },
       {
+        path: 'marketing',
+        canActivate: [planGuard('enterprise')],
+        loadComponent: () =>
+          import('./admin/marketing/marketing.component').then((m) => m.MarketingComponent),
+        title: 'Marketing',
+      },
+      {
         path: 'invoices',
         loadComponent: () =>
           import('./admin/invoices/admin-invoices.component').then((m) => m.AdminInvoicesComponent),

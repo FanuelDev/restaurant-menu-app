@@ -12,6 +12,10 @@ import 'features/reservations/screens/reservation_detail_screen.dart';
 import 'features/reservations/screens/create_reservation_screen.dart';
 import 'features/finance/screens/create_expense_screen.dart';
 import 'features/finance/screens/create_income_screen.dart';
+import 'features/marketing/models/marketing_models.dart';
+import 'features/marketing/screens/marketing_screen.dart';
+import 'features/marketing/screens/voucher_redeem_screen.dart';
+import 'features/marketing/screens/voucher_order_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -158,6 +162,36 @@ final routerProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: const CreateIncomeScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/marketing',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPage(
+          key: state.pageKey,
+          child: const ShellScreen(route: '/marketing'),
+        ),
+      ),
+      GoRoute(
+        path: '/marketing/vouchers/redeem/:token',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final token = state.pathParameters['token'] ?? '';
+          return _buildPage(
+            key: state.pageKey,
+            child: VoucherRedeemScreen(token: token),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/marketing/vouchers/order',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final voucher = state.extra as MarketingVoucher;
+          return _buildPage(
+            key: state.pageKey,
+            child: VoucherOrderScreen(voucher: voucher),
+          );
+        },
       ),
     ],
   );

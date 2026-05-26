@@ -12,6 +12,7 @@ import '../orders/screens/orders_screen.dart';
 import '../reservations/screens/reservations_screen.dart';
 import '../scanner/screens/scanner_screen.dart';
 import '../finance/screens/finance_screen.dart';
+import '../marketing/screens/marketing_screen.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 
 class ShellScreen extends ConsumerWidget {
@@ -94,6 +95,15 @@ class ShellScreen extends ConsumerWidget {
       ));
     }
 
+    if (restaurant.hasMarketing) {
+      items.add(const _NavItem(
+        icon: Icons.local_activity_outlined,
+        activeIcon: Icons.local_activity_rounded,
+        label: 'Marketing',
+        route: '/marketing',
+      ));
+    }
+
     items.add(const _NavItem(
       icon: Icons.qr_code_scanner_outlined,
       activeIcon: Icons.qr_code_scanner_rounded,
@@ -112,6 +122,8 @@ class ShellScreen extends ConsumerWidget {
         return const ReservationsScreen();
       case '/finance':
         return const FinanceScreen();
+      case '/marketing':
+        return const MarketingScreen();
       case '/scanner':
         return const ScannerScreen();
       case '/dashboard':

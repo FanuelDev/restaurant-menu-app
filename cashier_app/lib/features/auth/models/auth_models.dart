@@ -3,12 +3,14 @@ class PlanFeatures {
   final bool reservations;
   final bool apiAccess;
   final bool financialManagement;
+  final bool marketing;
 
   const PlanFeatures({
     required this.orders,
     required this.reservations,
     required this.apiAccess,
     required this.financialManagement,
+    required this.marketing,
   });
 
   factory PlanFeatures.fromJson(Map<String, dynamic> json) {
@@ -17,11 +19,13 @@ class PlanFeatures {
       reservations: json['reservations'] == true,
       apiAccess: json['api_access'] == true,
       financialManagement: json['financial_management'] == true,
+      marketing: json['financial_management'] == true || json['api_access'] == true,
     );
   }
 
   bool get hasReservations => reservations || apiAccess;
   bool get hasFinance => financialManagement || apiAccess;
+  bool get hasMarketing => marketing;
 }
 
 class RestaurantPlan {
@@ -73,6 +77,7 @@ class Restaurant {
   bool get hasOrders => plan?.features.orders ?? false;
   bool get hasReservations => plan?.features.hasReservations ?? false;
   bool get hasFinance => plan?.features.hasFinance ?? false;
+  bool get hasMarketing => plan?.features.hasMarketing ?? false;
 }
 
 class AuthUser {

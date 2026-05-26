@@ -61,6 +61,16 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
     final rawValue = barcode.rawValue;
     if (rawValue == null || rawValue.isEmpty) return;
 
+    // Marketing voucher: MV:{token}
+    if (rawValue.startsWith('MV:')) {
+      final mvToken = rawValue.substring(3).trim();
+      if (mvToken.isEmpty) return;
+      setState(() => _isScanning = false);
+      _handleMarketingVoucher(mvToken);
+      return;
+    }
+
+    // Gift order QR
     String token = rawValue;
     try {
       final uri = Uri.parse(rawValue);
@@ -78,6 +88,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
       _isScanning = false;
       _scannedToken = token;
     });
+  }
+
+  Future<void> _handleMarketingVoucher(String token) async {
+    await context.push('/marketing/vouchers/redeem/$token');
+    if (mounted) _reset();
   }
 
   void _reset() {
@@ -298,7 +313,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                           color: AppColors.brand, size: 20),
                       const Gap(10),
                       Text(
-                        'Pointez vers le QR du bon cadeau',
+                        'Bon cadeau ou bon marketing',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: AppColors.textPrimary,

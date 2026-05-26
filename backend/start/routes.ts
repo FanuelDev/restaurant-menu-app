@@ -21,6 +21,7 @@ const WebhooksController = () => import('#controllers/webhooks_controller')
 const OrdersController = () => import('#controllers/orders_controller')
 const ReservationsController = () => import('#controllers/reservations_controller')
 const FinanceController = () => import('#controllers/finance_controller')
+const MarketingController = () => import('#controllers/marketing_controller')
 
 // Super admin
 const SARestaurantsController = () => import('#controllers/super_admin/restaurants_controller')
@@ -180,6 +181,16 @@ router
       .use(middleware.financeGuard())
     router.delete('/finance/incomes/:id', [FinanceController, 'deleteIncome'])
       .use(middleware.financeGuard())
+
+    // Marketing Vouchers — Enterprise only
+    router.get('/marketing/vouchers', [MarketingController, 'index']).use(middleware.marketingGuard())
+    router.post('/marketing/vouchers', [MarketingController, 'store']).use(middleware.marketingGuard())
+    router.get('/marketing/vouchers/scan/:token', [MarketingController, 'scan']).use(middleware.marketingGuard())
+    router.get('/marketing/stats', [MarketingController, 'stats']).use(middleware.marketingGuard())
+    router.get('/marketing/vouchers/:id', [MarketingController, 'show']).use(middleware.marketingGuard())
+    router.patch('/marketing/vouchers/:id', [MarketingController, 'update']).use(middleware.marketingGuard())
+    router.delete('/marketing/vouchers/:id', [MarketingController, 'destroy']).use(middleware.marketingGuard())
+    router.post('/marketing/vouchers/:id/redeem', [MarketingController, 'redeem']).use(middleware.marketingGuard())
 
     // Categories — admin + cashier can read/create/update; only admin can delete
     router.get('/categories', [CategoriesController, 'index'])

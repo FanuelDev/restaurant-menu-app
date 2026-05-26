@@ -244,6 +244,10 @@ export class AdminLayoutComponent implements OnInit {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
     return f['financial_management'] === true || f['api_access'] === true
   })
+  readonly hasMarketing = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['marketing'] === true || f['api_access'] === true
+  })
   readonly hasApi = computed(() => {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
     return f['api_access'] === true
