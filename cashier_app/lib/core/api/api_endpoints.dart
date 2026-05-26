@@ -15,6 +15,14 @@ class ApiEndpoints {
   static const String reservations = '/admin/reservations';
   static String reservationStatus(int id) => '/admin/reservations/$id/status';
 
+  // Finance
+  static const String financeSummary = '/admin/finance/summary';
+  static const String financeChart = '/admin/finance/chart';
+  static const String financeExpenses = '/admin/finance/expenses';
+  static String financeExpenseById(int id) => '/admin/finance/expenses/$id';
+  static const String financeIncomes = '/admin/finance/incomes';
+  static String financeIncomeById(int id) => '/admin/finance/incomes/$id';
+
   // Public (with X-Tenant-Slug)
   static const String categories = '/public/categories';
 }

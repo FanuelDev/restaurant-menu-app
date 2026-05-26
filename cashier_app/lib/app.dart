@@ -10,6 +10,8 @@ import 'features/orders/screens/order_detail_screen.dart';
 import 'features/orders/screens/create_order_screen.dart';
 import 'features/reservations/screens/reservation_detail_screen.dart';
 import 'features/reservations/screens/create_reservation_screen.dart';
+import 'features/finance/screens/create_expense_screen.dart';
+import 'features/finance/screens/create_income_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -68,7 +70,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _buildPage(
           key: state.pageKey,
-          child: const ShellScreen(tab: 0),
+          child: const ShellScreen(route: '/dashboard'),
         ),
       ),
       GoRoute(
@@ -76,7 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _buildPage(
           key: state.pageKey,
-          child: const ShellScreen(tab: 1),
+          child: const ShellScreen(route: '/orders'),
         ),
       ),
       GoRoute(
@@ -84,7 +86,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _buildPage(
           key: state.pageKey,
-          child: const ShellScreen(tab: 2),
+          child: const ShellScreen(route: '/reservations'),
         ),
       ),
       GoRoute(
@@ -92,7 +94,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _buildPage(
           key: state.pageKey,
-          child: const ShellScreen(tab: 3),
+          child: const ShellScreen(route: '/scanner'),
+        ),
+      ),
+      GoRoute(
+        path: '/finance',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPage(
+          key: state.pageKey,
+          child: const ShellScreen(route: '/finance'),
         ),
       ),
       GoRoute(
@@ -132,6 +142,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             child: ReservationDetailScreen(reservationId: id),
           );
         },
+      ),
+      GoRoute(
+        path: '/finance/expenses/create',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPage(
+          key: state.pageKey,
+          child: const CreateExpenseScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/finance/incomes/create',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPage(
+          key: state.pageKey,
+          child: const CreateIncomeScreen(),
+        ),
       ),
     ],
   );

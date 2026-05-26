@@ -11,12 +11,13 @@ import '../dashboard/screens/dashboard_screen.dart';
 import '../orders/screens/orders_screen.dart';
 import '../reservations/screens/reservations_screen.dart';
 import '../scanner/screens/scanner_screen.dart';
+import '../finance/screens/finance_screen.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 
 class ShellScreen extends ConsumerWidget {
-  final int tab;
+  final String route;
 
-  const ShellScreen({super.key, this.tab = 0});
+  const ShellScreen({super.key, this.route = '/dashboard'});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,15 +27,19 @@ class ShellScreen extends ConsumerWidget {
     final restaurant = authState.restaurant;
     final navItems = _buildNavItems(restaurant);
 
-    final clampedTab = tab.clamp(0, navItems.length - 1);
-    final screen = _buildScreen(clampedTab, restaurant);
+    // Find the current index by matching the route
+    int currentIndex =
+        navItems.indexWhere((item) => item.route == route);
+    if (currentIndex < 0) currentIndex = 0;
+
+    final screen = _buildScreen(route, restaurant);
     final isTablet = MediaQuery.of(context).size.width >= 600;
 
     if (isTablet) {
       return _TabletLayout(
         restaurant: restaurant,
         navItems: navItems,
-        currentIndex: clampedTab,
+        currentIndex: currentIndex,
         onDestinationSelected: (index) =>
             _navigateToTab(context, index, restaurant),
         screen: screen,
@@ -45,7 +50,7 @@ class ShellScreen extends ConsumerWidget {
 
     return _PhoneLayout(
       navItems: navItems,
-      currentIndex: clampedTab,
+      currentIndex: currentIndex,
       onDestinationSelected: (index) =>
           _navigateToTab(context, index, restaurant),
       screen: screen,
@@ -80,6 +85,15 @@ class ShellScreen extends ConsumerWidget {
       ));
     }
 
+    if (restaurant.hasFinance) {
+      items.add(const _NavItem(
+        icon: Icons.account_balance_wallet_outlined,
+        activeIcon: Icons.account_balance_wallet_rounded,
+        label: 'Finance',
+        route: '/finance',
+      ));
+    }
+
     items.add(const _NavItem(
       icon: Icons.qr_code_scanner_outlined,
       activeIcon: Icons.qr_code_scanner_rounded,
@@ -90,21 +104,26 @@ class ShellScreen extends ConsumerWidget {
     return items;
   }
 
-  Widget _buildScreen(int index, Restaurant restaurant) {
-    final screens = <Widget>[const DashboardScreen()];
-
-    if (restaurant.hasOrders) screens.add(const OrdersScreen());
-    if (restaurant.hasReservations) screens.add(const ReservationsScreen());
-    screens.add(const ScannerScreen());
-
-    if (index >= screens.length) return screens.first;
-    return screens[index];
+  Widget _buildScreen(String route, Restaurant restaurant) {
+    switch (route) {
+      case '/orders':
+        return const OrdersScreen();
+      case '/reservations':
+        return const ReservationsScreen();
+      case '/finance':
+        return const FinanceScreen();
+      case '/scanner':
+        return const ScannerScreen();
+      case '/dashboard':
+      default:
+        return const DashboardScreen();
+    }
   }
 
   void _navigateToTab(
       BuildContext context, int index, Restaurant restaurant) {
     final items = _buildNavItems(restaurant);
-    if (index < items.length) {
+    if (index >= 0 && index < items.length) {
       context.go(items[index].route);
     }
   }
@@ -381,8 +400,8 @@ class _TabletLayout extends StatelessWidget {
                               borderRadius: BorderRadius.circular(14),
                               border: isActive
                                   ? Border.all(
-                                      color:
-                                          AppColors.brand.withValues(alpha: 0.3))
+                                      color: AppColors.brand
+                                          .withValues(alpha: 0.3))
                                   : null,
                             ),
                             child: Row(
@@ -425,8 +444,8 @@ class _TabletLayout extends StatelessWidget {
                   const Gap(8),
                   // Logout button
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 8),
                     child: Material(
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
@@ -440,7 +459,8 @@ class _TabletLayout extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                                color: AppColors.brand.withValues(alpha: 0.3)),
+                                color:
+                                    AppColors.brand.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Row(
