@@ -887,19 +887,19 @@ export class OrdersComponent implements OnInit {
 
   updateStatus(order: Order, status: OrderStatus): void {
     this.updatingId.set(order.id)
-    // Optimistic update — buttons refresh immediately without waiting for the API
+    // Optimistic update — new status (and next button) appear immediately
     this.orders.update(list => list.map(o => o.id === order.id ? { ...o, status } : o))
+    // Release the lock right away so the next status button is instantly clickable
+    this.updatingId.set(null)
 
     this.orderService.updateOrderStatus(order.id, status).subscribe({
       next: (updated) => {
-        // Confirm with the full server response
+        // Confirm with full server response (no UI change if optimistic was right)
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o))
-        this.updatingId.set(null)
       },
       error: () => {
         // Revert on failure
         this.orders.update(list => list.map(o => o.id === order.id ? order : o))
-        this.updatingId.set(null)
       },
     })
   }
