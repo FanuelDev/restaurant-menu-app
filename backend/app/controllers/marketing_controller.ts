@@ -64,7 +64,7 @@ export default class MarketingController {
     const result = await query.paginate(Number(page), 20)
     const json = result.toJSON()
 
-    json.data = json.data.map((v: MarketingVoucher) => ({
+    json.data = (json.data as unknown as MarketingVoucher[]).map((v) => ({
       ...v.serialize(),
       status: this._computeStatus(v),
     }))
