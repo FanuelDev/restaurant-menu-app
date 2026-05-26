@@ -2,11 +2,12 @@
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component'
 
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule, ThemeToggleComponent],
   templateUrl: './super-admin-layout.component.html',
   styles: [`
     .sa-shell {
@@ -18,7 +19,7 @@ import { AuthService } from '../../shared/services/auth.service'
     /* Sidebar */
     .sa-sidebar {
       width: 228px; flex-shrink: 0;
-      background: white;
+      background: var(--surface-1);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
       position: sticky; top: 0; height: 100vh;
@@ -73,6 +74,15 @@ import { AuthService } from '../../shared/services/auth.service'
     .sa-user-info { min-width: 0; }
     .sa-user-name { font-size: .8125rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sa-user-role { font-size: .70rem; color: var(--text-muted); }
+
+    /* Theme toggle row */
+    .sa-theme-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px var(--space-1);
+    }
+    .sa-theme-label {
+      font-size: .75rem; color: var(--text-muted); font-weight: 500; letter-spacing: .02em;
+    }
 
     .sa-logout {
       display: flex; align-items: center; gap: var(--space-2);

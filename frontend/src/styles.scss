@@ -99,6 +99,58 @@
   --transition-slow:   var(--t-slow);
 }
 
+// ── 1b. Dark mode token overrides ────────────────────────────────────────
+[data-theme="dark"] {
+  // Surfaces — warm dark (cohérent avec le thème rouge bordeaux)
+  --bg:        #0F0B0B;
+  --surface-1: #1A1212;
+  --surface-2: #221818;
+  --surface-3: #2A1E1E;
+
+  // Texte
+  --text-primary:   #F2EDED;
+  --text-secondary: #A89595;
+  --text-muted:     #6B5252;
+
+  // Bordures
+  --border:       #2C1E1E;
+  --border-focus: var(--brand);
+
+  // Palette neutre remappée (utilisée pour hovers, skeletons, badges…)
+  --gray-50:  #1C1414;
+  --gray-100: #251B1B;
+  --gray-150: #2D2121;
+  --gray-200: #362525;
+  --gray-300: #4A3030;
+  --gray-400: #6B5252;
+  --gray-500: #9E8585;
+  --gray-600: #B8A0A0;
+  // gray-700/800/900 kept dark — btn-secondary stays near-black, correct on dark bg
+
+  // Marque — ajustements
+  --brand-subtle: rgba(192, 57, 43, 0.12);
+  --brand-mid:    rgba(192, 57, 43, 0.22);
+  --brand-light:  rgba(192, 57, 43, 0.12);
+
+  // Statuts — fond sombre semi-transparent
+  --success-bg:     rgba(22,  163,  74, 0.12);
+  --success-border: rgba(22,  163,  74, 0.25);
+  --warning-bg:     rgba(217, 119,   6, 0.12);
+  --warning-border: rgba(217, 119,   6, 0.25);
+  --error-bg:       rgba(220,  38,  38, 0.12);
+  --error-border:   rgba(220,  38,  38, 0.25);
+  --info-bg:        rgba( 37,  99, 235, 0.12);
+  --info-border:    rgba( 37,  99, 235, 0.25);
+
+  // Ombres — plus prononcées sur fond sombre
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.6), 0 2px 4px rgba(0,0,0,.4);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,.7), 0 4px 8px rgba(0,0,0,.5);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,.8), 0 8px 16px rgba(0,0,0,.6);
+  --shadow-brand: 0 8px 28px rgba(192, 57, 43, 0.35);
+}
+
 // ── 2. Reset ──────────────────────────────────────────────────────────────
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -207,7 +259,7 @@ ul, ol { list-style: none; }
 }
 
 .btn-danger {
-  background: white; color: var(--error); border-color: var(--error-border);
+  background: var(--surface-1); color: var(--error); border-color: var(--error-border);
   &:hover:not(:disabled) { background: var(--error-bg); border-color: var(--error); }
 }
 

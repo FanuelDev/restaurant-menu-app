@@ -6,11 +6,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { filter } from 'rxjs'
 import { AuthService } from '../../shared/services/auth.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
+import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component'
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule, ThemeToggleComponent],
   templateUrl: './admin-layout.component.html',
   styles: [`
     /* ── Shell ──────────────────────────────────── */
@@ -25,7 +26,7 @@ import { RestaurantService } from '../../shared/services/restaurant.service'
     .sidebar {
       display: flex; flex-direction: column;
       width: 236px; min-width: 236px;
-      background: white;
+      background: var(--surface-1);
       border-right: 1px solid var(--border);
       transition: width var(--t-normal), min-width var(--t-normal);
       overflow: hidden;
@@ -117,7 +118,7 @@ import { RestaurantService } from '../../shared/services/restaurant.service'
     .upgrade-toast {
       position: fixed; top: 20px; right: 20px; z-index: 9999;
       max-width: 360px; width: calc(100vw - 40px);
-      background: white; border: 1.5px solid #e2e8f0;
+      background: var(--surface-1); border: 1.5px solid var(--border);
       border-radius: var(--radius-xl);
       box-shadow: 0 12px 40px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
       display: flex; align-items: flex-start; gap: 12px;
@@ -180,6 +181,18 @@ import { RestaurantService } from '../../shared/services/restaurant.service'
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .sb-user-role { font-size: .70rem; color: var(--text-muted); text-transform: capitalize; }
+
+    /* Theme toggle row */
+    .sb-theme-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px var(--space-1);
+    }
+    .sb-theme-label {
+      font-size: .75rem; color: var(--text-muted); font-weight: 500; letter-spacing: .02em;
+    }
+    .sb-theme-mini {
+      display: flex; justify-content: center;
+    }
 
     .sb-logout {
       display: flex; align-items: center; gap: var(--space-2);

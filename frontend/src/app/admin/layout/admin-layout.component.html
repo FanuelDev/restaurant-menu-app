@@ -216,6 +216,19 @@
               </div>
             }
           </div>
+
+          <!-- Theme toggle -->
+          @if (collapsed()) {
+            <div class="sb-theme-mini">
+              <app-theme-toggle [mini]="true" />
+            </div>
+          } @else {
+            <div class="sb-theme-row">
+              <span class="sb-theme-label">Thème</span>
+              <app-theme-toggle />
+            </div>
+          }
+
           <button class="sb-logout" (click)="logout()" [title]="collapsed() ? t('nav.logout') : ''" [attr.aria-label]="t('nav.logout')">
             <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>

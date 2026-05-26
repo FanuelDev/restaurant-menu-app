@@ -72,6 +72,13 @@
               <div class="sa-user-name">{{ authService.user()?.fullName }}</div>
             </div>
           </div>
+
+          <!-- Theme toggle -->
+          <div class="sa-theme-row">
+            <span class="sa-theme-label">Thème</span>
+            <app-theme-toggle />
+          </div>
+
           <button class="sa-logout" (click)="authService.logout()">
             <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
               <path d="M7 16H3a1 1 0 01-1-1V3a1 1 0 011-1h4"/>
