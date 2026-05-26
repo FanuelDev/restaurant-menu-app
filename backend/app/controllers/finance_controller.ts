@@ -81,12 +81,11 @@ export default class FinanceController {
     const startSql = start.toSQL()!
     const endSql   = end.toSQL()!
 
-    // Orders revenue (non-cancelled, non-gift or redeemed gift)
+    // Orders revenue (delivered only)
     const [ordersRow] = await db.rawQuery(
       `SELECT COALESCE(SUM(total), 0) as total
        FROM orders
-       WHERE restaurant_id = ? AND status != 'cancelled'
-         AND (is_gift = 0 OR gift_redeemed_at IS NOT NULL)
+       WHERE restaurant_id = ? AND status = 'delivered'
          AND created_at BETWEEN ? AND ?`,
       [restaurantId, startSql, endSql]
     )
@@ -123,8 +122,7 @@ export default class FinanceController {
 
     const [prevOrdersRow] = await db.rawQuery(
       `SELECT COALESCE(SUM(total), 0) as total FROM orders
-       WHERE restaurant_id = ? AND status != 'cancelled'
-         AND (is_gift = 0 OR gift_redeemed_at IS NOT NULL)
+       WHERE restaurant_id = ? AND status = 'delivered'
          AND created_at BETWEEN ? AND ?`,
       [restaurantId, prevStart.toSQL(), prevEnd.toSQL()]
     )
@@ -176,12 +174,11 @@ export default class FinanceController {
     const fmt = sqlDateFormat(groupBy)
     const labels = generateLabels(start, end, groupBy)
 
-    // Orders revenue grouped
+    // Orders revenue grouped (delivered only)
     const ordersRows = await db.rawQuery(
       `SELECT DATE_FORMAT(created_at, ?) as label, COALESCE(SUM(total), 0) as total
        FROM orders
-       WHERE restaurant_id = ? AND status != 'cancelled'
-         AND (is_gift = 0 OR gift_redeemed_at IS NOT NULL)
+       WHERE restaurant_id = ? AND status = 'delivered'
          AND created_at BETWEEN ? AND ?
        GROUP BY DATE_FORMAT(created_at, ?)`,
       [fmt, restaurantId, start.toSQL(), end.toSQL(), fmt]

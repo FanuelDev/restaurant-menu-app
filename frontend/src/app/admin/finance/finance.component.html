@@ -47,7 +47,7 @@
           </div>
         </div>
         <div class="fn-kpi-value">{{ formatAmount(summary()!.totalRevenue) }}</div>
-        <div class="fn-kpi-detail">dont {{ formatAmount(summary()!.ordersRevenue) }} commandes</div>
+        <div class="fn-kpi-detail">dont {{ formatAmount(summary()!.ordersRevenue) }} commandes livrées</div>
         <div class="fn-kpi-trend" [class.trend-up]="(summary()!.trends.revenue ?? 0) >= 0" [class.trend-down]="(summary()!.trends.revenue ?? 0) < 0">
           @if (summary()!.trends.revenue !== null) {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
