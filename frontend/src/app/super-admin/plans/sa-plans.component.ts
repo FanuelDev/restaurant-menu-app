@@ -45,7 +45,7 @@ const KNOWN_FEATURES: Array<{ key: string; label: string; desc: string }> = [
     .plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-5); }
 
     .plan-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-5);
       display: flex; flex-direction: column; gap: var(--space-4);
       animation: slideUpFade .4s var(--ease-spring) both;
@@ -83,7 +83,7 @@ const KNOWN_FEATURES: Array<{ key: string; label: string; desc: string }> = [
     .btn-delete {
       width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: white; color: var(--text-muted); cursor: pointer;
+      background: var(--surface-1); color: var(--text-muted); cursor: pointer;
       transition: all var(--t-fast);
       &:hover { background: var(--error-bg); color: var(--error); border-color: var(--error-border, #FCA5A5); }
     }
@@ -112,7 +112,7 @@ const KNOWN_FEATURES: Array<{ key: string; label: string; desc: string }> = [
       &::after {
         content: ''; position: absolute; top: 2px; left: 2px;
         width: 14px; height: 14px; border-radius: 50%;
-        background: white; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        background: var(--surface-1); box-shadow: 0 1px 3px rgba(0,0,0,.2);
         transition: transform var(--t-fast);
       }
     }

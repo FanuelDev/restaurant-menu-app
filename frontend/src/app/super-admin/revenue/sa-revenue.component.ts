@@ -299,7 +299,7 @@ import type { SaRevenueStats } from '../../shared/models'
     @media (max-width: 480px) { .kpi-row { grid-template-columns: 1fr; } }
 
     .kpi-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
       display: flex; align-items: center; gap: var(--space-4);
       animation: fadeUp .4s var(--ease-spring) calc(var(--d,0)*60ms) both;
@@ -326,10 +326,10 @@ import type { SaRevenueStats } from '../../shared/models'
     .kpi-green .kpi-icon { background: var(--success-bg); color: var(--success); }
 
     .kpi-blue::before { background: #2563EB; }
-    .kpi-blue .kpi-icon { background: #EFF6FF; color: #2563EB; }
+    .kpi-blue .kpi-icon { background: var(--info-bg, rgba(37,99,235,0.12)); color: #2563EB; }
 
     .kpi-amber::before { background: #D97706; }
-    .kpi-amber .kpi-icon { background: #FFFBEB; color: #D97706; }
+    .kpi-amber .kpi-icon { background: var(--warning-bg); color: var(--warning); }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
@@ -338,7 +338,7 @@ import type { SaRevenueStats } from '../../shared/models'
 
     /* ── Panels ──────────────────────────────────────────────── */
     .panel {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow: hidden;
     }
     .panel-head {
@@ -479,7 +479,7 @@ import type { SaRevenueStats } from '../../shared/models'
     }
     .top-rank-gold   { background: #FEF3C7; color: #D97706; }
     .top-rank-silver { background: #F1F5F9; color: #64748B; }
-    .top-rank-bronze { background: #FEF2F2; color: #B45309; }
+    .top-rank-bronze { background: var(--error-bg); color: var(--warning); }
 
     .top-info { flex: 1; min-width: 0; }
     .top-name { font-size: .875rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

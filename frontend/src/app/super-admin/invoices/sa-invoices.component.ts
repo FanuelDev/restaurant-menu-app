@@ -169,7 +169,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     .search-input {
       width: 100%; padding: .5rem .75rem .5rem 2rem;
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
-      font-size: .875rem; background: white; color: var(--text-primary);
+      font-size: .875rem; background: var(--surface-1); color: var(--text-primary);
       box-sizing: border-box; transition: border-color var(--t-fast);
     }
     .search-input:focus { outline: none; border-color: var(--brand); }
@@ -192,7 +192,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
 
     /* Table */
     .table-wrap {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); overflow: hidden;
     }
     .table {
@@ -237,15 +237,15 @@ import { printInvoice } from '../../shared/utils/invoice-print'
       border-radius: var(--radius-full); font-size: .7rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: .05em;
     }
-    .badge-free { background: #dcfce7; color: #166534; }
-    .badge-reduced { background: #fef9c3; color: #854d0e; }
+    .badge-free { background: var(--success-bg); color: var(--success); }
+    .badge-reduced { background: var(--warning-bg); color: var(--warning); }
     .badge-full { background: #f0f9ff; color: #0369a1; }
 
     .date-cell { color: var(--text-muted); font-size: .8125rem; white-space: nowrap; }
 
     .btn-download {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 10px; background: white;
+      padding: 5px 10px; background: var(--surface-1);
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       cursor: pointer; font-size: .75rem; font-weight: 600; color: var(--text-secondary);
       transition: all var(--t-fast); white-space: nowrap;
@@ -258,7 +258,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
       margin-top: var(--space-5);
     }
     .page-btn {
-      padding: .4rem var(--space-4); background: white; border: 1.5px solid var(--border);
+      padding: .4rem var(--space-4); background: var(--surface-1); border: 1.5px solid var(--border);
       border-radius: var(--radius-md); cursor: pointer; font-size: .875rem;
       color: var(--text-secondary); transition: all var(--t-fast);
     }

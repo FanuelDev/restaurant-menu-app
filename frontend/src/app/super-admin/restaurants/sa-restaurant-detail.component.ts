@@ -32,7 +32,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     /* ── Hero ── */
     .hero {
       display: flex; align-items: center; gap: var(--space-5);
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); padding: var(--space-5) var(--space-6);
       margin-bottom: var(--space-6); animation: slideUpFade .4s var(--ease-spring) both;
     }
@@ -62,9 +62,9 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
       padding: .25rem .7rem; border-radius: var(--radius-full);
       font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
     }
-    .status-trialing  { background: #fef9c3; color: #854d0e; }
-    .status-active    { background: #dcfce7; color: #166534; }
-    .status-blocked, .status-canceled, .status-suspended { background: #fee2e2; color: #991b1b; }
+    .status-trialing  { background: var(--warning-bg); color: var(--warning); }
+    .status-active    { background: var(--success-bg); color: var(--success); }
+    .status-blocked, .status-canceled, .status-suspended { background: var(--error-bg); color: var(--error); }
 
     /* ── Grid ── */
     .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-5); align-items: start; }
@@ -72,7 +72,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
 
     /* ── Cards ── */
     .card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); padding: var(--space-5);
       margin-bottom: var(--space-4); animation: slideUpFade .4s var(--ease-spring) both;
     }
@@ -110,7 +110,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     .blocked-date { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
     .blocked-reason {
       font-size: .8125rem; color: var(--text-secondary); font-style: italic;
-      background: white; padding: var(--space-3); border-radius: var(--radius-md);
+      background: var(--surface-1); padding: var(--space-3); border-radius: var(--radius-md);
       border: 1px solid #fecdd3; margin-bottom: var(--space-4);
     }
     .btn-success {
@@ -177,7 +177,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     .opt { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted); font-size: .7rem; }
     .form-select, .form-input {
       width: 100%; padding: .5rem .75rem; border: 1.5px solid var(--border);
-      border-radius: var(--radius-md); font-size: .875rem; background: white;
+      border-radius: var(--radius-md); font-size: .875rem; background: var(--surface-1);
       color: var(--text-primary); box-sizing: border-box; font-family: var(--font-body);
       transition: border-color var(--t-fast), box-shadow var(--t-fast);
     }
@@ -196,19 +196,19 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
 
     .alert-success {
       display: flex; align-items: center; gap: var(--space-2);
-      background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
+      background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0;
       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
       font-size: .8125rem; font-weight: 500; margin-bottom: var(--space-3);
     }
     .alert-error {
-      background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+      background: var(--error-bg); color: var(--error); border: 1px solid #fecaca;
       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
       font-size: .8125rem; margin-bottom: var(--space-3);
     }
 
     /* ── Grant card ── */
     .grant-card {
-      background: white; border-radius: var(--radius-xl);
+      background: var(--surface-1); border-radius: var(--radius-xl);
       border: 2px solid var(--brand);
       animation: slideUpFade .4s var(--ease-spring) both;
       overflow: hidden;
@@ -252,8 +252,8 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
       font-size: .7rem; font-weight: 700; letter-spacing: .04em;
       margin-top: var(--space-2);
     }
-    .badge-free { background: #dcfce7; color: #166534; }
-    .badge-reduced { background: #fef9c3; color: #854d0e; }
+    .badge-free { background: var(--success-bg); color: var(--success); }
+    .badge-reduced { background: var(--warning-bg); color: var(--warning); }
     .badge-full { background: #f0fdf4; color: #166534; }
 
     /* ── Spinner ── */

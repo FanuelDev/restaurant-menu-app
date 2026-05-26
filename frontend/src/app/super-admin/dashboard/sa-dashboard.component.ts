@@ -33,7 +33,7 @@ import type { SuperAdminStats } from '../../shared/models'
     @media (max-width: 600px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .kpi-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
       display: flex; align-items: center; gap: var(--space-3);
       position: relative; overflow: hidden;
@@ -57,7 +57,7 @@ import type { SuperAdminStats } from '../../shared/models'
     @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
 
     .panel {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); overflow: hidden;
       animation: slideUpFade .4s var(--ease-spring) calc(var(--d, 0) * 50ms) both;
     }
@@ -95,7 +95,7 @@ import type { SuperAdminStats } from '../../shared/models'
     }
     .signup-avatar {
       width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-      background: var(--brand-50, #FEF2F2); color: var(--brand);
+      background: var(--brand-subtle, var(--error-bg)); color: var(--brand);
       font-size: .8125rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
     }

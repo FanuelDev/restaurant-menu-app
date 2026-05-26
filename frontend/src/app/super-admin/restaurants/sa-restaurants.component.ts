@@ -26,7 +26,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     .search-input {
       width: 100%; padding: 9px 12px 9px 34px;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      font-size: .875rem; color: var(--text-primary); background: white;
+      font-size: .875rem; color: var(--text-primary); background: var(--surface-1);
       transition: border-color var(--t-fast), box-shadow var(--t-fast);
       &:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(176,48,32,.1); }
       &::placeholder { color: var(--text-muted); }
@@ -37,7 +37,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
       appearance: none;
       padding: 9px 32px 9px 12px;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      font-size: .875rem; color: var(--text-primary); background: white;
+      font-size: .875rem; color: var(--text-primary); background: var(--surface-1);
       cursor: pointer; min-width: 160px;
       transition: border-color var(--t-fast), box-shadow var(--t-fast);
       &:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(176,48,32,.1); }
@@ -45,7 +45,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     .select-chevron { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
 
     /* Skeleton */
-    .table-skeleton { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table-skeleton { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
     .skeleton-row {
       height: 56px; border-bottom: 1px solid var(--border);
       background: linear-gradient(90deg, var(--gray-50) 25%, var(--gray-100) 50%, var(--gray-50) 75%);
@@ -56,7 +56,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
     /* Table */
-    .table-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; animation: slideUpFade .4s var(--ease-spring) both; }
+    .table-wrap { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; animation: slideUpFade .4s var(--ease-spring) both; }
     table { width: 100%; border-collapse: collapse; font-size: .875rem; }
     th {
       padding: var(--space-3) var(--space-4);
@@ -94,7 +94,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     .action-btn {
       width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: white; color: var(--text-muted); cursor: pointer;
+      background: var(--surface-1); color: var(--text-muted); cursor: pointer;
       text-decoration: none; transition: all var(--t-fast);
       &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
     }
@@ -112,7 +112,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     .page-btn {
       display: inline-flex; align-items: center; gap: var(--space-1);
       padding: 7px var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: white; color: var(--text-secondary); font-size: .8125rem; cursor: pointer;
+      background: var(--surface-1); color: var(--text-secondary); font-size: .8125rem; cursor: pointer;
       transition: all var(--t-fast);
       &:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
       &:disabled { opacity: .4; cursor: default; }
