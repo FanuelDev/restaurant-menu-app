@@ -46,9 +46,9 @@ class _CreateIncomeScreenState extends ConsumerState<CreateIncomeScreen> {
       builder: (ctx, child) {
         return Theme(
           data: Theme.of(ctx).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.brand,
-              onPrimary: AppColors.textPrimary,
+              onPrimary: AppColors.textOnDark,
               surface: AppColors.surface,
               onSurface: AppColors.textPrimary,
             ),
@@ -308,7 +308,7 @@ class _CreateIncomeScreenState extends ConsumerState<CreateIncomeScreen> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.textOnDark,
                                 ),
                               ),
                       ),

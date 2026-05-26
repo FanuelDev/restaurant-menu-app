@@ -440,7 +440,7 @@ class _MenuItemCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.add_rounded,
-                    color: AppColors.textPrimary, size: 20),
+                    color: AppColors.textOnDark, size: 20),
               ),
             )
           else
@@ -458,7 +458,7 @@ class _MenuItemCard extends StatelessWidget {
                           color: AppColors.borderBright),
                     ),
                     child: const Icon(Icons.remove_rounded,
-                        color: AppColors.textPrimary, size: 16),
+                        color: AppColors.textSecondary, size: 16),
                   ),
                 ),
                 const Gap(10),
@@ -480,7 +480,7 @@ class _MenuItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.add_rounded,
-                        color: AppColors.textPrimary, size: 16),
+                        color: AppColors.textOnDark, size: 16),
                   ),
                 ),
               ],
@@ -594,7 +594,7 @@ class _BottomSummary extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
                 disabledBackgroundColor: AppColors.surfaceHigh,
-                foregroundColor: AppColors.textPrimary,
+                foregroundColor: AppColors.textOnDark,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
               ),
@@ -604,7 +604,7 @@ class _BottomSummary extends StatelessWidget {
                       height: 22,
                       child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.textPrimary),
+                          color: AppColors.textOnDark),
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,
@@ -727,7 +727,7 @@ class _SuccessSheet extends StatelessWidget {
               onPressed: onDone,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
-                foregroundColor: AppColors.textPrimary,
+                foregroundColor: AppColors.textOnDark,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
               ),

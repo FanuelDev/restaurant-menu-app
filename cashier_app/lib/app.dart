@@ -13,7 +13,6 @@ import 'features/reservations/screens/create_reservation_screen.dart';
 import 'features/finance/screens/create_expense_screen.dart';
 import 'features/finance/screens/create_income_screen.dart';
 import 'features/marketing/models/marketing_models.dart';
-import 'features/marketing/screens/marketing_screen.dart';
 import 'features/marketing/screens/voucher_redeem_screen.dart';
 import 'features/marketing/screens/voucher_order_screen.dart';
 
@@ -172,6 +171,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/menu',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPage(
+          key: state.pageKey,
+          child: const ShellScreen(route: '/menu'),
+        ),
+      ),
+      GoRoute(
         path: '/marketing/vouchers/redeem/:token',
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) {
@@ -213,8 +220,7 @@ class App extends ConsumerWidget {
     return MaterialApp.router(
       title: 'SaeMenus Caisse',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.lightTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       locale: const Locale('fr', 'FR'),

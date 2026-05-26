@@ -923,17 +923,17 @@ class _GradientBtn extends StatelessWidget {
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
-                    color: AppColors.textPrimary, strokeWidth: 2),
+                    color: AppColors.textOnDark, strokeWidth: 2),
               )
             else
-              Icon(icon, color: AppColors.textPrimary, size: 18),
+              Icon(icon, color: AppColors.textOnDark, size: 18),
             const Gap(8),
             Text(
               label,
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: AppColors.textOnDark,
               ),
             ),
           ],

@@ -203,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
           child: const Icon(
             Icons.restaurant_menu,
-            color: AppColors.textPrimary,
+            color: AppColors.textOnDark,
             size: 46,
           ),
         ),
@@ -378,7 +378,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            color: AppColors.textPrimary,
+                            color: AppColors.textOnDark,
                             strokeWidth: 2,
                           ),
                         )
@@ -387,7 +387,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: AppColors.textOnDark,
                           ),
                         ),
                 ),

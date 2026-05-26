@@ -296,7 +296,7 @@ class _GreetingCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textOnDark,
                   ),
                 ),
                 const Gap(4),
@@ -304,7 +304,7 @@ class _GreetingCard extends StatelessWidget {
                   restaurantName,
                   style: GoogleFonts.poppins(
                     fontSize: 13,
-                    color: AppColors.textPrimary.withValues(alpha: 0.7),
+                    color: AppColors.textOnDark.withValues(alpha: 0.75),
                   ),
                 ),
                 const Gap(8),
@@ -312,7 +312,7 @@ class _GreetingCard extends StatelessWidget {
                   '$dateStr · $timeStr',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    color: AppColors.textPrimary.withValues(alpha: 0.6),
+                    color: AppColors.textOnDark.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -326,7 +326,7 @@ class _GreetingCard extends StatelessWidget {
             ),
             child: const Icon(
               Icons.restaurant_menu,
-              color: AppColors.textPrimary,
+              color: AppColors.textOnDark,
               size: 28,
             ),
           ),

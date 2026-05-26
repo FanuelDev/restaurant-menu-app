@@ -13,6 +13,7 @@ import '../reservations/screens/reservations_screen.dart';
 import '../scanner/screens/scanner_screen.dart';
 import '../finance/screens/finance_screen.dart';
 import '../marketing/screens/marketing_screen.dart';
+import '../menu/screens/menu_screen.dart';
 import '../../shared/widgets/confirm_dialog.dart';
 
 class ShellScreen extends ConsumerWidget {
@@ -28,9 +29,7 @@ class ShellScreen extends ConsumerWidget {
     final restaurant = authState.restaurant;
     final navItems = _buildNavItems(restaurant);
 
-    // Find the current index by matching the route
-    int currentIndex =
-        navItems.indexWhere((item) => item.route == route);
+    int currentIndex = navItems.indexWhere((item) => item.route == route);
     if (currentIndex < 0) currentIndex = 0;
 
     final screen = _buildScreen(route, restaurant);
@@ -105,6 +104,13 @@ class ShellScreen extends ConsumerWidget {
     }
 
     items.add(const _NavItem(
+      icon: Icons.menu_book_outlined,
+      activeIcon: Icons.menu_book_rounded,
+      label: 'Menu',
+      route: '/menu',
+    ));
+
+    items.add(const _NavItem(
       icon: Icons.qr_code_scanner_outlined,
       activeIcon: Icons.qr_code_scanner_rounded,
       label: 'Scanner',
@@ -124,6 +130,8 @@ class ShellScreen extends ConsumerWidget {
         return const FinanceScreen();
       case '/marketing':
         return const MarketingScreen();
+      case '/menu':
+        return const MenuScreen();
       case '/scanner':
         return const ScannerScreen();
       case '/dashboard':
@@ -169,6 +177,8 @@ class _NavItem {
   });
 }
 
+// ─── Phone layout ─────────────────────────────────────────────────────────────
+
 class _PhoneLayout extends StatelessWidget {
   final List<_NavItem> navItems;
   final int currentIndex;
@@ -189,12 +199,11 @@ class _PhoneLayout extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Content with bottom padding for nav bar
           Positioned.fill(
             bottom: 80 + bottomPadding,
             child: screen,
           ),
-          // Floating bottom nav
+          // Floating dark nav bar
           Positioned(
             bottom: 16 + bottomPadding,
             left: 20,
@@ -202,17 +211,18 @@ class _PhoneLayout extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   height: 68,
                   decoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: 0.92),
+                    gradient: AppColors.navGradient,
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.borderBright),
+                    border: Border.all(
+                        color: AppColors.brand.withValues(alpha: 0.2)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        blurRadius: 30,
+                        color: AppColors.navBackground.withValues(alpha: 0.5),
+                        blurRadius: 32,
                         offset: const Offset(0, 8),
                       ),
                     ],
@@ -229,10 +239,10 @@ class _PhoneLayout extends StatelessWidget {
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOutCubic,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: isActive
-                                ? AppColors.brand.withValues(alpha: 0.18)
+                                ? AppColors.brand.withValues(alpha: 0.22)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -243,20 +253,20 @@ class _PhoneLayout extends StatelessWidget {
                                 isActive ? item.activeIcon : item.icon,
                                 color: isActive
                                     ? AppColors.brand
-                                    : AppColors.textMuted,
+                                    : AppColors.textOnDarkMuted,
                                 size: 22,
                               ),
                               const Gap(2),
                               Text(
                                 item.label,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: isActive
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: isActive
                                       ? AppColors.brand
-                                      : AppColors.textMuted,
+                                      : AppColors.textOnDarkMuted,
                                 ),
                               ),
                             ],
@@ -274,6 +284,8 @@ class _PhoneLayout extends StatelessWidget {
     );
   }
 }
+
+// ─── Tablet layout ────────────────────────────────────────────────────────────
 
 class _TabletLayout extends StatelessWidget {
   final Restaurant restaurant;
@@ -302,20 +314,20 @@ class _TabletLayout extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Row(
         children: [
-          // Navigation Rail
+          // Dark navigation rail
           Container(
             width: extended ? 220 : 72,
             decoration: const BoxDecoration(
-              color: AppColors.surface,
+              gradient: AppColors.navGradient,
               border: Border(
-                right: BorderSide(color: AppColors.border, width: 1),
+                right: BorderSide(
+                    color: Color(0xFF3D1010), width: 1),
               ),
             ),
             child: SafeArea(
               child: Column(
                 children: [
                   const Gap(20),
-                  // Logo + name
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: extended
@@ -330,14 +342,14 @@ class _TabletLayout extends StatelessWidget {
                                   boxShadow: [
                                     BoxShadow(
                                       color: AppColors.brand
-                                          .withValues(alpha: 0.3),
+                                          .withValues(alpha: 0.4),
                                       blurRadius: 12,
                                     ),
                                   ],
                                 ),
                                 child: const Icon(
                                   Icons.restaurant_menu,
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.textOnDark,
                                   size: 22,
                                 ),
                               ),
@@ -351,7 +363,7 @@ class _TabletLayout extends StatelessWidget {
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: AppColors.textOnDark,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -359,7 +371,7 @@ class _TabletLayout extends StatelessWidget {
                                       userName,
                                       style: GoogleFonts.poppins(
                                         fontSize: 11,
-                                        color: AppColors.textMuted,
+                                        color: AppColors.textOnDarkMuted,
                                       ),
                                     ),
                                   ],
@@ -377,16 +389,17 @@ class _TabletLayout extends StatelessWidget {
                               ),
                               child: const Icon(
                                 Icons.restaurant_menu,
-                                color: AppColors.textPrimary,
+                                color: AppColors.textOnDark,
                                 size: 22,
                               ),
                             ),
                           ),
                   ),
                   const Gap(24),
-                  const Divider(color: AppColors.border, height: 1),
+                  Divider(
+                      color: AppColors.brand.withValues(alpha: 0.2),
+                      height: 1),
                   const Gap(12),
-                  // Nav items
                   ...List.generate(navItems.length, (index) {
                     final isActive = index == currentIndex;
                     final item = navItems[index];
@@ -399,6 +412,10 @@ class _TabletLayout extends StatelessWidget {
                         child: InkWell(
                           onTap: () => onDestinationSelected(index),
                           borderRadius: BorderRadius.circular(14),
+                          splashColor:
+                              AppColors.brand.withValues(alpha: 0.15),
+                          highlightColor:
+                              AppColors.brand.withValues(alpha: 0.08),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             padding: EdgeInsets.symmetric(
@@ -407,13 +424,13 @@ class _TabletLayout extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isActive
-                                  ? AppColors.brand.withValues(alpha: 0.15)
+                                  ? AppColors.brand.withValues(alpha: 0.2)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(14),
                               border: isActive
                                   ? Border.all(
                                       color: AppColors.brand
-                                          .withValues(alpha: 0.3))
+                                          .withValues(alpha: 0.4))
                                   : null,
                             ),
                             child: Row(
@@ -425,7 +442,7 @@ class _TabletLayout extends StatelessWidget {
                                   isActive ? item.activeIcon : item.icon,
                                   color: isActive
                                       ? AppColors.brand
-                                      : AppColors.textMuted,
+                                      : AppColors.textOnDarkMuted,
                                   size: 22,
                                 ),
                                 if (extended) ...[
@@ -439,7 +456,7 @@ class _TabletLayout extends StatelessWidget {
                                           : FontWeight.w400,
                                       color: isActive
                                           ? AppColors.brand
-                                          : AppColors.textSecondary,
+                                          : AppColors.textOnDarkMuted,
                                     ),
                                   ),
                                 ],
@@ -452,9 +469,10 @@ class _TabletLayout extends StatelessWidget {
                   }),
 
                   const Spacer(),
-                  const Divider(color: AppColors.border, height: 1),
+                  Divider(
+                      color: AppColors.brand.withValues(alpha: 0.2),
+                      height: 1),
                   const Gap(8),
-                  // Logout button
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 8),
@@ -472,7 +490,7 @@ class _TabletLayout extends StatelessWidget {
                           decoration: BoxDecoration(
                             border: Border.all(
                                 color:
-                                    AppColors.brand.withValues(alpha: 0.3)),
+                                    AppColors.brand.withValues(alpha: 0.35)),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Row(
@@ -504,7 +522,6 @@ class _TabletLayout extends StatelessWidget {
               ),
             ),
           ),
-          // Content
           Expanded(child: screen),
         ],
       ),

@@ -702,14 +702,14 @@ class _GradientActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.textPrimary, size: 18),
+            Icon(icon, color: AppColors.textOnDark, size: 18),
             const Gap(8),
             Text(
               label,
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: AppColors.textOnDark,
               ),
             ),
           ],

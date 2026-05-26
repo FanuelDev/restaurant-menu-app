@@ -11,7 +11,6 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/api/api_client.dart';
 import '../models/marketing_models.dart';
 import '../providers/marketing_provider.dart';
-import 'voucher_order_screen.dart';
 
 class VoucherRedeemScreen extends ConsumerWidget {
   final String token;
@@ -182,14 +181,14 @@ class _ErrorBody extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.qr_code_scanner_rounded,
-                      color: AppColors.textPrimary, size: 18),
+                      color: AppColors.textOnDark, size: 18),
                   const Gap(8),
                   Text(
                     'Retour au scanner',
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textOnDark,
                     ),
                   ),
                 ],
@@ -373,7 +372,7 @@ class _VoucherBody extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        voucher.isExpired
+                        voucher.status == VoucherStatus.expired
                             ? 'Bon expiré'
                             : 'Quota atteint',
                         style: GoogleFonts.poppins(
@@ -383,7 +382,7 @@ class _VoucherBody extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        voucher.isExpired
+                        voucher.status == VoucherStatus.expired
                             ? 'Ce bon a dépassé sa date de validité.'
                             : 'Ce bon a atteint son nombre maximal d\'utilisations.',
                         style: GoogleFonts.poppins(
@@ -422,19 +421,19 @@ class _VoucherBody extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.restaurant_menu_rounded,
-                        color: AppColors.textPrimary, size: 20),
+                        color: AppColors.textOnDark, size: 20),
                     const Gap(10),
                     Text(
                       'Prendre la commande',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textOnDark,
                       ),
                     ),
                     const Gap(6),
                     const Icon(Icons.arrow_forward_rounded,
-                        color: AppColors.textPrimary, size: 18),
+                        color: AppColors.textOnDark, size: 18),
                   ],
                 ),
               ),

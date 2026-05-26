@@ -116,7 +116,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           ],
                         ),
                         child: const Icon(Icons.add_rounded,
-                            color: AppColors.textPrimary, size: 22),
+                            color: AppColors.textOnDark, size: 22),
                       ),
                     ),
                   ],
@@ -270,19 +270,16 @@ class _OrderCard extends StatelessWidget {
       child: InkWell(
         onTap: () => context.push('/orders/${order.id}'),
         borderRadius: BorderRadius.circular(14),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border(
-              left: BorderSide(color: statusColor, width: 4),
-              top: const BorderSide(color: AppColors.border),
-              right: const BorderSide(color: AppColors.border),
-              bottom: const BorderSide(color: AppColors.border),
-            ),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Row(
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+              child: Row(
             children: [
               Expanded(
                 child: Column(
@@ -358,7 +355,25 @@ class _OrderCard extends StatelessWidget {
                 ],
               ),
             ],
-          ),
+              ),
+            ),
+            // Left accent bar
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

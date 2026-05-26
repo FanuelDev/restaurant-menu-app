@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -469,14 +470,14 @@ class _GiftOrderResult extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.qr_code_scanner_rounded,
-                          color: AppColors.textPrimary, size: 18),
+                          color: AppColors.textOnDark, size: 18),
                       const Gap(8),
                       Text(
                         'Scanner à nouveau',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: AppColors.textOnDark,
                         ),
                       ),
                     ],
@@ -522,7 +523,7 @@ class _GiftOrderView extends StatelessWidget {
           child: Row(
             children: [
               const Icon(Icons.card_giftcard_rounded,
-                  color: AppColors.textPrimary, size: 32),
+                  color: AppColors.textOnDark, size: 32),
               const Gap(16),
               Expanded(
                 child: Column(
@@ -533,14 +534,14 @@ class _GiftOrderView extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textOnDark,
                       ),
                     ),
                     Text(
                       order.orderNumber,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        color: AppColors.textPrimary
+                        color: AppColors.textOnDark
                             .withValues(alpha: 0.7),
                       ),
                     ),

@@ -8,15 +8,15 @@ class AppTheme {
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.brand,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       surface: AppColors.surface,
-      surfaceContainerHighest: AppColors.surfaceHigh,
       primary: AppColors.brand,
-      onPrimary: AppColors.textPrimary,
+      onPrimary: AppColors.textOnDark,
       secondary: AppColors.brandDark,
-      onSecondary: AppColors.textPrimary,
+      onSecondary: AppColors.textOnDark,
       error: AppColors.brand,
-      onError: AppColors.textPrimary,
+      onError: AppColors.textOnDark,
+      onSurface: AppColors.textPrimary,
     ).copyWith(
       surfaceTint: Colors.transparent,
     );
@@ -56,7 +56,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: colorScheme,
       textTheme: textTheme,
       scaffoldBackgroundColor: AppColors.background,
@@ -85,7 +85,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.brand,
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: AppColors.textOnDark,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
@@ -172,20 +172,20 @@ class AppTheme {
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.brand,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: AppColors.textOnDark,
         elevation: 0,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.transparent,
         selectedItemColor: AppColors.brand,
-        unselectedItemColor: AppColors.textMuted,
+        unselectedItemColor: AppColors.textOnDarkMuted,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.navBackground,
         selectedIconTheme: const IconThemeData(color: AppColors.brand),
-        unselectedIconTheme: const IconThemeData(color: AppColors.textMuted),
+        unselectedIconTheme: const IconThemeData(color: AppColors.textOnDarkMuted),
         selectedLabelTextStyle: GoogleFonts.poppins(
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -193,24 +193,24 @@ class AppTheme {
         ),
         unselectedLabelTextStyle: GoogleFonts.poppins(
           fontSize: 12,
-          color: AppColors.textMuted,
+          color: AppColors.textOnDarkMuted,
         ),
         indicatorColor: AppColors.brand.withValues(alpha: 0.15),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surfaceHigh,
-        contentTextStyle: GoogleFonts.poppins(color: AppColors.textPrimary),
+        backgroundColor: AppColors.navBackground,
+        contentTextStyle: GoogleFonts.poppins(color: AppColors.textOnDark),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.borderBright),
+          side: BorderSide(color: AppColors.brand.withValues(alpha: 0.3)),
         ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.borderBright),
+          side: const BorderSide(color: AppColors.border),
         ),
       ),
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
