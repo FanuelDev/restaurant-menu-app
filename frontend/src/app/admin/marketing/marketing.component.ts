@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
+import { forkJoin, switchMap } from 'rxjs'
 import QRCode from 'qrcode'
 import {
   MarketingService,
@@ -9,6 +10,16 @@ import {
   MarketingStats,
   CreateVoucherPayload,
 } from '../../shared/services/marketing.service'
+import { MenuService } from '../../shared/services/menu.service'
+import { OrderService } from '../../shared/services/order.service'
+import type { MenuItem, Category } from '../../shared/models'
+
+interface RedeemCartItem {
+  menuItemId: number
+  name: string
+  price: number
+  quantity: number
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -303,62 +314,152 @@ function today(): string {
 }
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
-     REDEEM MODAL
+     REDEEM DRAWER — Panier + calcul différentiel
 ═══════════════════════════════════════════════════════════════════════════ -->
 @if (showRedeemModal() && selectedVoucher()) {
-  <div class="modal-overlay" (click)="closeRedeemModal()">
-    <div class="modal animate-scale" (click)="$event.stopPropagation()" style="max-width:460px">
-      <div class="modal-header">
-        <h2 class="modal-title">Utiliser le bon</h2>
-        <button class="modal-close" (click)="closeRedeemModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+  <div class="rd-overlay" (click)="closeRedeemModal()"></div>
+  <div class="rd-drawer animate-slide-in" (click)="$event.stopPropagation()">
+
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <div class="rd-header">
+      <div class="rd-header-left">
+        <div class="rd-voucher-chip">
+          <span class="rd-chip-icon">🎟</span>
+          <span class="rd-chip-label">{{ selectedVoucher()!.label }}</span>
+          <span class="rd-chip-amount">{{ fmtAmount(selectedVoucher()!.amount) }}</span>
+        </div>
+        <div class="rd-customer-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <input class="rd-customer-input" type="text" [(ngModel)]="redeemForm.customerName"
+                 placeholder="Nom du client *" [class.rd-input-error]="redeemError() && !redeemForm.customerName.trim()" />
+        </div>
       </div>
-      <div class="modal-body">
+      <button class="rd-close" (click)="closeRedeemModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- ── Body ───────────────────────────────────────────────────── -->
+    <div class="rd-body">
+
+      <!-- Menu (gauche) -->
+      <div class="rd-menu-panel">
+        <div class="rd-search-wrap">
+          <svg class="rd-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="rd-search-input" type="text" [ngModel]="redeemMenuSearch()" (ngModelChange)="redeemMenuSearch.set($event)" placeholder="Rechercher un plat…" />
+        </div>
+
+        @if (redeemMenuLoading()) {
+          <div class="rd-menu-loading">
+            <div class="rd-skeleton" style="height:32px;width:40%;margin-bottom:8px"></div>
+            @for (_ of [1,2,3,4]; track $index) {
+              <div class="rd-skeleton" style="height:52px;margin-bottom:6px"></div>
+            }
+          </div>
+        } @else {
+          <div class="rd-menu-list">
+            @for (group of redeemMenuByCategory(); track group.cat) {
+              <div class="rd-cat-header">{{ group.cat }}</div>
+              @for (item of group.items; track item.id) {
+                <button class="rd-item" [class.rd-item-added]="isInRedeemCart(item.id)" (click)="addToRedeemCart(item)">
+                  <div class="rd-item-info">
+                    <span class="rd-item-name">{{ item.name }}</span>
+                    <span class="rd-item-price">{{ fmtAmount(item.price) }}</span>
+                  </div>
+                  @if (isInRedeemCart(item.id)) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--success);flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  }
+                </button>
+              }
+            }
+            @if (redeemMenuByCategory().length === 0) {
+              <div class="rd-empty-menu">Aucun plat disponible</div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Panier + calcul (droite) -->
+      <div class="rd-cart-panel">
 
         @if (redeemError()) {
-          <div class="alert alert-error" style="margin-bottom:var(--space-4)">{{ redeemError() }}</div>
+          <div class="alert alert-error" style="margin-bottom:var(--space-3);font-size:.875rem">{{ redeemError() }}</div>
         }
         @if (redeemSuccess()) {
-          <div class="alert alert-success" style="margin-bottom:var(--space-4)">{{ redeemSuccess() }}</div>
+          <div class="alert alert-success" style="margin-bottom:var(--space-3);font-size:.875rem">{{ redeemSuccess() }}</div>
         }
 
-        <div class="redeem-voucher-info">
-          <span class="event-badge">{{ eventLabel(selectedVoucher()!.eventType) }}</span>
-          <strong>{{ selectedVoucher()!.label }}</strong>
-          <span class="detail-val-big" style="margin-left:auto">{{ fmtAmount(selectedVoucher()!.amount) }}</span>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Nom du client <span style="color:var(--error)">*</span></label>
-          <input class="form-control" type="text" [(ngModel)]="redeemForm.customerName" placeholder="Prénom Nom" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Total de la commande (FCFA) <span style="color:var(--error)">*</span></label>
-          <input class="form-control" type="number" min="0" [(ngModel)]="redeemForm.orderTotal" placeholder="0" />
-        </div>
-
-        <!-- Live calculation -->
-        @if (redeemForm.orderTotal > 0) {
-          <div class="redeem-calc">
-            <div class="calc-row">
-              <span class="calc-label">Montant couvert par le bon</span>
-              <span class="calc-val calc-val-green">{{ fmtAmount(redeemCovered()) }}</span>
+        <!-- Liste panier -->
+        <div class="rd-cart-list">
+          @if (redeemCart().length === 0) {
+            <div class="rd-cart-empty">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-muted)"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61H19a2 2 0 001.97-1.67L22.5 6H6"/></svg>
+              <p>Sélectionnez des plats<br>dans le menu</p>
             </div>
-            <div class="calc-row">
-              <span class="calc-label">Surplus à payer par le client</span>
-              <span class="calc-val" [class.calc-val-muted]="redeemSurplus() === 0">{{ fmtAmount(redeemSurplus()) }}</span>
+          }
+          @for (item of redeemCart(); track item.menuItemId) {
+            <div class="rd-cart-item">
+              <div class="rd-ci-info">
+                <span class="rd-ci-name">{{ item.name }}</span>
+                <span class="rd-ci-price">{{ fmtAmount(item.price * item.quantity) }}</span>
+              </div>
+              <div class="rd-ci-controls">
+                <button class="rd-qty-btn" (click)="updateRedeemQty(item.menuItemId, -1)">−</button>
+                <span class="rd-qty-val">{{ item.quantity }}</span>
+                <button class="rd-qty-btn" (click)="updateRedeemQty(item.menuItemId, 1)">+</button>
+                <button class="rd-remove-btn" (click)="removeFromRedeemCart(item.menuItemId)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
             </div>
+          }
+        </div>
+
+        <!-- Calcul différentiel -->
+        @if (redeemCart().length > 0) {
+          <div class="rd-calc">
+            <div class="rd-calc-row">
+              <span>Total commande</span>
+              <strong>{{ fmtAmount(redeemCartTotal()) }}</strong>
+            </div>
+            <div class="rd-calc-divider"></div>
+            <div class="rd-calc-row rd-calc-green">
+              <span>Couvert par le bon</span>
+              <strong>− {{ fmtAmount(redeemCovered()) }}</strong>
+            </div>
+            @if (redeemSurplus() > 0) {
+              <div class="rd-calc-surplus">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div>
+                  <div class="rd-surplus-label">Surplus à encaisser</div>
+                  <div class="rd-surplus-amount">{{ fmtAmount(redeemSurplus()) }}</div>
+                </div>
+              </div>
+            } @else if (redeemCartTotal() > 0) {
+              <div class="rd-calc-covered">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Entièrement couvert par le bon
+              </div>
+            }
           </div>
         }
 
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" (click)="closeRedeemModal()">Annuler</button>
-        <button class="btn btn-primary" [disabled]="redeeming() || !!redeemSuccess()" (click)="submitRedeem()">
-          {{ redeeming() ? 'Validation…' : 'Valider l\'utilisation' }}
-        </button>
+        <!-- Footer actions -->
+        <div class="rd-footer">
+          <button class="btn btn-outline" (click)="closeRedeemModal()">Annuler</button>
+          <button class="btn btn-primary"
+                  [disabled]="redeeming() || !!redeemSuccess() || redeemCart().length === 0"
+                  (click)="submitRedeem()">
+            @if (redeeming()) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0"/></svg>
+              Validation…
+            } @else {
+              Valider la commande
+            }
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -681,42 +782,211 @@ function today(): string {
     }
     @media (max-width: 480px) { .form-row { flex-direction: column; } }
 
-    /* ── Redeem modal ────────────────────────────────── */
-    .redeem-voucher-info {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      background: var(--gray-50);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      margin-bottom: var(--space-4);
-      flex-wrap: wrap;
+    /* ── Redeem drawer ───────────────────────────────── */
+    .rd-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 200;
+      animation: fadeIn .2s ease;
     }
-    .redeem-calc {
-      background: var(--gray-50);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4);
+    .rd-drawer {
+      position: fixed; inset: 0;
+      z-index: 201;
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
+      background: var(--surface-1);
+      border-left: 1px solid var(--border);
+      max-width: 900px;
+      margin-left: auto;
+      overflow: hidden;
     }
-    .calc-row {
+
+    /* Header */
+    .rd-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: var(--space-3);
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+      flex-shrink: 0;
     }
-    .calc-label { font-size: .875rem; color: var(--text-secondary); }
-    .calc-val { font-size: .9375rem; font-weight: 700; color: var(--text-primary); }
-    .calc-val-green { color: var(--success); }
-    .calc-val-muted { color: var(--text-muted); }
+    .rd-header-left { flex: 1; display: flex; flex-direction: column; gap: var(--space-3); }
+    .rd-voucher-chip {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      background: var(--color-brand); border-radius: var(--radius-full);
+      padding: 4px 12px 4px 8px; width: fit-content;
+    }
+    .rd-chip-icon { font-size: 1rem; }
+    .rd-chip-label { font-size: .875rem; font-weight: 600; color: white; }
+    .rd-chip-amount { font-size: .875rem; font-weight: 800; color: white; margin-left: var(--space-1); }
+    .rd-customer-row {
+      display: flex; align-items: center; gap: var(--space-2);
+      color: var(--text-secondary);
+    }
+    .rd-customer-input {
+      flex: 1; border: none; outline: none;
+      background: var(--surface-1);
+      color: var(--text-primary); font-size: .9375rem; font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+      border: 1.5px solid var(--border);
+      max-width: 320px;
+      transition: border-color var(--t-fast);
+    }
+    .rd-customer-input:focus { border-color: var(--color-brand); }
+    .rd-input-error { border-color: var(--error) !important; }
+    .rd-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); padding: var(--space-2);
+      border-radius: var(--radius-md); transition: all var(--t-fast);
+      flex-shrink: 0;
+    }
+    .rd-close:hover { background: var(--surface-3); color: var(--text-primary); }
+
+    /* Body */
+    .rd-body {
+      display: flex; flex: 1; overflow: hidden;
+    }
+
+    /* Menu panel (gauche) */
+    .rd-menu-panel {
+      width: 340px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .rd-search-wrap {
+      position: relative; padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .rd-search-icon {
+      position: absolute; left: calc(var(--space-4) + 10px); top: 50%;
+      transform: translateY(-50%); color: var(--text-muted); pointer-events: none;
+    }
+    .rd-search-input {
+      width: 100%; padding: var(--space-2) var(--space-3) var(--space-2) 32px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface-1); color: var(--text-primary);
+      font-family: var(--font-body); font-size: .875rem; outline: none;
+      transition: border-color var(--t-fast);
+    }
+    .rd-search-input:focus { border-color: var(--color-brand); }
+    .rd-menu-list { flex: 1; overflow-y: auto; padding: var(--space-2) 0; }
+    .rd-menu-loading { padding: var(--space-4); }
+    .rd-skeleton {
+      background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%; animation: shimmer 1.4s infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .rd-cat-header {
+      padding: var(--space-2) var(--space-4) var(--space-1);
+      font-size: .7rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-top: var(--space-2);
+    }
+    .rd-item {
+      width: 100%; display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4); border: none; background: none;
+      cursor: pointer; text-align: left; font-family: var(--font-body);
+      transition: background var(--t-fast); border-radius: 0;
+    }
+    .rd-item:hover { background: var(--surface-2); }
+    .rd-item-added { background: rgba(22,163,74,.08); }
+    .rd-item-added:hover { background: rgba(22,163,74,.12); }
+    .rd-item-info { flex: 1; }
+    .rd-item-name { display: block; font-size: .875rem; font-weight: 500; color: var(--text-primary); }
+    .rd-item-price { display: block; font-size: .8rem; color: var(--color-brand); font-weight: 600; margin-top: 2px; }
+    .rd-empty-menu { padding: var(--space-8); text-align: center; color: var(--text-muted); font-size: .875rem; }
+
+    /* Cart panel (droite) */
+    .rd-cart-panel {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+      padding: var(--space-4) var(--space-5);
+      gap: var(--space-4);
+    }
+    .rd-cart-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); }
+    .rd-cart-empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: var(--space-3);
+      color: var(--text-muted); text-align: center; font-size: .875rem;
+      line-height: 1.6;
+    }
+    .rd-cart-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-2); border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .rd-ci-info { flex: 1; }
+    .rd-ci-name { display: block; font-size: .875rem; font-weight: 500; color: var(--text-primary); }
+    .rd-ci-price { display: block; font-size: .8rem; color: var(--color-brand); font-weight: 700; margin-top: 2px; }
+    .rd-ci-controls { display: flex; align-items: center; gap: var(--space-2); }
+    .rd-qty-btn {
+      width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border);
+      background: var(--surface-1); color: var(--text-primary); font-size: 1rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-body); transition: all var(--t-fast);
+    }
+    .rd-qty-btn:hover { border-color: var(--color-brand); color: var(--color-brand); }
+    .rd-qty-val { font-size: .875rem; font-weight: 700; color: var(--text-primary); min-width: 20px; text-align: center; }
+    .rd-remove-btn {
+      width: 24px; height: 24px; border: none; background: none; cursor: pointer;
+      color: var(--text-muted); border-radius: var(--radius-sm); padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t-fast);
+    }
+    .rd-remove-btn:hover { color: var(--error); background: var(--error-bg); }
+
+    /* Calcul différentiel */
+    .rd-calc {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: var(--space-4);
+      display: flex; flex-direction: column; gap: var(--space-3);
+      flex-shrink: 0;
+    }
+    .rd-calc-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .9rem; color: var(--text-secondary);
+    }
+    .rd-calc-row strong { color: var(--text-primary); font-weight: 700; }
+    .rd-calc-divider { height: 1px; background: var(--border); }
+    .rd-calc-green { color: var(--success); }
+    .rd-calc-green strong { color: var(--success); }
+    .rd-calc-surplus {
+      display: flex; align-items: center; gap: var(--space-3);
+      background: var(--warning-bg); border: 1.5px solid var(--warning-border);
+      border-radius: var(--radius-md); padding: var(--space-3);
+      color: var(--warning);
+    }
+    .rd-surplus-label { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .rd-surplus-amount { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+    .rd-calc-covered {
+      display: flex; align-items: center; gap: var(--space-2);
+      color: var(--success); font-size: .875rem; font-weight: 600;
+    }
+
+    /* Footer */
+    .rd-footer {
+      display: flex; gap: var(--space-3); justify-content: flex-end;
+      flex-shrink: 0; padding-top: var(--space-2);
+      border-top: 1px solid var(--border);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .rd-drawer { max-width: 100%; }
+      .rd-body { flex-direction: column; }
+      .rd-menu-panel { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border); }
+    }
   `],
 })
 export class MarketingComponent implements OnInit {
-  private readonly svc = inject(MarketingService)
+  private readonly svc          = inject(MarketingService)
+  private readonly menuService  = inject(MenuService)
+  private readonly orderService = inject(OrderService)
 
   // ── State ──────────────────────────────────────────────────────────────────
   readonly stats        = signal<MarketingStats | null>(null)
@@ -750,26 +1020,48 @@ export class MarketingComponent implements OnInit {
     notes: string
   } = { label: '', eventType: '', amount: null, validFrom: today(), validUntil: '', maxUsages: null, notes: '' }
 
-  // Redeem modal
-  readonly showRedeemModal = signal(false)
-  readonly redeeming       = signal(false)
-  readonly redeemError     = signal<string | null>(null)
-  readonly redeemSuccess   = signal<string | null>(null)
+  // Redeem drawer — panier
+  readonly showRedeemModal   = signal(false)
+  readonly redeeming         = signal(false)
+  readonly redeemError       = signal<string | null>(null)
+  readonly redeemSuccess     = signal<string | null>(null)
+  readonly redeemMenuItems   = signal<MenuItem[]>([])
+  readonly redeemCategories  = signal<Category[]>([])
+  readonly redeemMenuLoading = signal(false)
+  readonly redeemMenuSearch  = signal('')
+  readonly redeemCart        = signal<RedeemCartItem[]>([])
 
-  redeemForm: { customerName: string; orderTotal: number } = { customerName: '', orderTotal: 0 }
+  redeemForm: { customerName: string } = { customerName: '' }
+
+  readonly redeemCartTotal = computed(() =>
+    this.redeemCart().reduce((s, i) => s + i.price * i.quantity, 0)
+  )
 
   readonly redeemCovered = computed(() => {
     if (!this.selectedVoucher()) return 0
-    const amt = this.selectedVoucher()!.amount
-    const total = this.redeemForm.orderTotal
-    return Math.min(amt, total)
+    return Math.min(this.selectedVoucher()!.amount, this.redeemCartTotal())
   })
 
   readonly redeemSurplus = computed(() => {
     if (!this.selectedVoucher()) return 0
-    const amt = this.selectedVoucher()!.amount
-    const total = this.redeemForm.orderTotal
-    return Math.max(0, total - amt)
+    return Math.max(0, this.redeemCartTotal() - this.selectedVoucher()!.amount)
+  })
+
+  readonly redeemFilteredItems = computed(() => {
+    const q = this.redeemMenuSearch().toLowerCase().trim()
+    if (!q) return this.redeemMenuItems()
+    return this.redeemMenuItems().filter(i =>
+      i.name.toLowerCase().includes(q) ||
+      (i.category?.name ?? '').toLowerCase().includes(q)
+    )
+  })
+
+  readonly redeemMenuByCategory = computed(() => {
+    const cats  = this.redeemCategories()
+    const items = this.redeemFilteredItems()
+    return cats
+      .map(cat => ({ cat: cat.name, items: items.filter(i => i.categoryId === cat.id) }))
+      .filter(g => g.items.length > 0)
   })
 
   // Delete
@@ -938,12 +1230,34 @@ export class MarketingComponent implements OnInit {
     })
   }
 
-  // ── Redeem ─────────────────────────────────────────────────────────────────
+  // ── Redeem drawer ─────────────────────────────────────────────────────────
   openRedeem(): void {
-    this.redeemForm = { customerName: '', orderTotal: 0 }
+    this.redeemForm = { customerName: '' }
+    this.redeemCart.set([])
+    this.redeemMenuSearch.set('')
     this.redeemError.set(null)
     this.redeemSuccess.set(null)
     this.showRedeemModal.set(true)
+
+    // Charger le menu si pas encore chargé
+    if (this.redeemMenuItems().length === 0) {
+      this.redeemMenuLoading.set(true)
+      forkJoin({
+        cats:  this.menuService.loadAdminCategories(),
+        items: this.menuService.loadAdminItems(),
+      }).subscribe({
+        next: ({ cats, items }) => {
+          this.redeemCategories.set(cats)
+          this.redeemMenuItems.set(
+            items
+              .filter((i: MenuItem) => i.isAvailable !== false)
+              .map((i: MenuItem) => ({ ...i, category: cats.find((c: Category) => c.id === i.categoryId) }))
+          )
+          this.redeemMenuLoading.set(false)
+        },
+        error: () => this.redeemMenuLoading.set(false),
+      })
+    }
   }
 
   closeRedeemModal(): void {
@@ -952,9 +1266,42 @@ export class MarketingComponent implements OnInit {
     this.redeemSuccess.set(null)
   }
 
+  // Cart helpers
+  isInRedeemCart(menuItemId: number): boolean {
+    return this.redeemCart().some(i => i.menuItemId === menuItemId)
+  }
+
+  addToRedeemCart(item: MenuItem): void {
+    if (this.isInRedeemCart(item.id)) return
+    this.redeemCart.update(list => [...list, {
+      menuItemId: item.id,
+      name:       item.name,
+      price:      item.price,
+      quantity:   1,
+    }])
+  }
+
+  removeFromRedeemCart(menuItemId: number): void {
+    this.redeemCart.update(list => list.filter(i => i.menuItemId !== menuItemId))
+  }
+
+  updateRedeemQty(menuItemId: number, delta: number): void {
+    this.redeemCart.update(list => list.map(i =>
+      i.menuItemId === menuItemId
+        ? { ...i, quantity: Math.max(1, Math.min(99, i.quantity + delta)) }
+        : i
+    ))
+  }
+
   submitRedeem(): void {
-    if (!this.redeemForm.customerName.trim()) { this.redeemError.set('Le nom du client est requis.'); return }
-    if (!this.redeemForm.orderTotal || this.redeemForm.orderTotal <= 0) { this.redeemError.set('Le total de la commande doit être supérieur à 0.'); return }
+    if (!this.redeemForm.customerName.trim()) {
+      this.redeemError.set('Le nom du client est requis.')
+      return
+    }
+    if (this.redeemCart().length === 0) {
+      this.redeemError.set('Ajoutez au moins un plat au panier.')
+      return
+    }
 
     const v = this.selectedVoucher()
     if (!v) return
@@ -962,16 +1309,33 @@ export class MarketingComponent implements OnInit {
     this.redeeming.set(true)
     this.redeemError.set(null)
 
-    this.svc.redeemVoucher(v.id, {
-      customerName: this.redeemForm.customerName.trim(),
-      orderTotal:   this.redeemForm.orderTotal,
-    }).subscribe({
+    // 1) Créer la commande
+    this.orderService.adminCreateOrder({
+      customerName:  this.redeemForm.customerName.trim(),
+      customerPhone: null,
+      customerEmail: null,
+      notes:         `Bon marketing: ${v.label}`,
+      status:        'confirmed',
+      items: this.redeemCart().map(i => ({
+        menuItemId:          i.menuItemId,
+        quantity:            i.quantity,
+        specialInstructions: null,
+      })),
+    }).pipe(
+      // 2) Racheter le bon avec l'orderId
+      switchMap(order =>
+        this.svc.redeemVoucher(v.id, {
+          customerName: this.redeemForm.customerName.trim(),
+          orderTotal:   this.redeemCartTotal(),
+          orderId:      order.id,
+        })
+      )
+    ).subscribe({
       next: (res) => {
         this.redeeming.set(false)
-        this.redeemSuccess.set(res.message ?? 'Bon utilisé avec succès.')
+        this.redeemSuccess.set(res.message ?? 'Commande enregistrée et bon validé.')
         this.loadStats()
         this.loadVouchers()
-        // Refresh selected voucher
         setTimeout(() => {
           this.closeRedeemModal()
           if (v) this.openDetail({ ...v })
