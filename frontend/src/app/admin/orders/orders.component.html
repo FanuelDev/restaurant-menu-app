@@ -100,10 +100,28 @@
                 {{ t('orders.tabAll') }}
               </button>
               <button class="tab" [class.tab-active]="activeTab() === 'pending'" (click)="setTab('pending')">
-                {{ t('orders.tabPending') }}
+                <span class="tab-dot" style="background:#F59E0B"></span>
+                {{ t('orders.status.pending') }}
               </button>
               <button class="tab" [class.tab-active]="activeTab() === 'confirmed'" (click)="setTab('confirmed')">
-                {{ t('orders.tabConfirmed') }}
+                <span class="tab-dot" style="background:#3B82F6"></span>
+                {{ t('orders.status.confirmed') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'preparing'" (click)="setTab('preparing')">
+                <span class="tab-dot" style="background:#8B5CF6"></span>
+                {{ t('orders.status.preparing') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'ready'" (click)="setTab('ready')">
+                <span class="tab-dot" style="background:#10B981"></span>
+                {{ t('orders.status.ready') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'delivered'" (click)="setTab('delivered')">
+                <span class="tab-dot" style="background:#6B7280"></span>
+                {{ t('orders.status.delivered') }}
+              </button>
+              <button class="tab" [class.tab-active]="activeTab() === 'cancelled'" (click)="setTab('cancelled')">
+                <span class="tab-dot" style="background:#EF4444"></span>
+                {{ t('orders.status.cancelled') }}
               </button>
               <button class="tab" [class.tab-active]="activeTab() === 'gift'" (click)="setTab('gift')">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>

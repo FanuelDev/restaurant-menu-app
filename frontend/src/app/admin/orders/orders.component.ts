@@ -216,10 +216,11 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     /* Filter bar */
     .filter-bar {
       display: flex;
-      align-items: center;
-      gap: var(--space-4);
+      align-items: flex-start;
+      gap: var(--space-3);
       margin-bottom: var(--space-5);
       flex-wrap: wrap;
+      overflow: hidden;
     }
     .filter-tabs {
       display: flex;
@@ -228,24 +229,36 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 3px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+      max-width: 100%;
     }
+    .filter-tabs::-webkit-scrollbar { display: none; }
     .tab {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
+      padding: var(--space-2) var(--space-3);
       border: none;
       background: none;
       border-radius: calc(var(--radius-md) - 2px);
-      font-size: .875rem;
+      font-size: .8125rem;
       font-weight: 600;
       color: var(--text-secondary);
       cursor: pointer;
       font-family: var(--font-body);
       transition: color var(--t-fast), background var(--t-fast);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .tab:hover { color: var(--text-primary); }
     .tab-active { background: var(--surface-2); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .tab-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
     .search-wrap {
       position: relative;
@@ -740,7 +753,7 @@ export class OrdersComponent implements OnInit {
   readonly scanError = signal('')
   readonly detailOrder = signal<Order | null>(null)
 
-  readonly activeTab = signal<'all' | 'pending' | 'confirmed' | 'gift'>('all')
+  readonly activeTab = signal<'all' | OrderStatus | 'gift'>('all')
 
   searchQuery = ''
   scanTokenValue = ''
@@ -821,7 +834,7 @@ export class OrdersComponent implements OnInit {
     this.loadOrders()
   }
 
-  setTab(tab: 'all' | 'pending' | 'confirmed' | 'gift'): void {
+  setTab(tab: 'all' | OrderStatus | 'gift'): void {
     this.activeTab.set(tab)
     this.meta.update(m => ({ ...m, currentPage: 1 }))
     this.loadOrders()
@@ -867,19 +880,27 @@ export class OrdersComponent implements OnInit {
   closeDetail(): void { this.detailOrder.set(null) }
 
   updateStatusAndSync(order: Order, status: OrderStatus): void {
-    this.updateStatus(order, status)
-    // update detail panel live
+    // Optimistically update the detail drawer immediately
     this.detailOrder.update(o => o ? { ...o, status } : null)
+    this.updateStatus(order, status)
   }
 
   updateStatus(order: Order, status: OrderStatus): void {
     this.updatingId.set(order.id)
+    // Optimistic update — buttons refresh immediately without waiting for the API
+    this.orders.update(list => list.map(o => o.id === order.id ? { ...o, status } : o))
+
     this.orderService.updateOrderStatus(order.id, status).subscribe({
       next: (updated) => {
+        // Confirm with the full server response
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o))
         this.updatingId.set(null)
       },
-      error: () => this.updatingId.set(null),
+      error: () => {
+        // Revert on failure
+        this.orders.update(list => list.map(o => o.id === order.id ? order : o))
+        this.updatingId.set(null)
+      },
     })
   }
 
