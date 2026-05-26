@@ -81,9 +81,9 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
       padding: 6px 14px; border: none; background: transparent; border-radius: 7px;
       font-size: .8125rem; font-weight: 500; color: var(--text-secondary); cursor: pointer;
       transition: all .15s; white-space: nowrap;
-      &:hover { background: white; color: var(--text-primary); }
+      &:hover { background: var(--surface-1); color: var(--text-primary); }
     }
-    .fn-period-active { background: white !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .fn-period-active { background: var(--surface-2) !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
 
     /* ── Skeleton ──────────────────────────────────────────────────────────── */
     .fn-skeleton { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
@@ -97,7 +97,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     .fn-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 
     .fn-kpi {
-      background: white; border-radius: 14px; padding: 20px;
+      background: var(--surface-1); border-radius: 14px; padding: 20px;
       border: 1px solid var(--border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
       display: flex; flex-direction: column; gap: 4px;
@@ -126,7 +126,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     .fn-icon-margin { background: #dbeafe; color: #3b82f6; }
 
     .fn-kpi-loss .fn-kpi-value { color: #ef4444; }
-    .fn-kpi-loss .fn-icon-profit { background: #fee2e2; color: #ef4444; }
+    .fn-kpi-loss .fn-icon-profit { background: var(--error-bg); color: var(--error); }
 
     .fn-margin-bar {
       height: 4px; background: var(--gray-100); border-radius: 4px; overflow: hidden; margin-top: 8px;
@@ -140,7 +140,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     .fn-charts-row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 20px; }
 
     .fn-chart-card {
-      background: white; border-radius: 14px; padding: 20px;
+      background: var(--surface-1); border-radius: 14px; padding: 20px;
       border: 1px solid var(--border);
       box-shadow: 0 1px 4px rgba(0,0,0,.04);
     }
@@ -176,7 +176,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     }
 
     /* ── Transactions ───────────────────────────────────────────────────────── */
-    .fn-transactions { background: white; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden; }
+    .fn-transactions { background: var(--surface-1); border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden; }
     .fn-tx-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 16px 20px; border-bottom: 1px solid var(--border);
@@ -227,12 +227,12 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     .fn-tx-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
     .fn-tx-item:hover .fn-tx-actions { opacity: 1; }
     .fn-icon-btn {
-      width: 28px; height: 28px; border: 1px solid var(--border); background: white;
+      width: 28px; height: 28px; border: 1px solid var(--border); background: var(--surface-1);
       border-radius: 6px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--text-muted); transition: all .15s;
       &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
     }
-    .fn-icon-del:hover { background: #fee2e2 !important; color: #ef4444 !important; border-color: #fca5a5 !important; }
+    .fn-icon-del:hover { background: var(--error-bg) !important; color: var(--error) !important; border-color: rgba(220,38,38,0.3) !important; }
 
     .fn-empty {
       padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;
@@ -241,7 +241,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     }
     .fn-empty-icon { font-size: 2.5rem; }
     .fn-empty-btn {
-      margin-top: 4px; padding: 8px 18px; border: 1px solid var(--border); background: white;
+      margin-top: 4px; padding: 8px 18px; border: 1px solid var(--border); background: var(--surface-1);
       border-radius: 8px; font-size: .8125rem; font-weight: 500; cursor: pointer;
       transition: all .15s; color: var(--text-secondary);
       &:hover { background: var(--gray-50); color: var(--text-primary); }
@@ -256,7 +256,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
       animation: fadeIn .15s ease;
     }
     .fn-modal {
-      background: white; border-radius: 16px; width: 100%; max-width: 480px;
+      background: var(--surface-1); border-radius: 16px; width: 100%; max-width: 480px;
       box-shadow: 0 24px 64px rgba(0,0,0,.18);
       animation: slideUp .18s ease;
     }
@@ -266,7 +266,7 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
       h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
     }
     .fn-modal-close {
-      width: 32px; height: 32px; border: 1px solid var(--border); background: white;
+      width: 32px; height: 32px; border: 1px solid var(--border); background: var(--surface-1);
       border-radius: 8px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; color: var(--text-muted); transition: all .15s;
       &:hover { background: var(--gray-50); }
@@ -290,13 +290,13 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
       font-size: .8rem; color: var(--text-muted); font-weight: 600; pointer-events: none;
     }
-    .fn-form-error { margin: 0 24px; padding: 10px 14px; background: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: .8125rem; }
+    .fn-form-error { margin: 0 24px; padding: 10px 14px; background: var(--error-bg); border-radius: 8px; color: var(--error); font-size: .8125rem; }
     .fn-modal-footer {
       display: flex; justify-content: flex-end; gap: 8px;
       padding: 16px 24px; border-top: 1px solid var(--border);
     }
     .fn-btn-cancel {
-      padding: 9px 18px; border: 1px solid var(--border); background: white;
+      padding: 9px 18px; border: 1px solid var(--border); background: var(--surface-1);
       border-radius: 8px; font-size: .875rem; font-weight: 500; cursor: pointer; color: var(--text-secondary);
       transition: all .15s;
       &:hover { background: var(--gray-50); }

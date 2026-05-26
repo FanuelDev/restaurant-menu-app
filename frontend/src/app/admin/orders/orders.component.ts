@@ -28,12 +28,12 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 }
 
 const STATUS_BG: Record<OrderStatus, string> = {
-  pending:   '#FFFBEB',
-  confirmed: '#EFF6FF',
-  preparing: '#F5F3FF',
-  ready:     '#ECFDF5',
-  delivered: '#F9FAFB',
-  cancelled: '#FEF2F2',
+  pending:   'var(--warning-bg)',
+  confirmed: 'rgba(37,99,235,0.12)',
+  preparing: 'rgba(109,40,217,0.12)',
+  ready:     'var(--success-bg)',
+  delivered: 'rgba(107,114,128,0.10)',
+  cancelled: 'var(--error-bg)',
 }
 
 const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']
@@ -57,8 +57,8 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       display: flex;
       align-items: flex-start;
       gap: var(--space-6);
-      background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
-      border: 1.5px solid #DDD6FE;
+      background: linear-gradient(135deg, rgba(109,40,217,0.15) 0%, rgba(109,40,217,0.08) 100%);
+      border: 1.5px solid rgba(109,40,217,0.3);
       border-radius: var(--radius-md);
       padding: var(--space-8);
       margin-bottom: var(--space-6);
@@ -66,7 +66,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .locked-icon {
       width: 56px;
       height: 56px;
-      background: white;
+      background: var(--surface-1);
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
@@ -78,12 +78,12 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .locked-title {
       font-size: 1.125rem;
       font-weight: 700;
-      color: #3B0764;
+      color: var(--text-primary);
       margin-bottom: var(--space-2);
     }
     .locked-desc {
       font-size: .9375rem;
-      color: #6D28D9;
+      color: var(--color-brand);
       line-height: 1.6;
       margin-bottom: var(--space-4);
     }
@@ -183,7 +183,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .scan-error {
       margin-top: var(--space-3);
       padding: var(--space-3) var(--space-4);
-      background: #FEF2F2;
+      background: var(--error-bg);
       color: #DC2626;
       border-radius: var(--radius-md);
       font-size: .875rem;
@@ -193,7 +193,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: var(--space-4);
-      background: white;
+      background: var(--surface-1);
     }
     .scanned-card-row {
       display: flex;
@@ -245,7 +245,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       transition: color var(--t-fast), background var(--t-fast);
     }
     .tab:hover { color: var(--text-primary); }
-    .tab-active { background: white; color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .tab-active { background: var(--surface-2); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 
     .search-wrap {
       position: relative;
@@ -269,7 +269,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       font-family: var(--font-body);
       color: var(--text-primary);
       outline: none;
-      background: white;
+      background: var(--surface-1);
     }
     .search-input:focus { border-color: var(--color-brand); }
 
@@ -288,7 +288,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .orders-list { display: flex; flex-direction: column; gap: var(--space-3); }
 
     .order-card {
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: var(--space-5);
@@ -339,7 +339,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       gap: var(--space-2);
       font-size: .8125rem;
       color: #7C3AED;
-      background: #F5F3FF;
+      background: rgba(109,40,217,0.10);
       border: 1px solid #DDD6FE;
       border-radius: var(--radius-full);
       padding: 2px 10px;
@@ -362,7 +362,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       padding: var(--space-2) var(--space-3);
       border: 1.5px solid;
       border-radius: var(--radius-md);
-      background: white;
+      background: var(--surface-1);
       font-size: .8125rem;
       font-weight: 600;
       cursor: pointer;
@@ -379,7 +379,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       padding: var(--space-2) var(--space-3);
       border: 1.5px solid #FECACA;
       border-radius: var(--radius-md);
-      background: #FFF5F5;
+      background: var(--error-bg);
       color: #EF4444;
       font-size: .8125rem;
       font-weight: 600;
@@ -414,7 +414,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       padding: var(--space-2) var(--space-4);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      background: white;
+      background: var(--surface-1);
       font-size: .875rem;
       font-weight: 600;
       color: var(--text-primary);
@@ -457,7 +457,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       position: fixed;
       top: 0; right: 0; bottom: 0;
       width: min(440px, 100vw);
-      background: white;
+      background: var(--surface-1);
       z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: -4px 0 32px rgba(0,0,0,.14);
@@ -511,7 +511,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       display: flex; justify-content: space-between; align-items: flex-start;
       padding: var(--space-3) var(--space-4); gap: var(--space-3);
       border-bottom: 1px solid var(--gray-100);
-      background: white;
+      background: var(--surface-1);
     }
     .detail-item:last-of-type { border-bottom: none; }
     .detail-item-left { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; }
@@ -541,7 +541,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       line-height: 1.6;
     }
 
-    .detail-gift-section { background: #FFFBEB; }
+    .detail-gift-section { background: var(--warning-bg); }
     .gift-title { color: #92400E; }
     .detail-gift-msg {
       font-size: .9375rem; color: #78350F;
@@ -566,7 +566,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     }
     .create-drawer {
       position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw);
-      background: white; z-index: 1001;
+      background: var(--surface-1); z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: -4px 0 32px rgba(0,0,0,.16);
       animation: slideIn .22s cubic-bezier(.16,1,.3,1);
@@ -606,7 +606,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       padding: var(--space-3) var(--space-4);
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       font-size: .9rem; font-family: var(--font-body); color: var(--text-primary);
-      background: white; outline: none; width: 100%;
+      background: var(--surface-1); outline: none; width: 100%;
       transition: border-color var(--t-fast);
     }
     .field-input:focus, .field-select:focus, .field-textarea:focus {
@@ -632,7 +632,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
       display: flex; align-items: center; gap: var(--space-3);
       padding: var(--space-2) var(--space-3);
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      margin-bottom: var(--space-2); background: white;
+      margin-bottom: var(--space-2); background: var(--surface-1);
       cursor: pointer; transition: border-color var(--t-fast), background var(--t-fast);
     }
     .menu-item-row:hover { border-color: var(--brand); background: var(--brand-subtle); }
@@ -659,7 +659,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     .cart-qty-ctrl { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
     .qty-btn {
       width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border);
-      background: white; cursor: pointer; font-size: .9rem; font-weight: 700;
+      background: var(--surface-1); cursor: pointer; font-size: .9rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       transition: border-color var(--t-fast);
     }
@@ -691,7 +691,7 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     }
     .cd-cancel {
       flex: 1; padding: var(--space-3); border: 1.5px solid var(--border);
-      border-radius: var(--radius-md); background: white;
+      border-radius: var(--radius-md); background: var(--surface-1);
       font-size: .9rem; font-weight: 600; cursor: pointer; font-family: var(--font-body);
       color: var(--text-secondary); transition: all var(--t-fast);
     }

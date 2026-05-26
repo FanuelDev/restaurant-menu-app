@@ -20,7 +20,7 @@ import type { StatsData } from '../../shared/models'
 
     /* Upgrade */
     .upgrade-card {
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-xl);
+      background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-xl);
       padding: var(--space-12) var(--space-8); text-align: center;
       display: flex; flex-direction: column; align-items: center; gap: var(--space-4);
     }
@@ -51,7 +51,7 @@ import type { StatsData } from '../../shared/models'
     @media (max-width: 768px) { .overview-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .stat-card {
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+      background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-lg);
       padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1);
       animation: slideUpFade .4s var(--ease-spring) both;
     }
@@ -65,7 +65,7 @@ import type { StatsData } from '../../shared/models'
 
     /* Chart */
     .chart-card {
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-xl);
+      background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-xl);
       padding: var(--space-6); margin-bottom: var(--space-5);
       animation: slideUpFade .45s var(--ease-spring) .1s both;
     }
@@ -98,7 +98,7 @@ import type { StatsData } from '../../shared/models'
     @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
 
     .list-card {
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-xl);
+      background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-xl);
       padding: var(--space-6); animation: slideUpFade .5s var(--ease-spring) .15s both;
     }
     .list-title { font-size: .9375rem; font-weight: 700; margin: 0 0 var(--space-1); color: var(--text-primary); }

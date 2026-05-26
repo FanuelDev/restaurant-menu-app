@@ -48,7 +48,7 @@ import { TranslocoModule } from '@jsverse/transloco'
       backdrop-filter: blur(4px);
     }
     .confirm-box {
-      background: white; border-radius: var(--radius-xl);
+      background: var(--surface-1); border-radius: var(--radius-xl);
       padding: var(--space-6); max-width: 440px; width: 90%;
       box-shadow: var(--shadow-xl); animation: scaleIn .3s var(--ease-spring) both;
     }
@@ -84,7 +84,7 @@ import { TranslocoModule } from '@jsverse/transloco'
       background: transparent; cursor: pointer; font-size: .8125rem; font-weight: 500;
       color: var(--text-muted); transition: all var(--t-fast);
     }
-    .cycle-toggle button.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .cycle-toggle button.active { background: var(--surface-2); color: var(--text-primary); box-shadow: var(--shadow-xs); }
     .discount {
       background: var(--success-bg); color: var(--success);
       font-size: .65rem; padding: .1rem .35rem;
@@ -93,7 +93,7 @@ import { TranslocoModule } from '@jsverse/transloco'
 
     .plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
     .plan-card {
-      background: white; border-radius: var(--radius-lg);
+      background: var(--surface-1); border-radius: var(--radius-lg);
       padding: var(--space-6); border: 2px solid var(--border);
       transition: box-shadow var(--t-fast), border-color var(--t-fast);
       animation: slideUpFade .4s var(--ease-spring) both;

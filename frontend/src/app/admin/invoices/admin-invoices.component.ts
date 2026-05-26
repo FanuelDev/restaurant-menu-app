@@ -129,7 +129,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     .invoices-list { display: flex; flex-direction: column; gap: var(--space-4); }
 
     .invoice-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); overflow: hidden;
       animation: slideUpFade .35s var(--ease-spring) both;
     }
@@ -154,8 +154,8 @@ import { printInvoice } from '../../shared/utils/invoice-print'
       border-radius: var(--radius-full); font-size: .7rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: .05em;
     }
-    .chip-free { background: #dcfce7; color: #166534; }
-    .chip-reduced { background: #fef9c3; color: #854d0e; }
+    .chip-free { background: var(--success-bg); color: var(--success); }
+    .chip-reduced { background: var(--warning-bg); color: var(--warning); }
     .chip-full { background: #f0f9ff; color: #0369a1; }
 
     /* Body */
@@ -183,11 +183,11 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     .invoice-footer {
       padding: var(--space-3) var(--space-5);
       border-top: 1px solid var(--border);
-      background: white;
+      background: var(--surface-1);
     }
     .btn-pdf {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: .4rem var(--space-4); background: white;
+      padding: .4rem var(--space-4); background: var(--surface-1);
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       cursor: pointer; font-size: .8125rem; font-weight: 600; color: var(--text-secondary);
       transition: all var(--t-fast);

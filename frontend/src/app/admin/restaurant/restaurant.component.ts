@@ -205,7 +205,7 @@ const DAYS: { key: string }[] = [
     .tp-tab { height: 8px; width: 28px; background: #d1cfc9; border-radius: 4px; }
     .tp-tab-active { background: var(--color-brand); }
     .tp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; flex: 1; }
-    .tp-card { background: white; border-radius: 5px; overflow: hidden; padding-bottom: 5px; }
+    .tp-card { background: var(--surface-1); border-radius: 5px; overflow: hidden; padding-bottom: 5px; }
     .tp-card-img { height: 30px; background: #e8e5e0; }
     .tp-card-line { height: 3px; background: #d1cfc9; border-radius: 2px; margin: 4px 5px 2px; }
     .tp-card-line-short { width: 50%; }
@@ -213,18 +213,18 @@ const DAYS: { key: string }[] = [
     /* Template 2 preview */
     .tpl-preview-magazine { background: #faf9f7; display: flex; flex-direction: column; gap: 0; }
     .tp-mag-header { display: grid; grid-template-columns: 45% 1fr; }
-    .tp-mag-title { background: white; padding: 6px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+    .tp-mag-title { background: var(--surface-1); padding: 6px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
     .tp-mag-title::before { content: ''; display: block; height: 3px; width: 16px; background: var(--color-brand); border-radius: 2px; }
     .tp-mag-title::after  { content: ''; display: block; height: 6px; width: 40px; background: #d1cfc9; border-radius: 2px; }
     .tp-mag-cover { background: linear-gradient(135deg, #c9c5be, #a8a39a); height: 40px; }
     .tp-mag-body { display: grid; grid-template-columns: 28px 1fr; flex: 1; }
-    .tp-mag-sidebar { background: white; padding: 4px 3px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid #e5e2de; }
+    .tp-mag-sidebar { background: var(--surface-1); padding: 4px 3px; display: flex; flex-direction: column; gap: 3px; border-right: 1px solid #e5e2de; }
     .tp-mag-idx { height: 4px; background: #d1cfc9; border-radius: 2px; }
     .tp-mag-idx:first-child { background: var(--color-brand); }
     .tp-mag-main { padding: 4px; display: flex; flex-direction: column; gap: 4px; }
-    .tp-mag-hero { background: white; border-radius: 4px; height: 32px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .tp-mag-hero { background: var(--surface-1); border-radius: 4px; height: 32px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
     .tp-mag-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
-    .tp-mag-mini { background: white; border-radius: 3px; height: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .tp-mag-mini { background: var(--surface-1); border-radius: 3px; height: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 
     /* Template 3 preview */
     .tpl-preview-immersive { background: #0a0a0a; }
@@ -237,7 +237,7 @@ const DAYS: { key: string }[] = [
       padding: 8px; display: flex; flex-direction: column; gap: 3px;
     }
     .tp-imm-chip { height: 7px; width: 36px; background: var(--color-brand); border-radius: 999px; }
-    .tp-imm-title { height: 9px; width: 70%; background: white; border-radius: 3px; opacity: .9; }
+    .tp-imm-title { height: 9px; width: 70%; background: var(--surface-1); border-radius: 3px; opacity: .9; }
     .tp-imm-desc { height: 5px; width: 85%; background: rgba(255,255,255,.5); border-radius: 2px; }
     .tp-imm-foot { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
     .tp-imm-price { height: 8px; width: 30px; background: var(--color-brand); border-radius: 2px; }
@@ -331,7 +331,7 @@ const DAYS: { key: string }[] = [
     }
     .tp-lum-nav {
       display: flex; gap: 3px; padding: 4px 5px;
-      background: white; border-bottom: 1px solid #ece9e3;
+      background: var(--surface-1); border-bottom: 1px solid #ece9e3;
     }
     .tp-lum-pill {
       height: 8px; width: 24px; background: #e8e5df; border-radius: 999px;
@@ -347,7 +347,7 @@ const DAYS: { key: string }[] = [
     }
     .tp-lum-featured {
       grid-column: span 2;
-      background: white; border-radius: 5px; overflow: hidden;
+      background: var(--surface-1); border-radius: 5px; overflow: hidden;
       box-shadow: 0 1px 6px rgba(0,0,0,.07);
       display: grid; grid-template-columns: 50% 1fr;
     }
@@ -364,7 +364,7 @@ const DAYS: { key: string }[] = [
       height: 4px; width: 40%; background: var(--color-brand); border-radius: 2px; opacity: .75;
     }
     .tp-lum-cell {
-      background: white; border-radius: 5px; overflow: hidden;
+      background: var(--surface-1); border-radius: 5px; overflow: hidden;
       box-shadow: 0 1px 4px rgba(0,0,0,.06); height: 30px;
     }
     .tp-lum-cell-img {

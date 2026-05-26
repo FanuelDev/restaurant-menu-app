@@ -45,7 +45,7 @@ import { TranslocoModule } from '@jsverse/transloco'
     .auth-form-panel {
       width: 500px; min-width: 500px;
       display: flex; align-items: center; justify-content: center;
-      padding: var(--space-10) var(--space-12); background: white;
+      padding: var(--space-10) var(--space-12); background: var(--surface-1);
     }
     @media (max-width: 820px) { .auth-form-panel { width: 100%; min-width: 0; padding: var(--space-8) var(--space-5); } }
 

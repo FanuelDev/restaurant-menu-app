@@ -19,10 +19,10 @@ const STATUS_COLORS: Record<ReservationStatus, string> = {
 }
 
 const STATUS_BG: Record<ReservationStatus, string> = {
-  pending:   '#FFFBEB',
-  confirmed: '#ECFDF5',
-  cancelled: '#F9FAFB',
-  no_show:   '#FEF2F2',
+  pending:   'var(--warning-bg)',
+  confirmed: 'var(--success-bg)',
+  cancelled: 'rgba(107,114,128,0.10)',
+  no_show:   'var(--error-bg)',
 }
 
 @Component({
@@ -44,8 +44,8 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       display: flex;
       align-items: flex-start;
       gap: var(--space-6);
-      background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
-      border: 1.5px solid #DDD6FE;
+      background: linear-gradient(135deg, rgba(109,40,217,0.15) 0%, rgba(109,40,217,0.08) 100%);
+      border: 1.5px solid rgba(109,40,217,0.3);
       border-radius: var(--radius-md);
       padding: var(--space-8);
       margin-bottom: var(--space-6);
@@ -53,7 +53,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     .locked-icon {
       width: 56px;
       height: 56px;
-      background: white;
+      background: var(--surface-1);
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
@@ -65,12 +65,12 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     .locked-title {
       font-size: 1.125rem;
       font-weight: 700;
-      color: #3B0764;
+      color: var(--text-primary);
       margin-bottom: var(--space-2);
     }
     .locked-desc {
       font-size: .9375rem;
-      color: #6D28D9;
+      color: var(--color-brand);
       line-height: 1.6;
       margin-bottom: var(--space-4);
     }
@@ -132,7 +132,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       transition: color var(--t-fast), background var(--t-fast);
     }
     .tab:hover { color: var(--text-primary); }
-    .tab-active { background: white; color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .tab-active { background: var(--surface-2); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 
     .date-wrap {
       position: relative;
@@ -153,7 +153,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       font-family: var(--font-body);
       color: var(--text-primary);
       outline: none;
-      background: white;
+      background: var(--surface-1);
     }
     .date-input:focus { border-color: var(--color-brand); }
 
@@ -172,7 +172,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-3) var(--space-4);
-      background: #FFFBEB;
+      background: var(--warning-bg);
       border: 1.5px solid #FCD34D;
       border-radius: var(--radius-md);
       margin-bottom: var(--space-4);
@@ -181,7 +181,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       animation: slideDown .3s ease;
     }
     .alert-banner.alert-overdue {
-      background: #FEF2F2;
+      background: var(--error-bg);
       border-color: #FECACA;
       color: #991B1B;
     }
@@ -212,18 +212,18 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     /* Card urgency states */
     .card-imminent {
       border-left: 3px solid #F59E0B !important;
-      background: #FFFDF5;
+      background: var(--warning-bg);
     }
     .card-overdue {
       border-left: 3px solid #EF4444 !important;
-      background: #FFFAFA;
+      background: var(--error-bg);
     }
 
     /* Reservations list */
     .res-list { display: flex; flex-direction: column; gap: var(--space-3); }
 
     .res-card {
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: var(--space-5);
@@ -338,7 +338,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       padding: var(--space-2) var(--space-3);
       border: 1.5px solid;
       border-radius: var(--radius-md);
-      background: white;
+      background: var(--surface-1);
       font-size: .8125rem;
       font-weight: 600;
       cursor: pointer;
@@ -351,21 +351,21 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     .action-confirm {
       color: #10B981;
       border-color: #6EE7B7;
-      background: #ECFDF5;
+      background: var(--success-bg);
     }
     .action-confirm:hover:not(:disabled) { background: #D1FAE5; }
 
     .action-cancel {
       color: #6B7280;
       border-color: #D1D5DB;
-      background: #F9FAFB;
+      background: rgba(107,114,128,0.08);
     }
     .action-cancel:hover:not(:disabled) { background: #F3F4F6; }
 
     .action-noshow {
       color: #EF4444;
       border-color: #FECACA;
-      background: #FFF5F5;
+      background: var(--error-bg);
     }
     .action-noshow:hover:not(:disabled) { background: #FEE2E2; }
 
@@ -388,7 +388,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       outline: none;
       background: var(--surface-1);
     }
-    .notes-input:focus { border-color: var(--color-brand); background: white; }
+    .notes-input:focus { border-color: var(--color-brand); background: var(--surface-1); }
     .notes-save {
       padding: var(--space-2) var(--space-3);
       background: var(--color-brand);
@@ -426,7 +426,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       padding: var(--space-2) var(--space-4);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      background: white;
+      background: var(--surface-1);
       font-size: .875rem;
       font-weight: 600;
       color: var(--text-primary);
@@ -464,7 +464,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     }
     .create-drawer {
       position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
-      background: white; z-index: 1001;
+      background: var(--surface-1); z-index: 1001;
       display: flex; flex-direction: column;
       box-shadow: -4px 0 32px rgba(0,0,0,.16);
       animation: slideIn .22s cubic-bezier(.16,1,.3,1);
@@ -505,7 +505,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       padding: var(--space-3) var(--space-4);
       border: 1.5px solid var(--border); border-radius: var(--radius-md);
       font-size: .9rem; font-family: var(--font-body); color: var(--text-primary);
-      background: white; outline: none; width: 100%;
+      background: var(--surface-1); outline: none; width: 100%;
       transition: border-color var(--t-fast);
     }
     .field-input:focus, .field-select:focus, .field-textarea:focus {
@@ -521,7 +521,7 @@ const STATUS_BG: Record<ReservationStatus, string> = {
     }
     .cd-cancel {
       flex: 1; padding: var(--space-3); border: 1.5px solid var(--border);
-      border-radius: var(--radius-md); background: white;
+      border-radius: var(--radius-md); background: var(--surface-1);
       font-size: .9rem; font-weight: 600; cursor: pointer; font-family: var(--font-body);
       color: var(--text-secondary); transition: all var(--t-fast);
     }

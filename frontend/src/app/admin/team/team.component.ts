@@ -29,7 +29,7 @@ import { TranslocoModule } from '@jsverse/transloco'
     .empty-panel {
       display: flex; flex-direction: column; align-items: center; text-align: center;
       padding: var(--space-20) var(--space-8); gap: var(--space-4);
-      background: white; border: 1px solid var(--border); border-radius: var(--radius-xl);
+      background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-xl);
       animation: slideUpFade .4s var(--ease-spring) both;
     }
     .empty-icon-wrap {
@@ -45,7 +45,7 @@ import { TranslocoModule } from '@jsverse/transloco'
 
     .member-card {
       display: flex; align-items: center; gap: var(--space-4);
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
       transition: box-shadow var(--t-fast), border-color var(--t-fast);
       &:hover { box-shadow: var(--shadow-md); border-color: var(--gray-300); }
@@ -80,7 +80,7 @@ import { TranslocoModule } from '@jsverse/transloco'
     .action-btn {
       width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: white; color: var(--text-muted); cursor: pointer;
+      background: var(--surface-1); color: var(--text-muted); cursor: pointer;
       transition: all var(--t-fast);
       &:hover { background: var(--gray-50); color: var(--text-primary); border-color: var(--gray-300); }
     }

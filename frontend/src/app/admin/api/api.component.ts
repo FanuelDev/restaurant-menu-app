@@ -454,16 +454,16 @@ $menu = api_get('/menu', $key, $base);</pre>
     .nka-key-wrap { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); flex-wrap: wrap; }
     .nka-key {
       font-family: monospace; font-size: .8125rem; font-weight: 600;
-      background: white; border: 1px solid #fde047; border-radius: var(--radius-md);
+      background: var(--surface-1); border: 1px solid #fde047; border-radius: var(--radius-md);
       padding: 6px 10px; color: #1c1917; word-break: break-all; flex: 1;
     }
     .btn-copy {
       display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
       padding: 6px 12px; border: 1.5px solid #fde047; border-radius: var(--radius-md);
-      background: white; cursor: pointer; font-size: .8125rem; font-weight: 600;
+      background: var(--surface-1); cursor: pointer; font-size: .8125rem; font-weight: 600;
       color: #78350f; transition: all var(--t-fast); white-space: nowrap;
     }
-    .btn-copy:hover { background: #fef9c3; }
+    .btn-copy:hover { background: var(--warning-bg); }
     .btn-copy.copied { color: #16a34a; border-color: #86efac; background: #f0fdf4; }
     .nka-warn { margin: 0; font-size: .8125rem; color: #92400e; }
     .nka-close {
@@ -474,7 +474,7 @@ $menu = api_get('/menu', $key, $base);</pre>
 
     /* Create */
     .create-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-5);
     }
     .create-title { margin: 0 0 var(--space-3); font-size: 1rem; font-weight: 700; color: var(--text-primary); }
@@ -482,7 +482,7 @@ $menu = api_get('/menu', $key, $base);</pre>
     .form-input {
       flex: 1; padding: .5rem .875rem; border: 1.5px solid var(--border);
       border-radius: var(--radius-md); font-size: .875rem; color: var(--text-primary);
-      background: white; transition: border-color var(--t-fast);
+      background: var(--surface-1); transition: border-color var(--t-fast);
     }
     .form-input:focus { outline: none; border-color: var(--brand); }
     .btn-create {
@@ -507,7 +507,7 @@ $menu = api_get('/menu', $key, $base);</pre>
     }
 
     /* Keys table */
-    .keys-table-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+    .keys-table-wrap { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
     .keys-table { width: 100%; border-collapse: collapse; }
     .keys-table th {
       text-align: left; padding: 10px 16px; font-size: .75rem; font-weight: 700;
@@ -524,7 +524,7 @@ $menu = api_get('/menu', $key, $base);</pre>
     .key-date { color: var(--text-muted); font-size: .8125rem; white-space: nowrap; }
     .never { color: var(--text-muted); font-style: italic; }
     .btn-revoke {
-      padding: 5px 12px; background: white; border: 1.5px solid var(--border);
+      padding: 5px 12px; background: var(--surface-1); border: 1.5px solid var(--border);
       border-radius: var(--radius-md); cursor: pointer; font-size: .8125rem;
       font-weight: 600; color: var(--text-secondary); transition: all var(--t-fast);
     }
@@ -564,7 +564,7 @@ $menu = api_get('/menu', $key, $base);</pre>
 
     .info-box {
       display: flex; align-items: flex-start; gap: 10px;
-      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-lg);
+      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.3); border-radius: var(--radius-lg);
       padding: 12px 16px; margin-top: var(--space-3);
       font-size: .875rem; color: #1e40af; line-height: 1.5;
     }
@@ -591,10 +591,10 @@ $menu = api_get('/menu', $key, $base);</pre>
       font-weight: 800; letter-spacing: .06em; text-transform: uppercase; flex-shrink: 0;
     }
     .get  { background: #dbeafe; color: #1e40af; }
-    .post { background: #dcfce7; color: #166534; }
+    .post { background: var(--success-bg); color: var(--success); }
     .ep-path { font-family: monospace; font-size: .875rem; font-weight: 600; color: var(--text-primary); }
     .ep-desc { font-size: .8125rem; color: var(--text-muted); margin-left: auto; }
-    .ep-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); background: white; }
+    .ep-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); background: var(--surface-1); }
     .ep-params { background: var(--gray-50); border-radius: var(--radius-lg); padding: var(--space-3); }
     .param-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 8px; }
     .param-row { display: flex; align-items: baseline; gap: var(--space-3); font-size: .8125rem; padding: 4px 0; color: var(--text-secondary); }
@@ -611,7 +611,7 @@ $menu = api_get('/menu', $key, $base);</pre>
     /* Limits */
     .limits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
     .limit-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-xl); padding: var(--space-4); text-align: center;
     }
     .limit-icon { font-size: 1.5rem; margin-bottom: 6px; }
@@ -622,7 +622,7 @@ $menu = api_get('/menu', $key, $base);</pre>
     .lang-tabs { display: flex; gap: 6px; margin-bottom: var(--space-3); }
     .ltab {
       padding: 6px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md);
-      background: white; cursor: pointer; font-size: .8125rem; font-weight: 600;
+      background: var(--surface-1); cursor: pointer; font-size: .8125rem; font-weight: 600;
       color: var(--text-secondary); transition: all var(--t-fast);
     }
     .ltab:hover { border-color: var(--brand); color: var(--brand); }

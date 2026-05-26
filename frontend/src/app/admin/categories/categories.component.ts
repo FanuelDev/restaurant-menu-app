@@ -19,7 +19,7 @@ import type { Category, ResourceUsage } from '../../shared/models'
     .usage-section { margin-bottom: var(--space-5); }
 
     .categories-list {
-      background: white; border-radius: var(--radius-lg);
+      background: var(--surface-1); border-radius: var(--radius-lg);
       border: 1px solid var(--border); overflow: hidden;
       box-shadow: var(--shadow-xs);
     }

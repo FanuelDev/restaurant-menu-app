@@ -6,19 +6,19 @@ import { AuditService, AuditLogFilters } from '../../shared/services/audit.servi
 import type { AuditLog, PaginatedResponse } from '../../shared/models'
 
 const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
-  created:           { bg: '#dcfce7', color: '#16a34a' },
+  created:           { bg: 'var(--success-bg)', color: 'var(--success)' },
   created_by_admin:  { bg: '#d1fae5', color: '#059669' },
   updated:           { bg: '#dbeafe', color: '#2563eb' },
   status_updated:    { bg: '#dbeafe', color: '#2563eb' },
-  deleted:           { bg: '#fee2e2', color: '#dc2626' },
-  toggled:           { bg: '#fef9c3', color: '#ca8a04' },
-  canceled:          { bg: '#fee2e2', color: '#dc2626' },
+  deleted:           { bg: 'var(--error-bg)', color: 'var(--error)' },
+  toggled:           { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+  canceled:          { bg: 'var(--error-bg)', color: 'var(--error)' },
   uploaded:          { bg: '#f3e8ff', color: '#9333ea' },
-  blocked:           { bg: '#fee2e2', color: '#dc2626' },
-  unblocked:         { bg: '#dcfce7', color: '#16a34a' },
-  granted:           { bg: '#dcfce7', color: '#16a34a' },
-  gift_revoked:      { bg: '#fee2e2', color: '#dc2626' },
-  reordered:         { bg: '#fef9c3', color: '#ca8a04' },
+  blocked:           { bg: 'var(--error-bg)', color: 'var(--error)' },
+  unblocked:         { bg: 'var(--success-bg)', color: 'var(--success)' },
+  granted:           { bg: 'var(--success-bg)', color: 'var(--success)' },
+  gift_revoked:      { bg: 'var(--error-bg)', color: 'var(--error)' },
+  reordered:         { bg: 'var(--warning-bg)', color: 'var(--warning)' },
   logo_uploaded:     { bg: '#f3e8ff', color: '#9333ea' },
 }
 
@@ -48,7 +48,7 @@ const ACTION_KEYS = [
       gap: var(--space-3);
       margin-bottom: var(--space-5);
       padding: var(--space-4) var(--space-5);
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
     }
@@ -95,7 +95,7 @@ const ACTION_KEYS = [
       display: flex; align-items: center; justify-content: center;
       width: 28px; height: 28px; border-radius: 50%;
       border: 1px solid var(--border);
-      background: white; color: var(--text-muted); cursor: pointer;
+      background: var(--surface-1); color: var(--text-muted); cursor: pointer;
       transition: background .15s, color .15s, border-color .15s;
       flex-shrink: 0;
     }
@@ -112,7 +112,7 @@ const ACTION_KEYS = [
       display: flex; align-items: center; justify-content: center;
       font-size: .8125rem; font-weight: 500;
       border: 1px solid var(--border); border-radius: var(--radius-md);
-      background: white; color: var(--text-secondary);
+      background: var(--surface-1); color: var(--text-secondary);
       cursor: pointer; padding: 0 var(--space-2);
       transition: background .15s, border-color .15s, color .15s;
     }
@@ -131,7 +131,7 @@ const ACTION_KEYS = [
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-4) var(--space-5);
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       margin-bottom: var(--space-2);
@@ -154,7 +154,7 @@ const ACTION_KEYS = [
     }
 
     .log-entry {
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
@@ -216,7 +216,7 @@ const ACTION_KEYS = [
       color: var(--gray-600);
     }
     .role-admin   { background: #dbeafe; color: #2563eb; }
-    .role-cashier { background: #dcfce7; color: #16a34a; }
+    .role-cashier { background: var(--success-bg); color: var(--success); }
 
     .log-date {
       font-size: .75rem;
@@ -311,7 +311,7 @@ const ACTION_KEYS = [
       white-space: nowrap;
     }
     .btn-ghost {
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       color: var(--text-secondary);
       display: inline-flex;

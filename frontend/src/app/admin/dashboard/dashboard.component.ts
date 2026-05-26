@@ -25,7 +25,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
     @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .kpi-card {
-      background: white;
+      background: var(--surface-1);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: var(--space-5);
@@ -66,7 +66,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 
     /* Restaurant card */
     .restaurant-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-6);
     }
     .rc-header {
@@ -93,7 +93,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 
     /* QR Code card */
     .qr-card {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-6);
     }
     .qr-header {
@@ -147,7 +147,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
 
     /* Quick actions */
     .quick-actions {
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       border-radius: var(--radius-lg); padding: var(--space-6);
     }
     .qa-title { font-size: 1rem; font-weight: 600; color: var(--text-primary); font-family: var(--font-body); margin: 0 0 var(--space-4); }
@@ -161,7 +161,7 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
     }
     .qa-icon {
       width: 36px; height: 36px; border-radius: var(--radius-md);
-      background: white; border: 1px solid var(--border);
+      background: var(--surface-1); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
       transition: all var(--t-fast);
     }
@@ -175,8 +175,8 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
       background: var(--gray-50);
     }
     .sub-active { background: var(--success-bg); border-color: #86efac; }
-    .sub-trial  { background: #eff6ff; border-color: #93c5fd; }
-    .sub-expired { background: #fff7ed; border-color: #fdba74; }
+    .sub-trial  { background: rgba(37,99,235,0.12); border-color: rgba(37,99,235,0.3); }
+    .sub-expired { background: rgba(234,88,12,0.12); border-color: rgba(234,88,12,0.3); }
 
     .sub-dot {
       width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
