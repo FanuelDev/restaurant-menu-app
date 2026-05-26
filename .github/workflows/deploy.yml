@@ -36,10 +36,10 @@ on:
         type: boolean
         default: false
 
-# Empêche deux déploiements simultanés sur la même branche
+# Un nouveau push annule le déploiement précédent en attente (pas celui en cours d'exécution)
 concurrency:
   group: deploy-${{ github.ref }}
-  cancel-in-progress: false  # ne pas annuler un déploiement en cours
+  cancel-in-progress: true
 
 jobs:
 
