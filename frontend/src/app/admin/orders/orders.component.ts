@@ -745,7 +745,9 @@ export class OrdersComponent implements OnInit {
   readonly loading = signal(true)
   readonly orders = signal<Order[]>([])
   readonly meta = signal({ total: 0, perPage: 20, currentPage: 1, lastPage: 1 })
-  readonly updatingId = signal<number | null>(null)
+  /** Tracks exactly which (orderId + targetStatus) button is in-flight — prevents double-click
+   *  while still allowing the *next* status button to be clicked immediately after optimistic update */
+  readonly updating = signal<{ id: number; status: OrderStatus } | null>(null)
 
   readonly scannerOpen = signal(false)
   readonly scanning = signal(false)
@@ -886,32 +888,35 @@ export class OrdersComponent implements OnInit {
   }
 
   updateStatus(order: Order, status: OrderStatus): void {
-    this.updatingId.set(order.id)
-    // Optimistic update — new status (and next button) appear immediately
+    // Lock only this specific button (orderId + targetStatus) — prevents double-click
+    // The *next* button that appears after optimistic update has a different status → not locked
+    if (this.updating()?.id === order.id && this.updating()?.status === status) return
+    this.updating.set({ id: order.id, status })
+
+    // Optimistic update: status changes immediately in the UI
     this.orders.update(list => list.map(o => o.id === order.id ? { ...o, status } : o))
-    // Release the lock right away so the next status button is instantly clickable
-    this.updatingId.set(null)
 
     this.orderService.updateOrderStatus(order.id, status).subscribe({
       next: (updated) => {
-        // Confirm with full server response (no UI change if optimistic was right)
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o))
+        this.updating.set(null)
       },
       error: () => {
-        // Revert on failure
+        // Revert optimistic update on failure
         this.orders.update(list => list.map(o => o.id === order.id ? order : o))
+        this.updating.set(null)
       },
     })
   }
 
   revokeGift(order: Order): void {
-    this.updatingId.set(order.id)
+    this.updating.set({ id: order.id, status: 'cancelled' }) // borrow 'cancelled' as revoke lock
     this.orderService.revokeGift(order.id).subscribe({
       next: (updated) => {
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o))
-        this.updatingId.set(null)
+        this.updating.set(null)
       },
-      error: () => this.updatingId.set(null),
+      error: () => this.updating.set(null),
     })
   }
 
