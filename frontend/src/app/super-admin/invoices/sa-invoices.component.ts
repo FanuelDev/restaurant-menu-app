@@ -227,9 +227,9 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     .period-sep { margin: 0 4px; color: var(--text-muted); }
 
     .amount-cell { white-space: nowrap; }
-    .amount-free { font-weight: 800; color: #16a34a; font-size: .8125rem; }
+    .amount-free { font-weight: 800; color: var(--success); font-size: .8125rem; }
     .amount-paid { font-weight: 700; color: var(--text-primary); }
-    .savings { color: #16a34a; font-weight: 600; font-size: .8125rem; }
+    .savings { color: var(--success); font-weight: 600; font-size: .8125rem; }
     .muted { color: var(--text-muted); }
 
     .status-badge {
@@ -239,7 +239,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     }
     .badge-free { background: var(--success-bg); color: var(--success); }
     .badge-reduced { background: var(--warning-bg); color: var(--warning); }
-    .badge-full { background: #f0f9ff; color: #0369a1; }
+    .badge-full { background: rgba(3,105,161,0.15); color: #38bdf8; }
 
     .date-cell { color: var(--text-muted); font-size: .8125rem; white-space: nowrap; }
 

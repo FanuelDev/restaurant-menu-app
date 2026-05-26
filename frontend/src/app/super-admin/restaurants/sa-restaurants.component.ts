@@ -83,7 +83,7 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
       display: flex; align-items: center; justify-content: center;
     }
 
-    code { background: var(--gray-100); color: var(--gray-700); padding: .15rem .4rem; border-radius: var(--radius-xs); font-size: .78rem; }
+    code { background: var(--gray-100); color: var(--text-secondary); padding: .15rem .4rem; border-radius: var(--radius-xs); font-size: .78rem; }
 
     .status-badge { display: inline-flex; align-items: center; padding: .25rem .6rem; border-radius: var(--radius-full); font-size: .70rem; font-weight: 700; }
     .status-trialing  { background: var(--warning-bg); color: var(--warning); }

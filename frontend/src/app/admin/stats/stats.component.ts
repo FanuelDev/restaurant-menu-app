@@ -123,9 +123,9 @@ import type { StatsData } from '../../shared/models'
       font-size: .65rem; font-weight: 700; padding: 2px 6px;
       border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0;
     }
-    .badge-new        { background: #dbeafe; color: #1d4ed8; }
-    .badge-popular    { background: #fef3c7; color: #b45309; }
-    .badge-vegetarian { background: #dcfce7; color: #15803d; }
+    .badge-new        { background: rgba(37,99,235,0.15); color: #60a5fa; }
+    .badge-popular    { background: var(--warning-bg); color: var(--warning); }
+    .badge-vegetarian { background: var(--success-bg); color: var(--success); }
     .badge-spicy      { background: #fee2e2; color: #b91c1c; }
     .item-price { font-size: .8125rem; font-weight: 700; color: var(--color-brand); white-space: nowrap; flex-shrink: 0; }
 

@@ -53,7 +53,7 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme
       &:hover { background: var(--gray-50); color: var(--text-primary); }
       &.active {
         background: var(--gray-100);
-        color: var(--gray-800);
+        color: var(--text-primary);
         font-weight: 600;
       }
     }

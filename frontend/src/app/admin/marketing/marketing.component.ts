@@ -419,7 +419,7 @@ function today(): string {
       line-height: 1;
       margin-bottom: var(--space-1);
     }
-    .stat-value-green { color: #16a34a; }
+    .stat-value-green { color: var(--success); }
     .stat-value-brand { color: var(--brand); }
     .stat-label {
       font-size: .8125rem;
@@ -669,7 +669,7 @@ function today(): string {
     .usage-customer { font-weight: 600; font-size: .9rem; color: var(--text-primary); }
     .usage-date { font-size: .78rem; color: var(--text-muted); }
     .usage-amounts { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: 2px; }
-    .usage-covered { font-size: .8rem; color: #16a34a; font-weight: 600; }
+    .usage-covered { font-size: .8rem; color: var(--success); font-weight: 600; }
     .usage-total { font-size: .8rem; color: var(--text-secondary); }
     .usage-surplus { font-size: .8rem; color: var(--brand); font-weight: 600; }
     .no-usages { font-size: .875rem; color: var(--text-muted); text-align: center; margin: var(--space-2) 0; }
@@ -711,7 +711,7 @@ function today(): string {
     }
     .calc-label { font-size: .875rem; color: var(--text-secondary); }
     .calc-val { font-size: .9375rem; font-weight: 700; color: var(--text-primary); }
-    .calc-val-green { color: #16a34a; }
+    .calc-val-green { color: var(--success); }
     .calc-val-muted { color: var(--text-muted); }
   `],
 })

@@ -55,7 +55,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
       padding: 3px 10px; border-radius: var(--radius-full);
       font-size: .75rem; font-weight: 500;
     }
-    .plan-chip { background: #ede9fe; color: #6d28d9; }
+    .plan-chip { background: rgba(109,40,217,0.15); color: var(--color-brand); }
 
     .status-pill {
       display: inline-flex; align-items: center;
@@ -254,7 +254,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     }
     .badge-free { background: var(--success-bg); color: var(--success); }
     .badge-reduced { background: var(--warning-bg); color: var(--warning); }
-    .badge-full { background: #f0fdf4; color: #166534; }
+    .badge-full { background: var(--success-bg); color: var(--success); }
 
     /* ── Spinner ── */
     .spinner {

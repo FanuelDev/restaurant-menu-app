@@ -97,7 +97,7 @@ const ACTION_KEYS = [
       transition: background .15s, color .15s, border-color .15s;
       flex-shrink: 0;
     }
-    .btn-clear-date:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    .btn-clear-date:hover { background: var(--error-bg); border-color: var(--error-border); color: var(--error); }
 
     .active-filters { display: flex; gap: var(--space-2); align-items: center; margin-left: auto; }
     .filter-chip {
@@ -126,15 +126,15 @@ const ACTION_KEYS = [
     .log-main:hover { background: var(--gray-50); }
 
     .action-badge { display: inline-flex; align-items: center; font-size: .75rem; font-weight: 600; padding: .25rem .6rem; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
-    .restaurant-pill { display: inline-flex; align-items: center; gap: 5px; font-size: .75rem; font-weight: 600; padding: .2rem .55rem; border-radius: var(--radius-full); background: #1c191710; color: #1c1917; white-space: nowrap; flex-shrink: 0; }
+    .restaurant-pill { display: inline-flex; align-items: center; gap: 5px; font-size: .75rem; font-weight: 600; padding: .2rem .55rem; border-radius: var(--radius-full); background: #1c191710; color: var(--text-primary); white-space: nowrap; flex-shrink: 0; }
     .log-resource { font-size: .8rem; color: var(--text-secondary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
     .log-spacer { flex: 1; }
     .log-meta { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
     .log-user { font-size: .78rem; color: var(--text-secondary); }
 
     .role-pill { font-size: .70rem; font-weight: 600; padding: .2rem .5rem; border-radius: var(--radius-full); background: var(--gray-100); color: var(--gray-600); }
-    .role-superadmin { background: #1c191715; color: #1c1917; }
-    .role-admin      { background: #dbeafe; color: #2563eb; }
+    .role-superadmin { background: var(--surface-2); color: var(--text-secondary); }
+    .role-admin      { background: rgba(37,99,235,0.15); color: #60a5fa; }
     .role-cashier    { background: var(--success-bg); color: var(--success); }
 
     .log-date { font-size: .75rem; color: var(--text-muted); display: flex; align-items: center; }

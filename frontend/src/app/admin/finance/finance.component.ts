@@ -120,10 +120,10 @@ const DONUT_CIRC = 2 * Math.PI * DONUT_R
     .trend-down { color: #ef4444; }
     .trend-neutral { color: var(--text-muted); font-weight: 400; }
 
-    .fn-icon-revenue { background: #d1fae5; color: #10b981; }
-    .fn-icon-expenses { background: #fef3c7; color: #f59e0b; }
-    .fn-icon-profit { background: #ede9fe; color: #6366f1; }
-    .fn-icon-margin { background: #dbeafe; color: #3b82f6; }
+    .fn-icon-revenue { background: rgba(22,163,74,0.15); color: #10b981; }
+    .fn-icon-expenses { background: var(--warning-bg); color: var(--warning); }
+    .fn-icon-profit { background: rgba(99,102,241,0.15); color: #818cf8; }
+    .fn-icon-margin { background: rgba(37,99,235,0.15); color: #60a5fa; }
 
     .fn-kpi-loss .fn-kpi-value { color: #ef4444; }
     .fn-kpi-loss .fn-icon-profit { background: var(--error-bg); color: var(--error); }

@@ -542,9 +542,9 @@ const ALL_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready
     }
 
     .detail-gift-section { background: var(--warning-bg); }
-    .gift-title { color: #92400E; }
+    .gift-title { color: var(--warning); }
     .detail-gift-msg {
-      font-size: .9375rem; color: #78350F;
+      font-size: .9375rem; color: var(--warning);
       font-style: italic; line-height: 1.6;
       margin-bottom: var(--space-3);
     }

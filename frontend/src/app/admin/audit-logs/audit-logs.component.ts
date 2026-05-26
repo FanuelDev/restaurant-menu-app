@@ -99,7 +99,7 @@ const ACTION_KEYS = [
       transition: background .15s, color .15s, border-color .15s;
       flex-shrink: 0;
     }
-    .btn-clear-date:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+    .btn-clear-date:hover { background: var(--error-bg); border-color: var(--error-border); color: var(--error); }
 
     /* Page numbers */
     .pagination-row {
@@ -215,7 +215,7 @@ const ACTION_KEYS = [
       background: var(--gray-100);
       color: var(--gray-600);
     }
-    .role-admin   { background: #dbeafe; color: #2563eb; }
+    .role-admin   { background: rgba(37,99,235,0.15); color: #60a5fa; }
     .role-cashier { background: var(--success-bg); color: var(--success); }
 
     .log-date {

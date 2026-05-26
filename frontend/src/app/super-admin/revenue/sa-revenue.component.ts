@@ -326,7 +326,7 @@ import type { SaRevenueStats } from '../../shared/models'
     .kpi-green .kpi-icon { background: var(--success-bg); color: var(--success); }
 
     .kpi-blue::before { background: #2563EB; }
-    .kpi-blue .kpi-icon { background: var(--info-bg, rgba(37,99,235,0.12)); color: #2563EB; }
+    .kpi-blue .kpi-icon { background: var(--info-bg, rgba(37,99,235,0.12)); color: #60a5fa; }
 
     .kpi-amber::before { background: #D97706; }
     .kpi-amber .kpi-icon { background: var(--warning-bg); color: var(--warning); }
@@ -477,8 +477,8 @@ import type { SaRevenueStats } from '../../shared/models'
       font-size: .75rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .top-rank-gold   { background: #FEF3C7; color: #D97706; }
-    .top-rank-silver { background: #F1F5F9; color: #64748B; }
+    .top-rank-gold   { background: var(--warning-bg); color: var(--warning); }
+    .top-rank-silver { background: var(--surface-2); color: var(--text-secondary); }
     .top-rank-bronze { background: var(--error-bg); color: var(--warning); }
 
     .top-info { flex: 1; min-width: 0; }

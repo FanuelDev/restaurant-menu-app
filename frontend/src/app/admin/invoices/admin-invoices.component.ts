@@ -146,7 +146,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
 
     .invoice-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); }
     .invoice-amount {}
-    .amount-free { font-size: 1.125rem; font-weight: 800; color: #16a34a; }
+    .amount-free { font-size: 1.125rem; font-weight: 800; color: var(--success); }
     .amount-value { font-size: 1.125rem; font-weight: 800; color: var(--text-primary); }
 
     .status-chip {
@@ -156,7 +156,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     }
     .chip-free { background: var(--success-bg); color: var(--success); }
     .chip-reduced { background: var(--warning-bg); color: var(--warning); }
-    .chip-full { background: #f0f9ff; color: #0369a1; }
+    .chip-full { background: rgba(3,105,161,0.15); color: #38bdf8; }
 
     /* Body */
     .invoice-body {
@@ -171,7 +171,7 @@ import { printInvoice } from '../../shared/utils/invoice-print'
     }
     .detail-val { font-size: .875rem; color: var(--text-primary); }
     .detail-note { color: var(--text-secondary); font-style: italic; }
-    .savings-val { color: #16a34a; font-weight: 600; }
+    .savings-val { color: var(--success); font-weight: 600; }
 
     .cycle-tag {
       display: inline-flex; margin-left: 6px;

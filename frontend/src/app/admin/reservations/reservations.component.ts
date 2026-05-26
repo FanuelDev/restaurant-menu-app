@@ -177,13 +177,13 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       border-radius: var(--radius-md);
       margin-bottom: var(--space-4);
       font-size: .9rem;
-      color: #92400E;
+      color: var(--warning);
       animation: slideDown .3s ease;
     }
     .alert-banner.alert-overdue {
       background: var(--error-bg);
-      border-color: #FECACA;
-      color: #991B1B;
+      border-color: var(--error-border);
+      color: var(--error);
     }
     .alert-icon { font-size: 1.1rem; flex-shrink: 0; }
     .alert-text { flex: 1; }
@@ -202,8 +202,8 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       margin-left: var(--space-2);
       animation: pulse 2s ease-in-out infinite;
     }
-    .pill-imminent { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
-    .pill-overdue  { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+    .pill-imminent { background: #FEF3C7; color: var(--warning); border: 1px solid #FCD34D; }
+    .pill-overdue  { background: #FEE2E2; color: var(--error); border: 1px solid #FECACA; }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: .65; }
@@ -300,12 +300,12 @@ const STATUS_BG: Record<ReservationStatus, string> = {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .06em;
-      color: #0369A1;
+      color: #38bdf8;
       margin-bottom: var(--space-1);
     }
     .special-text {
       font-size: .875rem;
-      color: #0C4A6E;
+      color: #7dd3fc;
       margin: 0;
       line-height: 1.5;
       font-style: italic;
@@ -350,21 +350,21 @@ const STATUS_BG: Record<ReservationStatus, string> = {
 
     .action-confirm {
       color: #10B981;
-      border-color: #6EE7B7;
+      border-color: var(--success-border);
       background: var(--success-bg);
     }
     .action-confirm:hover:not(:disabled) { background: #D1FAE5; }
 
     .action-cancel {
-      color: #6B7280;
-      border-color: #D1D5DB;
+      color: var(--text-muted);
+      border-color: var(--border);
       background: rgba(107,114,128,0.08);
     }
     .action-cancel:hover:not(:disabled) { background: #F3F4F6; }
 
     .action-noshow {
       color: #EF4444;
-      border-color: #FECACA;
+      border-color: var(--error-border);
       background: var(--error-bg);
     }
     .action-noshow:hover:not(:disabled) { background: #FEE2E2; }
