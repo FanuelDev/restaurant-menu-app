@@ -181,6 +181,8 @@ router
       .use(middleware.financeGuard())
     router.delete('/finance/incomes/:id', [FinanceController, 'deleteIncome'])
       .use(middleware.financeGuard())
+    router.get('/finance/order-revenues', [FinanceController, 'listOrderRevenues'])
+      .use(middleware.financeGuard())
 
     // Marketing Vouchers — Enterprise only
     router.get('/marketing/vouchers', [MarketingController, 'index']).use(middleware.marketingGuard())

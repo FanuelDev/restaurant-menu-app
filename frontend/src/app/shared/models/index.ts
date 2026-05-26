@@ -382,8 +382,18 @@ export interface FinanceSummary {
 export interface FinanceChartPoint {
   label: string
   revenue: number
+  ordersRevenue: number
+  manualRevenue: number
   expenses: number
   net: number
+}
+
+export interface FinanceOrderRevenue {
+  id: number
+  orderNumber: string
+  customerName: string
+  total: number
+  createdAt: string
 }
 
 export interface FinanceChart {

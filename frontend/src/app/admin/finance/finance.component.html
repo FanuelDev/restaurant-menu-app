@@ -147,7 +147,8 @@
         <div class="fn-chart-header">
           <h2 class="fn-chart-title">Revenus vs Dépenses</h2>
           <div class="fn-chart-legend">
-            <span class="fn-legend-dot" style="background:#10b981"></span><span>Revenus</span>
+            <span class="fn-legend-dot" style="background:#10b981"></span><span>Commandes</span>
+            <span class="fn-legend-dot" style="background:#3b82f6"></span><span>Manuels</span>
             <span class="fn-legend-dot" style="background:#f59e0b"></span><span>Dépenses</span>
             <span class="fn-legend-line"></span><span>Net</span>
           </div>
@@ -162,13 +163,15 @@
               }
               <!-- Zero line -->
               <line [attr.x1]="padL" [attr.y1]="zeroY()" [attr.x2]="svgW - padR" [attr.y2]="zeroY()" stroke="#d1d5db" stroke-width="1.5"/>
-              <!-- Bars -->
+              <!-- 3 bars per group -->
               @for (pt of barPoints(); track pt.label) {
-                <!-- Revenue bar -->
-                <rect [attr.x]="pt.rx" [attr.y]="pt.ry" [attr.width]="pt.bw" [attr.height]="pt.rh" rx="3" fill="#10b981" opacity=".85"/>
-                <!-- Expenses bar -->
-                <rect [attr.x]="pt.ex" [attr.y]="pt.ey" [attr.width]="pt.bw" [attr.height]="pt.eh" rx="3" fill="#f59e0b" opacity=".85"/>
-                <!-- X label — only shown every N points -->
+                <!-- Orders revenue (emerald) -->
+                <rect [attr.x]="pt.ox" [attr.y]="pt.oy" [attr.width]="pt.bw" [attr.height]="pt.oh" rx="2" fill="#10b981" opacity=".85"/>
+                <!-- Manual income (blue) -->
+                <rect [attr.x]="pt.mx" [attr.y]="pt.my" [attr.width]="pt.bw" [attr.height]="pt.mh" rx="2" fill="#3b82f6" opacity=".85"/>
+                <!-- Expenses (amber) -->
+                <rect [attr.x]="pt.ex" [attr.y]="pt.ey" [attr.width]="pt.bw" [attr.height]="pt.eh" rx="2" fill="#f59e0b" opacity=".85"/>
+                <!-- X label -->
                 @if (pt.showLabel) {
                   <text [attr.x]="pt.cx" [attr.y]="svgH - 5" text-anchor="middle" fill="#9ca3af" font-size="10">{{ pt.shortLabel }}</text>
                 }
@@ -248,11 +251,18 @@
             Revenus manuels
             @if (incomes().length) { <span class="fn-tab-badge">{{ incomes().length }}</span> }
           </button>
+          <button class="fn-tab" [class.fn-tab-active]="activeTab() === 'orders'" (click)="activeTab.set('orders')">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="11" cy="12" r="1"/><path d="M1 1h2l1.5 7.5h7L13 4H4"/></svg>
+            Commandes livrées
+            @if (orderRevenues().length) { <span class="fn-tab-badge" style="background:#10b981">{{ orderRevenues().length }}</span> }
+          </button>
         </div>
-        <button class="fn-add-btn" (click)="openAdd()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
-          Ajouter {{ activeTab() === 'expenses' ? 'une dépense' : 'un revenu' }}
-        </button>
+        @if (activeTab() !== 'orders') {
+          <button class="fn-add-btn" (click)="openAdd()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
+            Ajouter {{ activeTab() === 'expenses' ? 'une dépense' : 'un revenu' }}
+          </button>
+        }
       </div>
 
       <!-- Expenses list -->
@@ -321,6 +331,31 @@
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M2 3h10M5 3V2h4v1M5.5 6v5M8.5 6v5"/><rect x="3" y="3" width="8" height="9" rx="1"/></svg>
                   </button>
                 </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Order revenues list -->
+      @if (activeTab() === 'orders') {
+        @if (orderRevenues().length === 0) {
+          <div class="fn-empty">
+            <div class="fn-empty-icon">🛒</div>
+            <p>Aucune commande livrée sur cette période</p>
+          </div>
+        } @else {
+          <div class="fn-tx-list">
+            @for (ord of orderRevenues(); track ord.id) {
+              <div class="fn-tx-item">
+                <div class="fn-tx-cat" style="background:#10b98118;color:#10b981">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="5.5" cy="13.5" r="1"/><circle cx="11.5" cy="13.5" r="1"/><path d="M1 1h2l1.4 6.5h8.2L14 5H4"/></svg>
+                </div>
+                <div class="fn-tx-info">
+                  <div class="fn-tx-label">#{{ ord.orderNumber }} — {{ ord.customerName }}</div>
+                  <div class="fn-tx-meta">Commande livrée · {{ ord.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <div class="fn-tx-amount fn-tx-income">+{{ formatAmount(ord.total) }}</div>
               </div>
             }
           </div>

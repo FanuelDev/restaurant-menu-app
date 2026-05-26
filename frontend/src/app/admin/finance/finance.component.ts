@@ -10,6 +10,7 @@ import type {
   FinanceExpense,
   FinanceIncome,
   FinancePeriod,
+  FinanceOrderRevenue,
   ExpenseCategory,
 } from '../../shared/models'
 
@@ -343,13 +344,14 @@ export class FinanceComponent implements OnInit {
   readonly CATEGORY_COLORS = CATEGORY_COLORS
   readonly donutR = DONUT_R
 
-  readonly period    = signal<FinancePeriod>('month')
-  readonly summary   = signal<FinanceSummary | null>(null)
-  readonly chartData = signal<FinanceChart | null>(null)
-  readonly expenses  = signal<FinanceExpense[]>([])
-  readonly incomes   = signal<FinanceIncome[]>([])
-  readonly activeTab = signal<'expenses' | 'incomes'>('expenses')
-  readonly loading   = signal(true)
+  readonly period         = signal<FinancePeriod>('month')
+  readonly summary        = signal<FinanceSummary | null>(null)
+  readonly chartData      = signal<FinanceChart | null>(null)
+  readonly expenses       = signal<FinanceExpense[]>([])
+  readonly incomes        = signal<FinanceIncome[]>([])
+  readonly orderRevenues  = signal<FinanceOrderRevenue[]>([])
+  readonly activeTab      = signal<'expenses' | 'incomes' | 'orders'>('expenses')
+  readonly loading        = signal(true)
   readonly modal     = signal<{ mode: ModalMode; id: number | null } | null>(null)
   readonly saving    = signal(false)
   readonly formError = signal<string | null>(null)
@@ -372,7 +374,13 @@ export class FinanceComponent implements OnInit {
   readonly maxVal = computed(() => {
     const pts = this.chartData()?.points ?? []
     if (!pts.length) return 1
-    return Math.max(...pts.map(p => Math.max(p.revenue, p.expenses)), 1)
+    // scale must fit individual bars AND the net line (= total revenue)
+    return Math.max(...pts.map(p => Math.max(
+      p.ordersRevenue ?? p.revenue,
+      p.manualRevenue ?? 0,
+      p.expenses,
+      p.revenue,   // net line top
+    )), 1)
   })
 
   readonly minNet = computed(() => {
@@ -411,29 +419,37 @@ export class FinanceComponent implements OnInit {
     if (!pts.length) return []
     const n = pts.length
     const gw = this.plotW() / n
-    const bw = Math.min(gw * 0.32, 24)
-    const gap = gw * 0.07
+    // 3 bars per group — each narrower
+    const bw  = Math.min(gw * 0.22, 14)
+    const gap = bw * 0.35
     const groupBy = this.chartData()?.groupBy ?? 'day'
-    // Show at most 10 x-axis labels — compute step
     const step = Math.ceil(n / 10)
 
     return pts.map((p, i) => {
       const cx = this.padL + gw * i + gw / 2
-      const rh = p.revenue * this.yScale()
+      // Separate revenue values (backward-compat: fall back to revenue/0)
+      const or = (p.ordersRevenue ?? p.revenue)
+      const mr = (p.manualRevenue ?? 0)
+      // Bar heights
+      const oh = or * this.yScale()
+      const mh = mr * this.yScale()
       const eh = p.expenses * this.yScale()
       const ny = this.zeroY() - p.net * this.yScale()
+      // 3 bars centred around cx: orders | manual | expenses
+      const ox = cx - 1.5 * bw - gap
+      const mx = cx - bw / 2
+      const ex = cx + 0.5 * bw + gap
       return {
-        label: p.label,
+        label:      p.label,
         shortLabel: formatXLabel(p.label, groupBy),
-        showLabel: i % step === 0,
-        cx,
-        bw,
-        rx: cx - bw - gap / 2,
-        ry: this.zeroY() - rh,
-        rh: Math.max(rh, 0),
-        ex: cx + gap / 2,
-        ey: this.zeroY() - eh,
-        eh: Math.max(eh, 0),
+        showLabel:  i % step === 0,
+        cx, bw,
+        // orders bar
+        ox, oy: this.zeroY() - oh, oh: Math.max(oh, 0),
+        // manual income bar
+        mx, my: this.zeroY() - mh, mh: Math.max(mh, 0),
+        // expenses bar
+        ex, ey: this.zeroY() - eh, eh: Math.max(eh, 0),
         ny,
       }
     })
@@ -495,17 +511,19 @@ export class FinanceComponent implements OnInit {
     const p = this.period()
 
     let done = 0
-    const check = () => { if (++done === 4) this.loading.set(false) }
+    const check = () => { if (++done === 5) this.loading.set(false) }
 
     this.financeService.getSummary(p).subscribe({ next: v => { this.summary.set(v); check() }, error: () => check() })
     this.financeService.getChart(p).subscribe({ next: v => { this.chartData.set(v); check() }, error: () => check() })
     this.financeService.listExpenses({}).subscribe({ next: v => { this.expenses.set(v.data); check() }, error: () => check() })
     this.financeService.listIncomes({}).subscribe({ next: v => { this.incomes.set(v.data); check() }, error: () => check() })
+    this.financeService.listOrderRevenues(p).subscribe({ next: v => { this.orderRevenues.set(v); check() }, error: () => check() })
   }
 
   // ── Modal ──────────────────────────────────────────────────────────────────
   openAdd(): void {
-    const mode = this.activeTab() === 'expenses' ? 'expense' : 'income'
+    const tab = this.activeTab()
+    const mode: ModalMode = tab === 'incomes' ? 'income' : 'expense'
     this.form = this.emptyForm(mode)
     this.formError.set(null)
     this.modal.set({ mode, id: null })
@@ -575,6 +593,7 @@ export class FinanceComponent implements OnInit {
     const p = this.period()
     this.financeService.getSummary(p).subscribe(v => this.summary.set(v))
     this.financeService.getChart(p).subscribe(v => this.chartData.set(v))
+    this.financeService.listOrderRevenues(p).subscribe(v => this.orderRevenues.set(v))
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

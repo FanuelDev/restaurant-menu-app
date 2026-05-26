@@ -211,9 +211,11 @@ export default class FinanceController {
     for (const r of expensesRows[0] as any[]) expMap[r.label]    = Number(r.total)
 
     const points = labels.map((label) => {
-      const revenue  = (ordersMap[label] ?? 0) + (incomesMap[label] ?? 0)
-      const expenses = expMap[label] ?? 0
-      return { label, revenue, expenses, net: revenue - expenses }
+      const ordersRevenue  = ordersMap[label]  ?? 0
+      const manualRevenue  = incomesMap[label] ?? 0
+      const revenue        = ordersRevenue + manualRevenue
+      const expenses       = expMap[label]     ?? 0
+      return { label, revenue, ordersRevenue, manualRevenue, expenses, net: revenue - expenses }
     })
 
     return { period, groupBy, points }
@@ -376,5 +378,31 @@ export default class FinanceController {
       oldValues: { label: income.label, amount: income.amount, date: income.date },
     })
     return response.noContent()
+  }
+
+  // ── Delivered orders as revenue entries ───────────────────────────────────
+
+  // GET /api/admin/finance/order-revenues?period=month
+  async listOrderRevenues({ auth, request }: HttpContext) {
+    const restaurantId = auth.user!.restaurantId!
+    const period = (request.qs().period ?? 'month') as Period
+    const { start, end } = periodBounds(period)
+
+    const rows = await db.rawQuery(
+      `SELECT id, order_number, customer_name, total, created_at
+       FROM orders
+       WHERE restaurant_id = ? AND status = 'delivered'
+         AND created_at BETWEEN ? AND ?
+       ORDER BY created_at DESC`,
+      [restaurantId, start.toSQL()!, end.toSQL()!]
+    )
+
+    return (rows[0] as any[]).map((r) => ({
+      id:           r.id,
+      orderNumber:  r.order_number,
+      customerName: r.customer_name,
+      total:        Number(r.total),
+      createdAt:    r.created_at,
+    }))
   }
 }

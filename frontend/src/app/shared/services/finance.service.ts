@@ -8,6 +8,7 @@ import type {
   FinanceExpense,
   FinanceIncome,
   FinancePeriod,
+  FinanceOrderRevenue,
   PaginatedResponse,
 } from '../models'
 
@@ -69,5 +70,9 @@ export class FinanceService {
 
   deleteIncome(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/incomes/${id}`)
+  }
+
+  listOrderRevenues(period: FinancePeriod): Observable<FinanceOrderRevenue[]> {
+    return this.http.get<FinanceOrderRevenue[]>(`${this.base}/order-revenues`, { params: { period } })
   }
 }
