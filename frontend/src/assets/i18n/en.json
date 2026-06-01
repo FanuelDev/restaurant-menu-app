@@ -178,7 +178,9 @@
     "submitCreate": "Create",
     "deleteConfirm": "Delete category \"{{ name }}\" and all its dishes?",
     "limitMessage": "Plan limit reached. Upgrade your plan.",
-    "errorGeneric": "An error occurred."
+    "errorGeneric": "An error occurred.",
+    "successCreate": "Category created successfully.",
+    "successUpdate": "Category updated successfully."
   },
   "menuItems": {
     "title": "Menu items",
@@ -220,7 +222,9 @@
     "submitCreate": "Create",
     "deleteConfirm": "Delete item \"{{ name }}\"?",
     "limitMessage": "Plan limit reached. Upgrade your plan.",
-    "errorGeneric": "An error occurred."
+    "errorGeneric": "An error occurred.",
+    "successCreate": "Item created successfully.",
+    "successUpdate": "Item updated successfully."
   },
   "restaurant": {
     "title": "Restaurant information",
@@ -295,7 +299,9 @@
     "limitMessage": "Plan limit reached. Upgrade your plan.",
     "errorCreate": "Error creating cashier.",
     "errorUpdate": "Error updating cashier.",
-    "errorDelete": "Error deleting cashier."
+    "errorDelete": "Error deleting cashier.",
+    "successCreate": "Cashier added successfully.",
+    "successUpdate": "Cashier updated successfully."
   },
   "subscription": {
     "title": "Subscription",

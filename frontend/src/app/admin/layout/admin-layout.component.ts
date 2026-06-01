@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { filter } from 'rxjs'
 import { AuthService } from '../../shared/services/auth.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
+import { NotificationService } from '../../shared/services/notification.service'
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component'
 
 @Component({
@@ -150,6 +151,30 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme
     }
     .ut-close:hover { background: var(--gray-100); color: var(--text-secondary); }
 
+    /* Success / error toast */
+    .app-toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+      font-size: .875rem; font-weight: 500; max-width: 360px;
+      animation: toastIn .22s ease;
+    }
+    .app-toast-success {
+      background: #166534; color: #fff;
+    }
+    .app-toast-error {
+      background: var(--error); color: #fff;
+    }
+    .app-toast-icon { font-size: 1rem; flex-shrink: 0; }
+    .app-toast-msg { flex: 1; }
+    .app-toast-close {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.7); padding: 2px; flex-shrink: 0;
+      display: flex; align-items: center; border-radius: var(--radius-sm);
+    }
+    .app-toast-close:hover { color: #fff; }
+
     /* Vitrine */
     .sb-vitrine {
       padding: 0 var(--space-2) var(--space-2);
@@ -218,6 +243,7 @@ export class AdminLayoutComponent implements OnInit {
   private readonly restaurantService = inject(RestaurantService)
   private readonly router            = inject(Router)
   private readonly destroyRef        = inject(DestroyRef)
+  readonly notify                    = inject(NotificationService)
 
   readonly user       = this.authService.user
   readonly collapsed  = signal(false)

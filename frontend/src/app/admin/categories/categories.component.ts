@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
 import { SubscriptionService } from '../../shared/services/subscription.service'
+import { NotificationService } from '../../shared/services/notification.service'
 import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
 import type { Category, ResourceUsage } from '../../shared/models'
 
@@ -136,6 +137,7 @@ import type { Category, ResourceUsage } from '../../shared/models'
 export class CategoriesComponent implements OnInit {
   private readonly menuService = inject(MenuService)
   private readonly subscriptionService = inject(SubscriptionService)
+  private readonly notify = inject(NotificationService)
   private readonly fb = inject(FormBuilder)
   private readonly transloco = inject(TranslocoService)
 
@@ -250,8 +252,14 @@ export class CategoriesComponent implements OnInit {
       ? this.menuService.updateCategory(target.id, data)
       : this.menuService.createCategory(data)
 
+    const successKey = target ? 'categories.successUpdate' : 'categories.successCreate'
     req$.subscribe({
-      next: () => { this.saving.set(false); this.closeForm(); this.loadUsage() },
+      next: () => {
+        this.saving.set(false)
+        this.notify.show(this.transloco.translate(successKey))
+        this.closeForm()
+        this.loadUsage()
+      },
       error: (err) => {
         this.saving.set(false)
         if (err?.status === 402) {

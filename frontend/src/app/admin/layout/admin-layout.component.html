@@ -284,6 +284,19 @@
       </div>
     }
 
+    <!-- Success / error toast -->
+    @if (notify.toast()) {
+      <div class="app-toast" [class.app-toast-success]="notify.toast()!.type === 'success'" [class.app-toast-error]="notify.toast()!.type === 'error'" role="alert" aria-live="polite">
+        <span class="app-toast-icon">{{ notify.toast()!.type === 'success' ? '✓' : '✕' }}</span>
+        <span class="app-toast-msg">{{ notify.toast()!.message }}</span>
+        <button class="app-toast-close" (click)="notify.dismiss()" aria-label="Fermer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    }
+
     </div>
     </ng-container>
   

@@ -178,7 +178,9 @@
     "submitCreate": "创建",
     "deleteConfirm": "删除分类「{{ name }}」及其所有菜品？",
     "limitMessage": "已达套餐上限，请升级到更高套餐。",
-    "errorGeneric": "发生错误。"
+    "errorGeneric": "发生错误。",
+    "successCreate": "分类创建成功。",
+    "successUpdate": "分类更新成功。"
   },
   "menuItems": {
     "title": "菜单菜品",
@@ -220,7 +222,9 @@
     "submitCreate": "创建",
     "deleteConfirm": "删除菜品「{{ name }}」？",
     "limitMessage": "已达套餐上限，请升级到更高套餐。",
-    "errorGeneric": "发生错误。"
+    "errorGeneric": "发生错误。",
+    "successCreate": "菜品创建成功。",
+    "successUpdate": "菜品更新成功。"
   },
   "restaurant": {
     "title": "餐厅信息",
@@ -295,7 +299,9 @@
     "limitMessage": "已达套餐上限，请升级到更高套餐。",
     "errorCreate": "创建时发生错误。",
     "errorUpdate": "更新时发生错误。",
-    "errorDelete": "删除时发生错误。"
+    "errorDelete": "删除时发生错误。",
+    "successCreate": "收银员添加成功。",
+    "successUpdate": "收银员更新成功。"
   },
   "subscription": {
     "title": "订阅",

@@ -4,9 +4,10 @@ import { FormsModule } from '@angular/forms'
 import { RouterLink } from '@angular/router'
 import { TeamService, CreateMemberPayload } from '../../shared/services/team.service'
 import { SubscriptionService } from '../../shared/services/subscription.service'
+import { NotificationService } from '../../shared/services/notification.service'
 import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
 import type { TeamMember, ResourceUsage } from '../../shared/models'
-import { TranslocoModule } from '@jsverse/transloco'
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 
 @Component({
   selector: 'app-team',
@@ -110,6 +111,8 @@ import { TranslocoModule } from '@jsverse/transloco'
 export class TeamComponent implements OnInit {
   private readonly teamService = inject(TeamService)
   private readonly subscriptionService = inject(SubscriptionService)
+  private readonly notify = inject(NotificationService)
+  private readonly transloco = inject(TranslocoService)
 
   readonly members = signal<TeamMember[]>([])
   readonly loading = signal(true)
@@ -177,6 +180,7 @@ export class TeamComponent implements OnInit {
         next: (updated) => {
           this.members.update((ms) => ms.map((m) => m.id === updated.id ? updated : m))
           this.modalLoading.set(false)
+          this.notify.show(this.transloco.translate('team.successUpdate'))
           this.closeModal()
         },
         error: (err) => { this.modalLoading.set(false); this.modalError.set(err.error?.message ?? 'team.errorUpdate') },
@@ -189,7 +193,13 @@ export class TeamComponent implements OnInit {
         phone: this.form.phone || undefined,
       }
       this.teamService.createMember(payload).subscribe({
-        next: (m) => { this.members.update((ms) => [...ms, m]); this.modalLoading.set(false); this.closeModal(); this.loadUsage() },
+        next: (m) => {
+          this.members.update((ms) => [...ms, m])
+          this.modalLoading.set(false)
+          this.notify.show(this.transloco.translate('team.successCreate'))
+          this.closeModal()
+          this.loadUsage()
+        },
         error: (err) => {
           this.modalLoading.set(false)
           if (err?.status === 402) {

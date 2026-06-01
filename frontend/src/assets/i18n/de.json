@@ -178,7 +178,9 @@
     "submitCreate": "Erstellen",
     "deleteConfirm": "Kategorie «{{ name }}» und alle ihre Gerichte löschen?",
     "limitMessage": "Planlimit erreicht. Wechseln Sie zu einem höheren Plan.",
-    "errorGeneric": "Ein Fehler ist aufgetreten."
+    "errorGeneric": "Ein Fehler ist aufgetreten.",
+    "successCreate": "Kategorie erfolgreich erstellt.",
+    "successUpdate": "Kategorie erfolgreich aktualisiert."
   },
   "menuItems": {
     "title": "Menügerichte",
@@ -220,7 +222,9 @@
     "submitCreate": "Erstellen",
     "deleteConfirm": "Gericht «{{ name }}» löschen?",
     "limitMessage": "Planlimit erreicht. Wechseln Sie zu einem höheren Plan.",
-    "errorGeneric": "Ein Fehler ist aufgetreten."
+    "errorGeneric": "Ein Fehler ist aufgetreten.",
+    "successCreate": "Gericht erfolgreich erstellt.",
+    "successUpdate": "Gericht erfolgreich aktualisiert."
   },
   "restaurant": {
     "title": "Restaurantinformationen",
@@ -295,7 +299,9 @@
     "limitMessage": "Planlimit erreicht. Wechseln Sie zu einem höheren Plan.",
     "errorCreate": "Fehler beim Erstellen.",
     "errorUpdate": "Fehler beim Aktualisieren.",
-    "errorDelete": "Fehler beim Löschen."
+    "errorDelete": "Fehler beim Löschen.",
+    "successCreate": "Kassierer erfolgreich hinzugefügt.",
+    "successUpdate": "Kassierer erfolgreich aktualisiert."
   },
   "subscription": {
     "title": "Abonnement",

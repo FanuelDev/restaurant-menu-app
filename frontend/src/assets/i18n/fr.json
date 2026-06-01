@@ -178,7 +178,9 @@
     "submitCreate": "Créer",
     "deleteConfirm": "Supprimer la catégorie « {{ name }} » et tous ses plats ?",
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
-    "errorGeneric": "Une erreur est survenue."
+    "errorGeneric": "Une erreur est survenue.",
+    "successCreate": "Catégorie créée avec succès.",
+    "successUpdate": "Catégorie modifiée avec succès."
   },
   "menuItems": {
     "title": "Plats du menu",
@@ -220,7 +222,9 @@
     "submitCreate": "Créer",
     "deleteConfirm": "Supprimer le plat « {{ name }} » ?",
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
-    "errorGeneric": "Une erreur est survenue."
+    "errorGeneric": "Une erreur est survenue.",
+    "successCreate": "Plat créé avec succès.",
+    "successUpdate": "Plat modifié avec succès."
   },
   "restaurant": {
     "title": "Informations restaurant",
@@ -295,7 +299,9 @@
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
     "errorCreate": "Erreur lors de la création.",
     "errorUpdate": "Erreur lors de la mise à jour.",
-    "errorDelete": "Erreur lors de la suppression."
+    "errorDelete": "Erreur lors de la suppression.",
+    "successCreate": "Caissier ajouté avec succès.",
+    "successUpdate": "Caissier modifié avec succès."
   },
   "subscription": {
     "title": "Abonnement",

@@ -7,6 +7,7 @@ import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { MenuService } from '../../shared/services/menu.service'
 import { SubscriptionService } from '../../shared/services/subscription.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
+import { NotificationService } from '../../shared/services/notification.service'
 import { PlanLimitBarComponent } from '../../shared/components/plan-limit-bar/plan-limit-bar.component'
 import type { Category, MenuItem, MenuItemBadge, ResourceUsage } from '../../shared/models'
 
@@ -191,6 +192,7 @@ export class MenuItemsComponent implements OnInit {
   private readonly menuService = inject(MenuService)
   private readonly subscriptionService = inject(SubscriptionService)
   private readonly restaurantService = inject(RestaurantService)
+  private readonly notify = inject(NotificationService)
   private readonly fb = inject(FormBuilder)
   private readonly transloco = inject(TranslocoService)
 
@@ -382,8 +384,14 @@ export class MenuItemsComponent implements OnInit {
       ? this.menuService.updateMenuItem(target.id, formData)
       : this.menuService.createMenuItem(formData)
 
+    const successKey = target ? 'menuItems.successUpdate' : 'menuItems.successCreate'
     req$.subscribe({
-      next: () => { this.saving.set(false); this.closeForm(); this.loadUsage() },
+      next: () => {
+        this.saving.set(false)
+        this.notify.show(this.transloco.translate(successKey))
+        this.closeForm()
+        this.loadUsage()
+      },
       error: (err) => {
         this.saving.set(false)
         if (err?.status === 402) {
