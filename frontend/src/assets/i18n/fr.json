@@ -180,7 +180,8 @@
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
     "errorGeneric": "Une erreur est survenue.",
     "successCreate": "Catégorie créée avec succès.",
-    "successUpdate": "Catégorie modifiée avec succès."
+    "successUpdate": "Catégorie modifiée avec succès.",
+    "successToggle": "Visibilité mise à jour."
   },
   "menuItems": {
     "title": "Plats du menu",
@@ -224,7 +225,8 @@
     "limitMessage": "Limite du plan atteinte. Passez à un plan supérieur.",
     "errorGeneric": "Une erreur est survenue.",
     "successCreate": "Plat créé avec succès.",
-    "successUpdate": "Plat modifié avec succès."
+    "successUpdate": "Plat modifié avec succès.",
+    "successToggle": "Disponibilité mise à jour."
   },
   "restaurant": {
     "title": "Informations restaurant",

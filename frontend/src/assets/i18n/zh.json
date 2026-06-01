@@ -180,7 +180,8 @@
     "limitMessage": "已达套餐上限，请升级到更高套餐。",
     "errorGeneric": "发生错误。",
     "successCreate": "分类创建成功。",
-    "successUpdate": "分类更新成功。"
+    "successUpdate": "分类更新成功。",
+    "successToggle": "可见性已更新。"
   },
   "menuItems": {
     "title": "菜单菜品",
@@ -224,7 +225,8 @@
     "limitMessage": "已达套餐上限，请升级到更高套餐。",
     "errorGeneric": "发生错误。",
     "successCreate": "菜品创建成功。",
-    "successUpdate": "菜品更新成功。"
+    "successUpdate": "菜品更新成功。",
+    "successToggle": "可用性已更新。"
   },
   "restaurant": {
     "title": "餐厅信息",

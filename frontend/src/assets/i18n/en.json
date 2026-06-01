@@ -180,7 +180,8 @@
     "limitMessage": "Plan limit reached. Upgrade your plan.",
     "errorGeneric": "An error occurred.",
     "successCreate": "Category created successfully.",
-    "successUpdate": "Category updated successfully."
+    "successUpdate": "Category updated successfully.",
+    "successToggle": "Visibility updated."
   },
   "menuItems": {
     "title": "Menu items",
@@ -224,7 +225,8 @@
     "limitMessage": "Plan limit reached. Upgrade your plan.",
     "errorGeneric": "An error occurred.",
     "successCreate": "Item created successfully.",
-    "successUpdate": "Item updated successfully."
+    "successUpdate": "Item updated successfully.",
+    "successToggle": "Availability updated."
   },
   "restaurant": {
     "title": "Restaurant information",

@@ -272,7 +272,9 @@ export class CategoriesComponent implements OnInit {
   }
 
   toggleVisibility(cat: Category): void {
-    this.menuService.updateCategory(cat.id, { isVisible: !cat.isVisible }).subscribe()
+    this.menuService.updateCategory(cat.id, { isVisible: !cat.isVisible }).subscribe({
+      next: () => this.notify.show(this.transloco.translate('categories.successToggle')),
+    })
   }
 
   confirmDelete(cat: Category): void {

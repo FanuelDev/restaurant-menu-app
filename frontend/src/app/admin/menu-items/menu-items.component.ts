@@ -404,7 +404,9 @@ export class MenuItemsComponent implements OnInit {
   }
 
   toggleAvailability(item: MenuItem): void {
-    this.menuService.toggleAvailability(item.id).subscribe()
+    this.menuService.toggleAvailability(item.id).subscribe({
+      next: () => this.notify.show(this.transloco.translate('menuItems.successToggle')),
+    })
   }
 
   confirmDelete(item: MenuItem): void {

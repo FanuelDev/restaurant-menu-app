@@ -180,7 +180,8 @@
     "limitMessage": "Planlimit erreicht. Wechseln Sie zu einem höheren Plan.",
     "errorGeneric": "Ein Fehler ist aufgetreten.",
     "successCreate": "Kategorie erfolgreich erstellt.",
-    "successUpdate": "Kategorie erfolgreich aktualisiert."
+    "successUpdate": "Kategorie erfolgreich aktualisiert.",
+    "successToggle": "Sichtbarkeit aktualisiert."
   },
   "menuItems": {
     "title": "Menügerichte",
@@ -224,7 +225,8 @@
     "limitMessage": "Planlimit erreicht. Wechseln Sie zu einem höheren Plan.",
     "errorGeneric": "Ein Fehler ist aufgetreten.",
     "successCreate": "Gericht erfolgreich erstellt.",
-    "successUpdate": "Gericht erfolgreich aktualisiert."
+    "successUpdate": "Gericht erfolgreich aktualisiert.",
+    "successToggle": "Verfügbarkeit aktualisiert."
   },
   "restaurant": {
     "title": "Restaurantinformationen",
