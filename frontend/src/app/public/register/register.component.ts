@@ -311,6 +311,12 @@ export class RegisterComponent implements OnDestroy {
 
   readonly countries     = COUNTRIES
   readonly currencies    = CURRENCIES
+
+  /** ISO2 codes (lowercase) des pays autorisés dans le sélecteur téléphone */
+  readonly allowedPhoneCountries = COUNTRIES.map((c) => c.code.toLowerCase())
+
+  /** Priorités : même ordre que COUNTRIES (les africains en premier, puis Europe/US) */
+  readonly phoneCountryOrder = COUNTRIES.slice(0, 12).map((c) => c.code.toLowerCase())
   readonly step          = signal(1)
   readonly slugStatus    = signal<'idle'|'checking'|'available'|'taken'>('idle')
   readonly loading       = signal(false)

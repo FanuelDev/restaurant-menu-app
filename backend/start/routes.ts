@@ -263,6 +263,7 @@ router
     router.post('/restaurants/:id/block', [SARestaurantsController, 'block'])
     router.post('/restaurants/:id/unblock', [SARestaurantsController, 'unblock'])
     router.post('/restaurants/:id/assign-plan', [SARestaurantsController, 'assignPlan'])
+    router.post('/restaurants/:id/verify-user', [SARestaurantsController, 'verifyUser'])
     router.get('/plans', [SAPlansController, 'index'])
     router.post('/plans', [SAPlansController, 'store'])
     router.put('/plans/:id', [SAPlansController, 'update'])

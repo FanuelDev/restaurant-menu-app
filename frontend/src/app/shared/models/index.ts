@@ -74,6 +74,14 @@ export interface PlanUsage {
   users: ResourceUsage
 }
 
+export interface RestaurantOwner {
+  id: number
+  email: string
+  fullName: string | null
+  emailVerifiedAt: string | null
+  isActive: boolean
+}
+
 export interface Restaurant {
   id: number
   slug: string
@@ -97,6 +105,8 @@ export interface Restaurant {
   blockedAt?: string | null
   blockedReason?: string | null
   createdAt?: string
+  /** Propriétaire du restaurant (admin) — enrichi par le super admin API */
+  owner?: RestaurantOwner | null
 }
 
 export interface Subscription {

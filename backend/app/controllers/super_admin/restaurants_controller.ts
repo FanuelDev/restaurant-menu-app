@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import Restaurant from '#models/restaurant'
+import User from '#models/user'
 import Plan from '#models/plan'
 import Subscription from '#models/subscription'
 import SaInvoice from '#models/sa_invoice'
@@ -48,10 +49,51 @@ export default class SuperAdminRestaurantsController {
     if (status === 'blocked') query.whereNotNull('blocked_at')
     else if (status === 'active') query.whereNull('blocked_at').where('is_active', true)
     else if (status === 'trial') query.where('subscription_status', 'trialing')
+    else if (status === 'unverified') {
+      // Restaurants dont le propriétaire n'a pas encore vérifié son email
+      const unverifiedUserIds = await User.query()
+        .whereNull('email_verified_at')
+        .whereNotNull('restaurant_id')
+        .where('role', 'admin')
+        .select('restaurant_id')
+      const restaurantIds = unverifiedUserIds.map((u) => u.restaurantId).filter(Boolean)
+      if (restaurantIds.length) query.whereIn('id', restaurantIds as number[])
+      else query.whereRaw('1 = 0') // aucun résultat
+    }
 
     const restaurants = await query.paginate(page, perPage)
 
-    return response.ok(restaurants)
+    // Enrichir chaque restaurant avec le statut de vérification email du propriétaire
+    const restaurantIds = restaurants.all().map((r) => r.id)
+    const owners = restaurantIds.length
+      ? await User.query()
+          .whereIn('restaurant_id', restaurantIds)
+          .where('role', 'admin')
+          .select('id', 'email', 'email_verified_at', 'is_active', 'restaurant_id', 'full_name')
+      : []
+
+    const ownerMap = new Map(owners.map((u) => [u.restaurantId, u]))
+
+    const data = restaurants.all().map((r) => {
+      const owner = ownerMap.get(r.id)
+      return {
+        ...r.serialize(),
+        owner: owner
+          ? {
+              id: owner.id,
+              email: owner.email,
+              fullName: owner.fullName,
+              emailVerifiedAt: owner.emailVerifiedAt?.toISO() ?? null,
+              isActive: owner.isActive,
+            }
+          : null,
+      }
+    })
+
+    return response.ok({
+      data,
+      meta: restaurants.getMeta(),
+    })
   }
 
   /** GET /api/super-admin/restaurants/:id */
@@ -66,7 +108,73 @@ export default class SuperAdminRestaurantsController {
       .orderBy('created_at', 'desc')
       .limit(20)
 
-    return response.ok({ restaurant, recentLogs })
+    const owner = await User.query()
+      .where('restaurant_id', restaurant.id)
+      .where('role', 'admin')
+      .select('id', 'email', 'full_name', 'email_verified_at', 'is_active', 'created_at')
+      .first()
+
+    return response.ok({
+      restaurant: {
+        ...restaurant.serialize(),
+        owner: owner
+          ? {
+              id: owner.id,
+              email: owner.email,
+              fullName: owner.fullName,
+              emailVerifiedAt: owner.emailVerifiedAt?.toISO() ?? null,
+              isActive: owner.isActive,
+            }
+          : null,
+      },
+      recentLogs,
+    })
+  }
+
+  /** POST /api/super-admin/restaurants/:id/verify-user
+   *  Active manuellement le compte (email vérifié + compte actif) */
+  async verifyUser({ params, request, response, auth }: HttpContext) {
+    const restaurant = await Restaurant.findOrFail(params.id)
+
+    const owner = await User.query()
+      .where('restaurant_id', restaurant.id)
+      .where('role', 'admin')
+      .firstOrFail()
+
+    if (owner.emailVerifiedAt) {
+      return response.badRequest({ message: 'Cet email est déjà vérifié.' })
+    }
+
+    owner.emailVerifiedAt = DateTime.now()
+    owner.isActive = true
+    // Invalider le token de vérification s'il en existe un
+    owner.emailVerificationToken = null
+    owner.emailVerificationTokenExpiresAt = null
+    await owner.save()
+
+    await this.#auditService.log({
+      ctx: { request } as never,
+      user: auth.user!,
+      restaurantId: restaurant.id,
+      action: 'user.email_verified_by_admin',
+      resourceType: 'user',
+      resourceId: owner.id,
+      resourceName: owner.email,
+      newValues: {
+        verifiedAt: owner.emailVerifiedAt.toISO(),
+        grantedBy: auth.user!.email,
+      },
+    })
+
+    return response.ok({
+      message: `Compte de ${owner.email} activé manuellement.`,
+      owner: {
+        id: owner.id,
+        email: owner.email,
+        emailVerifiedAt: owner.emailVerifiedAt.toISO(),
+        isActive: owner.isActive,
+      },
+    })
   }
 
   /** POST /api/super-admin/restaurants/:id/block */

@@ -256,6 +256,34 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     .badge-reduced { background: var(--warning-bg); color: var(--warning); }
     .badge-full { background: var(--success-bg); color: var(--success); }
 
+    /* ── Owner / email verification ── */
+    .email-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: var(--radius-full);
+      font-size: .75rem; font-weight: 600;
+    }
+    .email-verified   { background: var(--success-bg); color: var(--success); }
+    .email-unverified { background: var(--warning-bg); color: var(--warning); }
+
+    .verify-banner {
+      background: #fffbeb; border: 1.5px solid #fde68a;
+      border-radius: var(--radius-lg); padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .verify-banner-top { display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .verify-banner-icon { font-size: 1.25rem; }
+    .verify-banner-title { font-weight: 700; color: #92400e; font-size: .9rem; }
+    .verify-banner-desc  { font-size: .8rem; color: #b45309; margin-top: 2px; }
+    .btn-verify {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: .5rem var(--space-4); background: #f59e0b;
+      color: white; border: none; border-radius: var(--radius-md);
+      cursor: pointer; font-size: .875rem; font-weight: 600;
+      transition: opacity var(--t-fast);
+    }
+    .btn-verify:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-verify:hover:not(:disabled) { opacity: .87; }
+
     /* ── Spinner ── */
     .spinner {
       width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3);
@@ -277,6 +305,11 @@ export class SaRestaurantDetailComponent implements OnInit {
   readonly showBlockForm = signal(false)
   readonly actionLoading = signal(false)
   readonly actionError = signal<string | null>(null)
+
+  // Activation manuelle email
+  readonly verifyLoading = signal(false)
+  readonly verifyError   = signal<string | null>(null)
+  readonly verifySuccess = signal<string | null>(null)
 
   // Grant plan form
   readonly grantLoading = signal(false)
@@ -389,6 +422,26 @@ export class SaRestaurantDetailComponent implements OnInit {
         this.restaurant.update((prev) => prev ? { ...prev, blockedAt: null, blockedReason: null } : prev)
       },
       error: (err) => { this.actionLoading.set(false); this.actionError.set(err.error?.message) },
+    })
+  }
+
+  verifyUser(): void {
+    const r = this.restaurant()
+    if (!r) return
+    this.verifyLoading.set(true)
+    this.verifyError.set(null)
+    this.verifySuccess.set(null)
+    this.saService.verifyUser(r.id).subscribe({
+      next: (res) => {
+        this.verifyLoading.set(false)
+        this.verifySuccess.set(res.message)
+        // Mettre à jour le owner localement
+        this.restaurant.update((prev) => prev ? { ...prev, owner: res.owner } : prev)
+      },
+      error: (err) => {
+        this.verifyLoading.set(false)
+        this.verifyError.set(err.error?.message ?? 'Erreur lors de l\'activation.')
+      },
     })
   }
 }

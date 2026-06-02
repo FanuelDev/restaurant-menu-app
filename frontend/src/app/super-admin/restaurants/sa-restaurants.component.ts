@@ -90,6 +90,14 @@ import type { Restaurant, PaginatedResponse } from '../../shared/models'
     .status-active    { background: var(--success-bg); color: var(--success); }
     .status-blocked, .status-canceled, .status-suspended { background: var(--error-bg); color: var(--error); }
 
+    .email-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: var(--radius-full);
+      font-size: .68rem; font-weight: 600;
+    }
+    .email-ok  { background: var(--success-bg); color: var(--success); }
+    .email-ko  { background: var(--warning-bg); color: var(--warning); }
+
     .row-actions { display: flex; gap: var(--space-1); justify-content: flex-end; }
     .action-btn {
       width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;

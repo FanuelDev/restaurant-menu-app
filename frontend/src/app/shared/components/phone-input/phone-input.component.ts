@@ -99,11 +99,11 @@ type AnyOptions = any
       z-index: 1000;
     }
 
-    /* ── Search input (doit être au-dessus de la liste, fond opaque) ── */
+    /* ── Search input ── */
     ::ng-deep .iti__search-input {
       display: block;
       width: 100%;
-      padding: 10px 14px 10px 36px;
+      padding: 10px 14px;
       border: none;
       border-bottom: 1px solid var(--border, #e2e1de);
       background: var(--gray-50, #fafaf9);
@@ -112,24 +112,12 @@ type AnyOptions = any
       color: var(--text-primary, #1a1917);
       outline: none;
       box-sizing: border-box;
+      /* Désactive l'icône native du type="search" pour éviter les doublons */
+      -webkit-appearance: none;
+      appearance: none;
       &::placeholder { color: var(--text-muted, #a8a29e); }
-    }
-
-    /* Icône loupe positionnée dans le champ search */
-    ::ng-deep .iti__search-input-container {
-      position: relative;
-      &::before {
-        content: '';
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 14px;
-        height: 14px;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") center/contain no-repeat;
-        pointer-events: none;
-        z-index: 1;
-      }
+      &::-webkit-search-decoration,
+      &::-webkit-search-cancel-button { display: none; }
     }
 
     /* ── Pays liste ── */
@@ -148,10 +136,22 @@ type AnyOptions = any
 export class PhoneInputComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
   @ViewChild('phoneEl') phoneEl!: ElementRef<HTMLInputElement>
 
-  /** ISO2 country code used by default (e.g. 'ci', 'sn', 'fr') */
-  @Input() initialCountry = 'ci'
+  /** ISO2 code du pays par défaut — réactif : changer cette valeur met à jour l'indicatif */
+  @Input()
+  set initialCountry(value: string) {
+    this._initialCountry = (value || 'ci').toLowerCase()
+    // Si iti est déjà initialisé, on change le pays programmatiquement
+    if (this.iti) {
+      try { this.iti.setSelectedCountry(this._initialCountry as any) } catch { /* pays inconnu */ }
+    }
+  }
+  get initialCountry(): string { return this._initialCountry }
+  private _initialCountry = 'ci'
 
-  /** Countries shown at the top of the list, e.g. ['ci','sn','ml','fr'] */
+  /** Restreindre la liste aux seuls pays autorisés (ISO2 lowercase). Vide = tous les pays. */
+  @Input() onlyCountries: string[] = []
+
+  /** Pays affichés en tête de liste */
   @Input() priorityCountries: string[] = ['ci', 'sn', 'ml', 'bf', 'cm', 'fr']
 
   /** Emits null (empty), true (valid) or false (invalid) */
@@ -167,7 +167,8 @@ export class PhoneInputComponent implements ControlValueAccessor, AfterViewInit,
 
   ngAfterViewInit(): void {
     const options: AnyOptions = {
-      initialCountry: this.initialCountry,
+      initialCountry: this._initialCountry,
+      onlyCountries: this.onlyCountries.length ? this.onlyCountries : null,
       countryOrder: this.priorityCountries.length ? this.priorityCountries : null,
       separateDialCode: true,
       countrySearch: true,

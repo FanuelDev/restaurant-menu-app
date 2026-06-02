@@ -15,6 +15,7 @@ export type AuditAction =
   | 'user.created' | 'user.updated' | 'user.deleted'
   | 'subscription.created' | 'subscription.canceled' | 'subscription.granted'
   | 'restaurant.blocked' | 'restaurant.unblocked'
+  | 'user.email_verified_by_admin'
   | 'marketing_voucher.created' | 'marketing_voucher.updated' | 'marketing_voucher.deleted' | 'marketing_voucher.redeemed'
 
 export default class AuditLog extends BaseModel {

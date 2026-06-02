@@ -162,6 +162,8 @@
             <app-phone-input
               [(ngModel)]="s1.phone"
               [initialCountry]="s1.country.toLowerCase()"
+              [onlyCountries]="allowedPhoneCountries"
+              [priorityCountries]="phoneCountryOrder"
               (validityChange)="s1PhoneValid.set($event)"
             />
             @if (s1PhoneValid() === false) {
@@ -212,6 +214,8 @@
             <app-phone-input
               [(ngModel)]="s2.ownerPhone"
               [initialCountry]="s1.country.toLowerCase()"
+              [onlyCountries]="allowedPhoneCountries"
+              [priorityCountries]="phoneCountryOrder"
               (validityChange)="s2PhoneValid.set($event)"
             />
             @if (s2PhoneValid() === false) {

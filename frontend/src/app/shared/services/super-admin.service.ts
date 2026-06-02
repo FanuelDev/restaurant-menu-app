@@ -40,6 +40,12 @@ export class SuperAdminService {
     return this.http.post<{ message: string }>(`${environment.apiUrl}/super-admin/restaurants/${id}/unblock`, {})
   }
 
+  verifyUser(restaurantId: number): Observable<{ message: string; owner: import('../models').RestaurantOwner }> {
+    return this.http.post<{ message: string; owner: import('../models').RestaurantOwner }>(
+      `${environment.apiUrl}/super-admin/restaurants/${restaurantId}/verify-user`, {}
+    )
+  }
+
   getPlans(): Observable<Plan[]> {
     return this.http.get<Plan[]>(`${environment.apiUrl}/super-admin/plans`)
   }

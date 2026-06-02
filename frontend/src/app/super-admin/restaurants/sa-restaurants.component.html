@@ -23,6 +23,7 @@
             <option value="active">{{ t('superAdmin.restaurants.filterActive') }}</option>
             <option value="trial">{{ t('superAdmin.restaurants.filterTrialing') }}</option>
             <option value="blocked">{{ t('superAdmin.restaurants.filterBlocked') }}</option>
+            <option value="unverified">⚠ Email non vérifié</option>
           </select>
           <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -40,7 +41,7 @@
             <thead>
               <tr>
                 <th>{{ t('superAdmin.restaurants.colName') }}</th>
-                <th>{{ t('superAdmin.restaurants.colSlug') }}</th>
+                <th>Propriétaire</th>
                 <th>{{ t('superAdmin.restaurants.colCountry') }}</th>
                 <th>{{ t('superAdmin.restaurants.colPlan') }}</th>
                 <th>{{ t('superAdmin.restaurants.colStatus') }}</th>
@@ -57,7 +58,24 @@
                       <span>{{ r.name }}</span>
                     </a>
                   </td>
-                  <td><code>{{ r.slug }}</code></td>
+                  <td>
+                    @if (r.owner) {
+                      <div style="font-size:.8125rem;color:var(--text-secondary)">{{ r.owner.email }}</div>
+                      @if (r.owner.emailVerifiedAt) {
+                        <span class="email-badge email-ok">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                          Vérifié
+                        </span>
+                      } @else {
+                        <span class="email-badge email-ko">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16v.5"/></svg>
+                          Non vérifié
+                        </span>
+                      }
+                    } @else {
+                      <span class="col-muted">—</span>
+                    }
+                  </td>
                   <td class="col-muted">{{ r.country || '—' }}</td>
                   <td class="col-muted">{{ r.plan?.name ?? '—' }}</td>
                   <td>

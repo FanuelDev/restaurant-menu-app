@@ -54,6 +54,78 @@
           <!-- Left col -->
           <div class="main-col">
 
+            <!-- Propriétaire & statut email -->
+            <div class="card">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Propriétaire du compte
+              </div>
+
+              @if (restaurant()!.owner; as owner) {
+                <!-- Bannière activation manuelle si email non vérifié -->
+                @if (!owner.emailVerifiedAt) {
+                  <div class="verify-banner">
+                    <div class="verify-banner-top">
+                      <span class="verify-banner-icon">⚠️</span>
+                      <div>
+                        <div class="verify-banner-title">Email non vérifié</div>
+                        <div class="verify-banner-desc">
+                          {{ owner.email }} n'a pas encore validé son adresse.<br/>
+                          Le compte ne peut pas se connecter. Vous pouvez l'activer manuellement.
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (verifySuccess()) {
+                      <div class="alert-success" style="margin-bottom:0">✓ {{ verifySuccess() }}</div>
+                    } @else {
+                      @if (verifyError()) {
+                        <div class="alert-error" style="margin-bottom:var(--space-3)">{{ verifyError() }}</div>
+                      }
+                      <button class="btn-verify" (click)="verifyUser()" [disabled]="verifyLoading()">
+                        @if (verifyLoading()) { <span class="spinner"></span> Activation… }
+                        @else {
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                          Activer le compte manuellement
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+
+                <div class="info-grid">
+                  <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-val">{{ owner.email }}</span>
+                  </div>
+                  @if (owner.fullName) {
+                    <div class="info-row">
+                      <span class="info-label">Nom</span>
+                      <span class="info-val">{{ owner.fullName }}</span>
+                    </div>
+                  }
+                  <div class="info-row">
+                    <span class="info-label">Email vérifié</span>
+                    <span>
+                      @if (owner.emailVerifiedAt) {
+                        <span class="email-status email-verified">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                          Vérifié · {{ owner.emailVerifiedAt | date:'dd/MM/yyyy' }}
+                        </span>
+                      } @else {
+                        <span class="email-status email-unverified">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16v.5"/></svg>
+                          Non vérifié
+                        </span>
+                      }
+                    </span>
+                  </div>
+                </div>
+              } @else {
+                <p style="font-size:.8rem;color:var(--text-muted);margin:0">Aucun propriétaire associé.</p>
+              }
+            </div>
+
             <!-- Info card -->
             <div class="card">
               <div class="card-title">
