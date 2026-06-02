@@ -108,15 +108,19 @@ function validatePhone(phone: string, countryCode: string): boolean {
 
 function formatPhonePlaceholder(countryCode: string): string {
   const examples: Record<string, string> = {
-    CI: '+225 07 00 00 00 00', SN: '+221 77 000 00 00', ML: '+223 70 00 00 00',
-    BF: '+226 70 00 00 00', TG: '+228 90 00 00 00', BJ: '+229 97 00 00 00',
-    NE: '+227 90 00 00 00', GN: '+224 620 00 00 00', CM: '+237 670 00 00 00',
-    CG: '+242 06 000 00 00', CD: '+243 81 000 0000', GA: '+241 060 00 00 00',
-    GH: '+233 24 000 0000', NG: '+234 801 000 0000', FR: '+33 6 00 00 00 00',
-    BE: '+32 470 00 00 00', CH: '+41 76 000 00 00', LU: '+352 691 000 000',
-    US: '+1 202-555-0100',
+    CI: '07 00 00 00 00', SN: '77 000 00 00', ML: '70 00 00 00',
+    BF: '70 00 00 00', TG: '90 00 00 00', BJ: '97 00 00 00',
+    NE: '90 00 00 00', GN: '620 00 00 00', CM: '670 00 00 00',
+    CG: '06 000 00 00', CD: '81 000 0000', GA: '060 00 00 00',
+    GH: '24 000 0000', NG: '801 000 0000', FR: '6 00 00 00 00',
+    BE: '470 00 00 00', CH: '76 000 00 00', LU: '691 000 000',
+    US: '202-555-0100',
   }
-  return examples[countryCode] ?? '+X XX XX XX XX'
+  return examples[countryCode] ?? 'XX XX XX XX XX'
+}
+
+function countryToFlag(code: string): string {
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
 }
 
 // ─── Composant ────────────────────────────────────────────────────────────────
@@ -226,21 +230,27 @@ function formatPhonePlaceholder(countryCode: string): string {
 
     /* ── Phone input avec indicatif ── */
     .phone-wrap { position: relative; display: flex; align-items: stretch; }
-    .phone-dial {
-      display: flex; align-items: center; gap: 4px;
-      padding: 0 var(--space-3); border: 1px solid var(--border);
-      border-right: none; border-radius: var(--radius-md) 0 0 var(--radius-md);
-      background: var(--gray-50); color: var(--text-muted); font-size: .875rem;
-      white-space: nowrap; flex-shrink: 0;
+    .phone-country-select {
+      appearance: none; -webkit-appearance: none;
+      border: 1px solid var(--border); border-right: none;
+      border-radius: var(--radius-md) 0 0 var(--radius-md);
+      background: var(--gray-50); color: var(--text-secondary);
+      font-size: .875rem; cursor: pointer; flex-shrink: 0;
+      padding: 0 1.6rem 0 var(--space-3); height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 6px center;
+      transition: border-color .15s, background-color .15s;
+      &:focus { outline: none; border-color: var(--brand); background-color: #fff; z-index: 1; }
+      &:hover { background-color: var(--gray-100); }
     }
     .phone-wrap .form-control {
       border-radius: 0 var(--radius-md) var(--radius-md) 0;
       border-left: none; flex: 1;
     }
     .phone-wrap .form-control:focus { z-index: 1; }
-    .phone-wrap.invalid .phone-dial { border-color: var(--error); background: #fff5f5; }
+    .phone-wrap.invalid .phone-country-select { border-color: var(--error); background-color: #fff5f5; }
     .phone-wrap.invalid .form-control { border-color: var(--error); }
-    .phone-wrap.valid   .phone-dial { border-color: var(--success); }
+    .phone-wrap.valid   .phone-country-select { border-color: var(--success); }
     .phone-wrap.valid   .form-control { border-color: var(--success); }
     .phone-error { font-size: .78rem; color: var(--error); margin-top: 4px; }
     .phone-ok    { font-size: .78rem; color: var(--success); margin-top: 4px; }
@@ -376,6 +386,10 @@ export class RegisterComponent implements OnDestroy {
   s1: StepOne = { restaurantName: '', restaurantSlug: '', country: 'CI', currency: 'XOF', address: '', phone: '' }
   s2: StepTwo = { fullName: '', email: '', password: '', passwordConfirmation: '', ownerPhone: '' }
 
+  // Phone country (indépendant du pays du restaurant)
+  readonly s1PhoneCountry = signal<string>('CI')
+  readonly s2PhoneCountry = signal<string>('CI')
+
   // Phone validation state
   readonly s1PhoneValid  = signal<boolean | null>(null)
   readonly s2PhoneValid  = signal<boolean | null>(null)
@@ -407,22 +421,39 @@ export class RegisterComponent implements OnDestroy {
 
   readonly pwStrength = computed(() => checkPasswordStrength(this.s2.password))
 
-  readonly dialCode1 = computed(() => getDialCode(this.s1.country))
+  readonly dialCode1 = computed(() => getDialCode(this.s1PhoneCountry()))
+  readonly dialCode2 = computed(() => getDialCode(this.s2PhoneCountry()))
 
-  readonly phonePlaceholder = computed(() => formatPhonePlaceholder(this.s1.country))
+  readonly phonePlaceholder1 = computed(() => formatPhonePlaceholder(this.s1PhoneCountry()))
+  readonly phonePlaceholder2 = computed(() => formatPhonePlaceholder(this.s2PhoneCountry()))
 
   readonly otpCode = computed(() => this.otpDigits().join(''))
 
+  // ── Phone helpers ───────────────────────────────────────────────────────────
+
+  flag(code: string): string { return countryToFlag(code) }
+  dialOf(code: string): string { return getDialCode(code) }
+
   // ── Phone handlers ──────────────────────────────────────────────────────────
+
+  onS1PhoneCountryChange(code: string): void {
+    this.s1PhoneCountry.set(code)
+    if (this.s1.phone) this.onS1PhoneChange(this.s1.phone)
+  }
+
+  onS2PhoneCountryChange(code: string): void {
+    this.s2PhoneCountry.set(code)
+    if (this.s2.ownerPhone) this.onS2PhoneChange(this.s2.ownerPhone)
+  }
 
   onS1PhoneChange(phone: string): void {
     if (!phone.trim()) { this.s1PhoneValid.set(null); return }
-    this.s1PhoneValid.set(validatePhone(phone, this.s1.country))
+    this.s1PhoneValid.set(validatePhone(phone, this.s1PhoneCountry()))
   }
 
   onS2PhoneChange(phone: string): void {
     if (!phone.trim()) { this.s2PhoneValid.set(null); return }
-    this.s2PhoneValid.set(validatePhone(phone, this.s1.country))
+    this.s2PhoneValid.set(validatePhone(phone, this.s2PhoneCountry()))
   }
 
   // ── Slug handlers ───────────────────────────────────────────────────────────
@@ -439,7 +470,9 @@ export class RegisterComponent implements OnDestroy {
   onCountryChange(code: string): void {
     const found = COUNTRIES.find((c) => c.code === code)
     if (found) this.s1.currency = found.currency
-    // Re-valider les numéros de téléphone avec le nouveau pays
+    // Sync le pays du téléphone au pays du restaurant (si pas encore modifié manuellement)
+    this.s1PhoneCountry.set(code)
+    this.s2PhoneCountry.set(code)
     if (this.s1.phone) this.onS1PhoneChange(this.s1.phone)
     if (this.s2.ownerPhone) this.onS2PhoneChange(this.s2.ownerPhone)
   }
