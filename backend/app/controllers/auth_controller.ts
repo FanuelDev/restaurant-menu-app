@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { randomBytes, createHash } from 'node:crypto'
 import User from '#models/user'
 import { loginValidator, forgotPasswordValidator, resetPasswordValidator } from '#validators/auth_validator'
+import { mailService } from '#services/mail_service'
 
 function hashResetToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
@@ -107,13 +108,16 @@ export default class AuthController {
     await user.save()
 
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200'
-    // rawToken goes in the email link — hash stays in DB
     const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`
 
-    // TODO: Remplacer par envoi d'email via @adonisjs/mail
-    // En production : envoyer resetUrl par email, ne jamais logger le token
+    // Envoi asynchrone — ne bloque pas la réponse et ne révèle pas si l'email existe
+    mailService.sendPasswordReset(user.email, user.fullName ?? user.email, resetUrl).catch((err) => {
+      console.error('[Mail] Erreur envoi reset password :', err)
+    })
+
+    // En dev uniquement : afficher le lien dans les logs (jamais en production)
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[DEV ONLY] Reset link: ${resetUrl}`)
+      console.log(`[DEV] Reset link: ${resetUrl}`)
     }
 
     return response.ok({ message: 'Si cet email existe, un lien a été envoyé.' })
