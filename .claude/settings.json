@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Auto-committing changes...",
+            "command": "cd \"C:/Users/Perce/Documents/Claude/restaurant-menu-app\" && git add -u && git diff --cached --quiet && exit 0; FILES=$(git diff --cached --name-only | head -5 | tr '\\n' ' ' | sed 's/ $//' ); COUNT=$(git diff --cached --name-only | wc -l | tr -d ' '); if [ \"$COUNT\" -gt 5 ]; then MSG=\"chore: update $COUNT files — ${FILES}...\"; else MSG=\"chore: update ${FILES}\"; fi; git commit -m \"$MSG\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
