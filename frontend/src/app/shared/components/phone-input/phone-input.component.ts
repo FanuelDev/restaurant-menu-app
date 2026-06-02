@@ -99,25 +99,23 @@ type AnyOptions = any
       z-index: 1000;
     }
 
-    /* ── Search input ── */
+    /* ── Search wrapper + input ──
+       ⚠ Ne pas overrider padding-left/padding-right : intl-tel-input les calcule
+          via --iti-spacer-horizontal / --iti-globe-icon-size pour aligner son icône.
+       On ne touche qu'au fond, à la font et aux couleurs. */
+    ::ng-deep .iti__search-input-wrapper {
+      background: var(--gray-50, #fafaf9);
+    }
     ::ng-deep .iti__search-input {
-      display: block;
-      width: 100%;
-      padding: 10px 14px;
-      border: none;
-      border-bottom: 1px solid var(--border, #e2e1de);
       background: var(--gray-50, #fafaf9);
       font-family: inherit;
       font-size: .875rem;
       color: var(--text-primary, #1a1917);
       outline: none;
-      box-sizing: border-box;
-      /* Désactive l'icône native du type="search" pour éviter les doublons */
-      -webkit-appearance: none;
-      appearance: none;
       &::placeholder { color: var(--text-muted, #a8a29e); }
-      &::-webkit-search-decoration,
-      &::-webkit-search-cancel-button { display: none; }
+    }
+    ::ng-deep .iti__search-icon-svg {
+      stroke: var(--text-muted, #a8a29e);
     }
 
     /* ── Pays liste ── */
