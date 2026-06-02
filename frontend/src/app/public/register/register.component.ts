@@ -363,7 +363,9 @@ export class RegisterComponent implements OnDestroy {
 
   readonly countryName = computed(() => COUNTRIES.find((c) => c.code === this.s1.country)?.name ?? this.s1.country)
 
-  readonly pwStrength = computed(() => checkPasswordStrength(this.s2.password))
+  // Signal qui suit la valeur du mot de passe (computed ne traque pas les objets plain)
+  readonly _pw = signal('')
+  readonly pwStrength = computed(() => checkPasswordStrength(this._pw()))
 
   readonly otpCode = computed(() => this.otpDigits().join(''))
 
@@ -399,7 +401,7 @@ export class RegisterComponent implements OnDestroy {
       this.s2.fullName && this.s2.email &&
       pw.score >= 4 && // Fort ou Très fort requis
       pw.checks.length && pw.checks.uppercase && pw.checks.lowercase && pw.checks.number && pw.checks.special &&
-      this.s2.password === this.s2.passwordConfirmation &&
+      this._pw() === this.s2.passwordConfirmation &&
       (this.s2PhoneValid() !== false)
     )
   }

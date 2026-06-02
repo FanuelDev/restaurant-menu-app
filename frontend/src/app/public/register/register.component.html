@@ -235,7 +235,9 @@
           <div class="form-group">
             <label class="form-label">{{ t('public.register.fieldPassword') }} <span class="req">*</span></label>
             <div class="pw-wrap">
-              <input class="form-control" [(ngModel)]="s2.password"
+              <input class="form-control"
+                     [ngModel]="s2.password"
+                     (ngModelChange)="s2.password = $event; _pw.set($event)"
                      [type]="showPw() ? 'text' : 'password'" placeholder="••••••••" />
               <button type="button" class="pw-toggle" (click)="showPw.set(!showPw())">
                 @if (showPw()) {
@@ -251,7 +253,7 @@
             </div>
 
             <!-- Password strength -->
-            @if (s2.password.length > 0) {
+            @if (_pw().length > 0) {
               <div class="pw-strength">
                 <div class="pw-strength-bar">
                   <div class="pw-strength-fill"
@@ -324,7 +326,7 @@
             <div class="pw-wrap">
               <input class="form-control" [(ngModel)]="s2.passwordConfirmation"
                      [type]="showPwConfirm() ? 'text' : 'password'" placeholder="••••••••"
-                     [class.is-invalid]="s2.password && s2.passwordConfirmation && s2.password !== s2.passwordConfirmation" />
+                     [class.is-invalid]="_pw() && s2.passwordConfirmation && _pw() !== s2.passwordConfirmation" />
               <button type="button" class="pw-toggle" (click)="showPwConfirm.set(!showPwConfirm())">
                 @if (showPwConfirm()) {
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -337,7 +339,7 @@
                 }
               </button>
             </div>
-            @if (s2.password && s2.passwordConfirmation && s2.password !== s2.passwordConfirmation) {
+            @if (_pw() && s2.passwordConfirmation && _pw() !== s2.passwordConfirmation) {
               <span class="form-error">{{ t('public.register.passwordMismatch') }}</span>
             }
           </div>
