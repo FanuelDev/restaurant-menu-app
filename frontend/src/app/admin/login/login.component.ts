@@ -231,20 +231,37 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false)
-        const body = err.error ?? {}
 
-        if (err.status === 403 && body.suspended) {
-          this.suspended.set({ blockedAt: body.blockedAt, blockedReason: body.blockedReason })
+        // err.error peut être un objet OU une string selon le Content-Type
+        let body: Record<string, unknown> = {}
+        try {
+          body = typeof err.error === 'string'
+            ? JSON.parse(err.error)
+            : (err.error ?? {})
+        } catch { body = {} }
+
+        // Compte suspendu → alerte dédiée, pas le message d'erreur générique
+        if (err.status === 403 && body['suspended']) {
+          this.suspended.set({
+            blockedAt: body['blockedAt'] as string,
+            blockedReason: (body['blockedReason'] as string) ?? null,
+          })
           return
         }
 
-        this.apiError.set(
-          err.status === 400 || err.status === 401
-            ? this.transloco.translate('auth.login.errorCredentials')
-            : err.status === 403 && body.requiresVerification
-              ? body.message
-              : this.transloco.translate('auth.login.errorGeneric')
-        )
+        // Email non vérifié
+        if (err.status === 403 && body['requiresVerification']) {
+          this.apiError.set(body['message'] as string)
+          return
+        }
+
+        // Identifiants incorrects
+        if (err.status === 400 || err.status === 401 || err.status === 422) {
+          this.apiError.set(this.transloco.translate('auth.login.errorCredentials'))
+          return
+        }
+
+        this.apiError.set(this.transloco.translate('auth.login.errorGeneric'))
       },
     })
   }

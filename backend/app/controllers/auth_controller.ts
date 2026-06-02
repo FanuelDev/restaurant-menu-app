@@ -35,7 +35,7 @@ export default class AuthController {
         return response.forbidden({
           suspended: true,
           message: 'Votre compte a été suspendu. Veuillez contacter le support.',
-          blockedAt: user.restaurant.blockedAt,
+          blockedAt: user.restaurant.blockedAt.toISO(),
           blockedReason: user.restaurant.blockedReason ?? null,
         })
       }
