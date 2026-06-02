@@ -15,8 +15,30 @@ export default class AuthController {
 
     const user = await User.verifyCredentials(email, password)
 
+    // Email non encore vérifié
+    if (!user.emailVerifiedAt) {
+      return response.forbidden({
+        message: 'Votre email n\'est pas encore vérifié. Vérifiez votre boîte mail.',
+        requiresVerification: true,
+        email: user.email,
+      })
+    }
+
     if (!user.isActive) {
       return response.forbidden({ message: 'Ce compte est désactivé.' })
+    }
+
+    // Vérifier si le restaurant est suspendu (blockedAt défini)
+    if (user.restaurantId) {
+      await user.load('restaurant', (q) => q.preload('plan'))
+      if (user.restaurant.blockedAt) {
+        return response.forbidden({
+          suspended: true,
+          message: 'Votre compte a été suspendu. Veuillez contacter le support.',
+          blockedAt: user.restaurant.blockedAt,
+          blockedReason: user.restaurant.blockedReason ?? null,
+        })
+      }
     }
 
     user.lastLoginAt = DateTime.now()
@@ -29,7 +51,7 @@ export default class AuthController {
 
     let restaurantData = null
     if (user.restaurantId) {
-      await user.load('restaurant', (q) => q.preload('plan'))
+      // Déjà chargé ci-dessus
       restaurantData = {
         id: user.restaurant.id,
         slug: user.restaurant.slug,

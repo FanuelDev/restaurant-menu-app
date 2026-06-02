@@ -42,4 +42,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   CINETPAY_SITE_ID: Env.schema.string.optional(),
   CINETPAY_NOTIFY_URL: Env.schema.string.optional(),
   CINETPAY_RETURN_URL: Env.schema.string.optional(),
+
+  // SMTP — emails transactionnels (vérification de compte, etc.)
+  SMTP_HOST: Env.schema.string.optional(),
+  SMTP_PORT: Env.schema.number.optional(),
+  SMTP_SECURE: Env.schema.string.optional(),
+  SMTP_USER: Env.schema.string.optional(),
+  SMTP_PASS: Env.schema.string.optional(),
+  SMTP_FROM: Env.schema.string.optional(),
 })

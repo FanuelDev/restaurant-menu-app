@@ -79,6 +79,10 @@ router.get('/api/auth/me', [AuthController, 'me']).use(middleware.auth())
 // ─── Self-service registration ────────────────────────────────────────────────
 router.post('/api/register', [RegisterController, 'store'])
   .use((ctx, next) => registerRateLimiter.handle(ctx, next))
+router.post('/api/register/verify-email', [RegisterController, 'verifyEmail'])
+  .use((ctx, next) => registerRateLimiter.handle(ctx, next))
+router.post('/api/register/resend-verification', [RegisterController, 'resendVerification'])
+  .use((ctx, next) => registerRateLimiter.handle(ctx, next))
 router.get('/api/register/check-slug', [RegisterController, 'checkSlug'])
 
 // ─── Public plans pricing page (no tenant, no auth) ──────────────────────────

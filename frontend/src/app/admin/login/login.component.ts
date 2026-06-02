@@ -157,6 +157,35 @@ import { AuthService } from '../../shared/services/auth.service'
     .forgot-link { font-size: .8125rem; color: var(--brand); text-decoration: none; font-weight: 500; }
     .forgot-link:hover { text-decoration: underline; }
 
+    /* ── Alerte suspension ─────────────────────── */
+    .suspended-alert {
+      display: flex; gap: var(--space-3);
+      background: #fff7ed; border: 1.5px solid #fed7aa;
+      border-radius: var(--radius-lg); padding: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .suspended-icon {
+      flex-shrink: 0; width: 38px; height: 38px;
+      background: #ffedd5; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .suspended-body { flex: 1; min-width: 0; }
+    .suspended-title {
+      font-weight: 700; font-size: .9375rem; color: #9a3412;
+      margin: 0 0 2px;
+    }
+    .suspended-date { font-size: .8rem; color: #c2410c; margin: 0 0 var(--space-2); }
+    .suspended-reason {
+      font-size: .8125rem; color: #7c2d12;
+      background: #fef3c7; border: 1px solid #fde68a;
+      border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-3); font-style: italic;
+    }
+    .suspended-support {
+      font-size: .8125rem; color: #9a3412; line-height: 1.5;
+      a { color: #c2410c; font-weight: 600; }
+    }
+
     .pw-wrap { position: relative; }
     .pw-wrap .form-control { padding-right: 2.75rem; }
     .pw-toggle {
@@ -177,6 +206,7 @@ export class LoginComponent {
   readonly loading      = signal(false)
   readonly apiError     = signal<string | null>(null)
   readonly showPassword = signal(false)
+  readonly suspended    = signal<{ blockedAt: string; blockedReason: string | null } | null>(null)
 
   form = this.fb.group({
     email:    ['', [Validators.required, Validators.email]],
@@ -192,6 +222,7 @@ export class LoginComponent {
     if (this.form.invalid) { this.form.markAllAsTouched(); return }
     this.loading.set(true)
     this.apiError.set(null)
+    this.suspended.set(null)
     const { email, password } = this.form.value as { email: string; password: string }
     this.authService.login(email, password).subscribe({
       next: (res) => {
@@ -200,12 +231,28 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading.set(false)
+        const body = err.error ?? {}
+
+        if (err.status === 403 && body.suspended) {
+          this.suspended.set({ blockedAt: body.blockedAt, blockedReason: body.blockedReason })
+          return
+        }
+
         this.apiError.set(
           err.status === 400 || err.status === 401
             ? this.transloco.translate('auth.login.errorCredentials')
-            : this.transloco.translate('auth.login.errorGeneric')
+            : err.status === 403 && body.requiresVerification
+              ? body.message
+              : this.transloco.translate('auth.login.errorGeneric')
         )
       },
+    })
+  }
+
+  formatDate(iso: string): string {
+    if (!iso) return ''
+    return new Date(iso).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
     })
   }
 }

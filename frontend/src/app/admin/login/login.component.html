@@ -107,6 +107,30 @@
               }
             </div>
 
+            <!-- Compte suspendu -->
+            @if (suspended()) {
+              <div class="suspended-alert" role="alert">
+                <div class="suspended-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div class="suspended-body">
+                  <p class="suspended-title">Compte suspendu</p>
+                  <p class="suspended-date">Depuis le {{ formatDate(suspended()!.blockedAt) }}</p>
+                  @if (suspended()!.blockedReason) {
+                    <div class="suspended-reason">« {{ suspended()!.blockedReason }} »</div>
+                  }
+                  <p class="suspended-support">
+                    Pour toute contestation, contactez notre support&nbsp;:<br/>
+                    <a href="mailto:support@saemenus.com">support@saemenus.com</a>
+                  </p>
+                </div>
+              </div>
+            }
+
+            <!-- Erreur générique -->
             @if (apiError()) {
               <div class="alert alert-error" role="alert" style="margin-bottom: var(--space-4)">{{ apiError() }}</div>
             }
