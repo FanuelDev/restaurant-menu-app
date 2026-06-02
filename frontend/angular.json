@@ -43,9 +43,22 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
+              },
+              {
+                "glob": "flags.webp",
+                "input": "node_modules/intl-tel-input/dist/img",
+                "output": "assets/iti/img"
+              },
+              {
+                "glob": "flags@2x.webp",
+                "input": "node_modules/intl-tel-input/dist/img",
+                "output": "assets/iti/img"
               }
             ],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss",
+              "node_modules/intl-tel-input/dist/css/intlTelInput-no-assets.css"
+            ],
             "scripts": []
           },
           "configurations": {

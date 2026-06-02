@@ -8,6 +8,12 @@
 // Inter — corps de texte moderne
 
 // ── 1. Tokens ────────────────────────────────────────────────────────────
+// ── intl-tel-input flag images ──────────────────────────────────────────────
+:root {
+  --iti-path-flags-1x: url('/assets/iti/img/flags.webp');
+  --iti-path-flags-2x: url('/assets/iti/img/flags@2x.webp');
+}
+
 :root {
   // Marque
   --brand:         #C0392B;

@@ -159,21 +159,11 @@
           <!-- Téléphone restaurant -->
           <div class="form-group">
             <label class="form-label">{{ t('public.register.fieldPhone') }}</label>
-            <div class="phone-wrap"
-                 [class.invalid]="s1PhoneValid() === false"
-                 [class.valid]="s1PhoneValid() === true">
-              <select class="phone-country-select"
-                      [ngModel]="s1PhoneCountry()"
-                      (ngModelChange)="onS1PhoneCountryChange($event)"
-                      [title]="'Indicatif pays'">
-                @for (c of countries; track c.code) {
-                  <option [value]="c.code">{{ flag(c.code) }} {{ dialOf(c.code) }}</option>
-                }
-              </select>
-              <input class="form-control" [(ngModel)]="s1.phone" type="tel"
-                     [placeholder]="phonePlaceholder1()"
-                     (ngModelChange)="onS1PhoneChange($event)" />
-            </div>
+            <app-phone-input
+              [(ngModel)]="s1.phone"
+              [initialCountry]="s1.country.toLowerCase()"
+              (validityChange)="s1PhoneValid.set($event)"
+            />
             @if (s1PhoneValid() === false) {
               <span class="phone-error">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><path d="M8 5v3M8 11v.5"/></svg>
@@ -219,21 +209,11 @@
           <!-- Téléphone propriétaire -->
           <div class="form-group">
             <label class="form-label">{{ t('public.register.fieldPhone') }}</label>
-            <div class="phone-wrap"
-                 [class.invalid]="s2PhoneValid() === false"
-                 [class.valid]="s2PhoneValid() === true">
-              <select class="phone-country-select"
-                      [ngModel]="s2PhoneCountry()"
-                      (ngModelChange)="onS2PhoneCountryChange($event)"
-                      [title]="'Indicatif pays'">
-                @for (c of countries; track c.code) {
-                  <option [value]="c.code">{{ flag(c.code) }} {{ dialOf(c.code) }}</option>
-                }
-              </select>
-              <input class="form-control" [(ngModel)]="s2.ownerPhone" type="tel"
-                     [placeholder]="phonePlaceholder2()"
-                     (ngModelChange)="onS2PhoneChange($event)" />
-            </div>
+            <app-phone-input
+              [(ngModel)]="s2.ownerPhone"
+              [initialCountry]="s1.country.toLowerCase()"
+              (validityChange)="s2PhoneValid.set($event)"
+            />
             @if (s2PhoneValid() === false) {
               <span class="phone-error">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><path d="M8 5v3M8 11v.5"/></svg>
