@@ -89,21 +89,59 @@ type AnyOptions = any
       background: transparent;
       gap: 6px;
     }
-    ::ng-deep .iti__country-list {
+    /* ── Dropdown container ── */
+    ::ng-deep .iti__dropdown-content {
+      background: var(--white, #fff);
+      border: 1px solid var(--border, #e2e1de);
       border-radius: var(--radius-lg, 12px);
-      border-color: var(--border, #e2e1de);
-      box-shadow: var(--shadow-lg, 0 10px 40px rgba(0,0,0,.14));
-      font-family: inherit;
-      font-size: .875rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,.14);
+      overflow: hidden;
+      z-index: 1000;
     }
+
+    /* ── Search input (doit être au-dessus de la liste, fond opaque) ── */
     ::ng-deep .iti__search-input {
+      display: block;
+      width: 100%;
+      padding: 10px 14px 10px 36px;
+      border: none;
       border-bottom: 1px solid var(--border, #e2e1de);
-      padding: 10px 14px;
+      background: var(--gray-50, #fafaf9);
       font-family: inherit;
       font-size: .875rem;
+      color: var(--text-primary, #1a1917);
       outline: none;
+      box-sizing: border-box;
+      &::placeholder { color: var(--text-muted, #a8a29e); }
+    }
+
+    /* Icône loupe positionnée dans le champ search */
+    ::ng-deep .iti__search-input-container {
+      position: relative;
+      &::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") center/contain no-repeat;
+        pointer-events: none;
+        z-index: 1;
+      }
+    }
+
+    /* ── Pays liste ── */
+    ::ng-deep .iti__country-list {
+      background: var(--white, #fff);
+      font-family: inherit;
+      font-size: .875rem;
+      max-height: 220px;
+      overflow-y: auto;
     }
     ::ng-deep .iti__country.iti__highlight { background: var(--brand-light, rgba(192,57,43,.08)); }
+    ::ng-deep .iti__country-name { color: var(--text-primary, #1a1917); }
     ::ng-deep .iti__dial-code { color: var(--text-muted, #a8a29e); }
   `],
 })
