@@ -278,6 +278,10 @@ export class AdminLayoutComponent implements OnInit {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
     return f['api_access'] === true
   })
+  readonly isPro = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['stats'] === true || f['api_access'] === true
+  })
 
   // ── Upgrade toast ─────────────────────────────────────────────────────────
   readonly toast = signal<{ label: string; plan: string } | null>(null)

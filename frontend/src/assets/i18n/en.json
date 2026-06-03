@@ -836,7 +836,7 @@
       "q3": "Is there a free trial?",
       "a3": "Yes, the Free plan is available without time limit. It lets you create a menu with up to 3 categories, generate your QR code and receive basic reservations. You can upgrade to a paid plan at any time from your dashboard.",
       "q4": "What is the difference between plans?",
-      "a4": "The Free plan covers the essentials: digital menu + QR code. The Pro plan adds online orders, advanced reservations, detailed statistics and team management. The Enterprise plan adds API access, gift QR codes and dedicated priority support. See the Pricing page for full details.",
+      "a4": "The Free plan covers the essentials: digital menu + QR code, 3 categories and 10 dishes maximum. The Pro plan adds orders, reservations, statistics, team management and audit log. The Enterprise plan adds API access, gift QR codes and 24/7 support. See the Pricing page for full details.",
       "q5": "Can I change plans at any time?",
       "a5": "Yes. You can upgrade immediately from Dashboard → Subscription. The change takes effect instantly and you are only charged for the remaining period. For a downgrade, the change takes effect at the next renewal date.",
       "q6": "How does billing work?",

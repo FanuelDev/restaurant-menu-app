@@ -120,12 +120,14 @@ export const routes: Routes = [
       },
       {
         path: 'team',
+        canActivate: [planGuard('pro', 'enterprise')],
         loadComponent: () =>
           import('./admin/team/team.component').then((m) => m.TeamComponent),
         title: 'Équipe',
       },
       {
         path: 'audit-logs',
+        canActivate: [planGuard('pro', 'enterprise')],
         loadComponent: () =>
           import('./admin/audit-logs/audit-logs.component').then((m) => m.AuditLogsComponent),
         title: 'Journal d\'audit',
