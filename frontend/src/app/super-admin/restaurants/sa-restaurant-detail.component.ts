@@ -101,7 +101,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     /* ── Block section ── */
     .danger-desc { font-size: .8125rem; color: var(--text-muted); margin: 0 0 var(--space-4); }
     .blocked-banner {
-      background: #fff1f2; border: 1px solid #fecdd3;
+      background: var(--error-bg); border: 1px solid var(--error-border);
       border-radius: var(--radius-lg); padding: var(--space-4);
     }
     .blocked-top { display: flex; align-items: flex-start; gap: var(--space-3); margin-bottom: var(--space-3); }
@@ -111,7 +111,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     .blocked-reason {
       font-size: .8125rem; color: var(--text-secondary); font-style: italic;
       background: var(--surface-1); padding: var(--space-3); border-radius: var(--radius-md);
-      border: 1px solid #fecdd3; margin-bottom: var(--space-4);
+      border: 1px solid var(--error-border); margin-bottom: var(--space-4);
     }
     .btn-success {
       display: inline-flex; align-items: center; gap: var(--space-2);
@@ -128,7 +128,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
       border-radius: var(--radius-md); cursor: pointer; font-size: .875rem; font-weight: 600;
       transition: background var(--t-fast);
     }
-    .btn-danger-outline:hover { background: #fff1f2; }
+    .btn-danger-outline:hover { background: var(--error-bg); }
     .block-form { margin-top: var(--space-4); }
     .block-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-3); }
     .btn-ghost {
@@ -196,12 +196,12 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
 
     .alert-success {
       display: flex; align-items: center; gap: var(--space-2);
-      background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0;
+      background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border);
       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
       font-size: .8125rem; font-weight: 500; margin-bottom: var(--space-3);
     }
     .alert-error {
-      background: var(--error-bg); color: var(--error); border: 1px solid #fecaca;
+      background: var(--error-bg); color: var(--error); border: 1px solid var(--error-border);
       padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
       font-size: .8125rem; margin-bottom: var(--space-3);
     }
@@ -216,7 +216,7 @@ import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../
     .grant-header {
       display: flex; align-items: flex-start; gap: var(--space-3);
       padding: var(--space-5); border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, #f8f4ff 0%, #fff 100%);
+      background: var(--surface-2);
     }
     .grant-icon {
       width: 40px; height: 40px; background: var(--brand); border-radius: var(--radius-lg);
