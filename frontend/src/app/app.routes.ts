@@ -28,6 +28,12 @@ export const routes: Routes = [
     title: 'Inscription',
   },
   {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./public/verify-email/verify-email.component').then((m) => m.VerifyEmailComponent),
+    title: 'Vérifier votre email',
+  },
+  {
     path: 'redeem/:token',
     loadComponent: () =>
       import('./public/redeem/redeem.component').then((m) => m.RedeemComponent),
