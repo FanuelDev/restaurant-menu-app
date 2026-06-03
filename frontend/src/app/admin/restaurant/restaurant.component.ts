@@ -1,8 +1,9 @@
 ﻿// frontend/src/app/admin/restaurant/restaurant.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core'
+import { Component, inject, OnInit, signal, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RestaurantService } from '../../shared/services/restaurant.service'
+import { AuthService } from '../../shared/services/auth.service'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 
 const CURRENCIES = [
@@ -195,6 +196,27 @@ const DAYS: { key: string }[] = [
       display: flex; align-items: center; justify-content: center;
       z-index: 2;
     }
+    .tpl-locked { opacity: .55; cursor: default; }
+    .tpl-locked:hover { border-color: var(--border) !important; transform: none !important; box-shadow: none !important; }
+    .tpl-lock-overlay {
+      position: absolute; inset: 0; z-index: 3;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      background: rgba(0,0,0,.32); backdrop-filter: blur(1px);
+    }
+    .tpl-lock-overlay svg { color: #fff; opacity: .9; }
+    .tpl-lock-badge {
+      font-size: .65rem; font-weight: 800; letter-spacing: .08em;
+      background: var(--brand); color: #fff;
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .tpl-upgrade-toast {
+      display: flex; align-items: center; gap: var(--space-3);
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-left: 3px solid var(--brand);
+      border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+      font-size: .875rem; color: var(--text-primary);
+      margin-bottom: var(--space-4); animation: slideUpFade .3s ease both;
+    }
 
     /* Template 1 preview */
     .tpl-preview-classic { background: #f8f7f5; padding: 8px 8px 4px; display: flex; flex-direction: column; gap: 5px; }
@@ -377,8 +399,15 @@ const DAYS: { key: string }[] = [
 })
 export class RestaurantComponent implements OnInit {
   private readonly restaurantService = inject(RestaurantService)
+  private readonly authService       = inject(AuthService)
   private readonly fb = inject(FormBuilder)
   private readonly transloco = inject(TranslocoService)
+
+  readonly isPro = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['stats'] === true || f['api_access'] === true
+  })
+  readonly templateToast = signal(false)
 
   readonly restaurant = this.restaurantService.restaurant
   readonly saving      = signal(false)
@@ -426,6 +455,11 @@ export class RestaurantComponent implements OnInit {
   }
 
   selectTemplate(id: 1 | 2 | 3 | 4 | 5): void {
+    if (id > 1 && !this.isPro()) {
+      this.templateToast.set(true)
+      setTimeout(() => this.templateToast.set(false), 3500)
+      return
+    }
     this.selectedTemplate.set(id)
     this.restaurantService.update({ templateId: id } as never).subscribe({
       next: () => {
