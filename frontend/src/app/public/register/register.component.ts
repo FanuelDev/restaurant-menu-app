@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed, OnDestroy } from '@angular/core'
+import { Component, signal, inject, computed, OnInit, OnDestroy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { Router, RouterLink } from '@angular/router'
@@ -304,7 +304,7 @@ function checkPasswordStrength(pw: string): PasswordStrength {
     }
   `],
 })
-export class RegisterComponent implements OnDestroy {
+export class RegisterComponent implements OnInit, OnDestroy {
   private readonly registerService = inject(RegisterService)
   private readonly authService     = inject(AuthService)
   private readonly router          = inject(Router)
@@ -355,6 +355,65 @@ export class RegisterComponent implements OnDestroy {
     })
   }
 
+  // ─── Session persistence (survie au F5) ────────────────────────────────────
+
+  private readonly SESSION_KEY = 'saem_reg_draft'
+
+  ngOnInit(): void {
+    this.restoreSession()
+  }
+
+  /** Sauvegarde l'état courant dans sessionStorage */
+  saveSession(): void {
+    try {
+      sessionStorage.setItem(this.SESSION_KEY, JSON.stringify({
+        step: this.step(),
+        s1: this.s1,
+        s2: {
+          fullName:             this.s2.fullName,
+          email:                this.s2.email,
+          password:             this.s2.password,
+          passwordConfirmation: this.s2.passwordConfirmation,
+          ownerPhone:           this.s2.ownerPhone,
+        },
+        pendingEmail: this.pendingEmail(),
+      }))
+    } catch { /* sessionStorage non disponible (private browsing strict) */ }
+  }
+
+  /** Restaure l'état depuis sessionStorage au rechargement */
+  private restoreSession(): void {
+    try {
+      const raw = sessionStorage.getItem(this.SESSION_KEY)
+      if (!raw) return
+      const d = JSON.parse(raw)
+
+      if (d.s1) {
+        this.s1 = { ...this.s1, ...d.s1 }
+        // Reclencher la vérif du slug restauré
+        if (this.s1.restaurantSlug) this.checkSlug(this.s1.restaurantSlug)
+      }
+      if (d.s2) {
+        this.s2 = { ...this.s2, ...d.s2 }
+        if (d.s2.password) this._pw.set(d.s2.password)
+      }
+      if (d.pendingEmail) this.pendingEmail.set(d.pendingEmail)
+
+      // Restaurer l'étape en dernier (après que les données soient prêtes)
+      const savedStep = Number(d.step)
+      if (savedStep >= 1 && savedStep <= 4) {
+        this.step.set(savedStep)
+        // Sur l'étape 4, lancer le countdown renvoyer (le code reste valide 15 min)
+        if (savedStep === 4) this.startResendCountdown()
+      }
+    } catch { /* données corrompues → on ignore */ }
+  }
+
+  /** Supprime la session après inscription réussie */
+  private clearSession(): void {
+    try { sessionStorage.removeItem(this.SESSION_KEY) } catch {}
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval)
   }
@@ -383,6 +442,7 @@ export class RegisterComponent implements OnDestroy {
   onCountryChange(code: string): void {
     const found = COUNTRIES.find((c) => c.code === code)
     if (found) this.s1.currency = found.currency
+    this.saveSession()
   }
 
   // ── Navigation ──────────────────────────────────────────────────────────────
@@ -406,7 +466,9 @@ export class RegisterComponent implements OnDestroy {
     )
   }
 
-  nextStep(): void { this.step.update((s) => s + 1) }
+  nextStep(): void { this.step.update((s) => s + 1); this.saveSession() }
+
+  goStep(n: number): void { this.step.set(n); this.saveSession() }
 
   // ── OTP handlers ────────────────────────────────────────────────────────────
 
@@ -486,6 +548,7 @@ export class RegisterComponent implements OnDestroy {
     this.error.set(null)
     this.registerService.verifyEmail(this.pendingEmail(), this.otpCode()).subscribe({
       next: (res) => {
+        this.clearSession() // inscription terminée → on vide la session
         this.authService.loginFromRegistration(res.token.value, res.user, res.restaurant)
         this.router.navigate(['/admin'])
       },
@@ -526,6 +589,7 @@ export class RegisterComponent implements OnDestroy {
         this.otpDigits.set(['', '', '', '', '', ''])
         this.startResendCountdown()
         this.step.set(4)
+        this.saveSession() // persiste l'étape 4 + pendingEmail
       },
       error: (err) => {
         this.loading.set(false)
