@@ -148,6 +148,7 @@ export default class MainSeeder extends BaseSeeder {
         role: 'super_admin',
         restaurantId: null,
         isActive: true,
+        emailVerifiedAt: DateTime.now(),
       },
     ])
     console.log(`✅ Super admin : ${superAdmin.email} / SuperAdmin1234!`)
