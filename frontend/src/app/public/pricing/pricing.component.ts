@@ -259,7 +259,7 @@ export class PricingComponent implements OnInit {
     },
     {
       key: 'templates',
-      label: (p) => p.slug === 'free' ? '1 template visuel (Classique)' : '5 templates visuels',
+      label: (p) => p.slug === 'free' ? '1 template visuel' : '5 templates visuels',
       value: () => true,
     },
     {
