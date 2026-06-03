@@ -154,6 +154,7 @@ import { AuthService } from '../../shared/services/auth.service'
     .af-footer-verify {
       margin-top: var(--space-3); font-size: .8125rem;
       padding-top: var(--space-3); border-top: 1px solid var(--border);
+      white-space: nowrap;
     }
 
     .pw-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
