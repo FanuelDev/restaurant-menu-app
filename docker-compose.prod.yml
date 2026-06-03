@@ -86,6 +86,14 @@ services:
       CINETPAY_NOTIFY_URL: ${CINETPAY_NOTIFY_URL}
       CINETPAY_RETURN_URL: ${CINETPAY_RETURN_URL}
 
+      SMTP_HOST:           ${SMTP_HOST}
+      SMTP_PORT:           ${SMTP_PORT}
+      SMTP_SECURE:         ${SMTP_SECURE}
+      SMTP_USER:           ${SMTP_USER}
+      SMTP_PASS:           ${SMTP_PASS}
+      SMTP_FROM:           ${SMTP_FROM}
+      FRONTEND_URL:        ${FRONTEND_URL}
+
   # ── phpMyAdmin ───────────────────────────────────────────────────────────────
   phpmyadmin:
     environment:
