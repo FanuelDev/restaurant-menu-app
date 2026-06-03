@@ -355,7 +355,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     })
   }
 
-  // ─── Session persistence (survie au F5) ────────────────────────────────────
+  // ─── Session persistence (survie au F5 + fermeture d'onglet) ────────────────
 
   private readonly SESSION_KEY = 'saem_reg_draft'
 
@@ -363,47 +363,41 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.restoreSession()
   }
 
-  /** Sauvegarde l'état courant dans sessionStorage */
+  /** Sauvegarde l'état courant dans localStorage (persiste après fermeture d'onglet).
+   *  Le mot de passe n'est pas persisté — le compte est déjà créé avant l'étape 4. */
   saveSession(): void {
     try {
-      sessionStorage.setItem(this.SESSION_KEY, JSON.stringify({
+      localStorage.setItem(this.SESSION_KEY, JSON.stringify({
         step: this.step(),
         s1: this.s1,
         s2: {
-          fullName:             this.s2.fullName,
-          email:                this.s2.email,
-          password:             this.s2.password,
-          passwordConfirmation: this.s2.passwordConfirmation,
-          ownerPhone:           this.s2.ownerPhone,
+          fullName:   this.s2.fullName,
+          email:      this.s2.email,
+          ownerPhone: this.s2.ownerPhone,
         },
         pendingEmail: this.pendingEmail(),
       }))
-    } catch { /* sessionStorage non disponible (private browsing strict) */ }
+    } catch { /* localStorage non disponible (private browsing strict) */ }
   }
 
-  /** Restaure l'état depuis sessionStorage au rechargement */
+  /** Restaure l'état depuis localStorage au rechargement */
   private restoreSession(): void {
     try {
-      const raw = sessionStorage.getItem(this.SESSION_KEY)
+      const raw = localStorage.getItem(this.SESSION_KEY)
       if (!raw) return
       const d = JSON.parse(raw)
 
       if (d.s1) {
         this.s1 = { ...this.s1, ...d.s1 }
-        // Reclencher la vérif du slug restauré
         if (this.s1.restaurantSlug) this.checkSlug(this.s1.restaurantSlug)
       }
-      if (d.s2) {
-        this.s2 = { ...this.s2, ...d.s2 }
-        if (d.s2.password) this._pw.set(d.s2.password)
-      }
+      if (d.s2) this.s2 = { ...this.s2, ...d.s2 }
       if (d.pendingEmail) this.pendingEmail.set(d.pendingEmail)
 
       // Restaurer l'étape en dernier (après que les données soient prêtes)
       const savedStep = Number(d.step)
       if (savedStep >= 1 && savedStep <= 4) {
         this.step.set(savedStep)
-        // Sur l'étape 4, lancer le countdown renvoyer (le code reste valide 15 min)
         if (savedStep === 4) this.startResendCountdown()
       }
     } catch { /* données corrompues → on ignore */ }
@@ -411,7 +405,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
   /** Supprime la session après inscription réussie */
   private clearSession(): void {
-    try { sessionStorage.removeItem(this.SESSION_KEY) } catch {}
+    try { localStorage.removeItem(this.SESSION_KEY) } catch {}
   }
 
   ngOnDestroy() {
