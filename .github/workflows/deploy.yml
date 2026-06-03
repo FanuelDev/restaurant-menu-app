@@ -67,6 +67,7 @@ jobs:
               - 'frontend/**'
             backend:
               - 'backend/**'
+              - 'docker-compose*.yml'
 
       # Fusionne les résultats du filtre avec les overrides manuels
       - name: Résoudre les cibles de déploiement
