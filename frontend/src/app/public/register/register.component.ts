@@ -1,7 +1,7 @@
 import { Component, signal, inject, computed, OnInit, OnDestroy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { Router, RouterLink } from '@angular/router'
+import { Router, RouterLink, ActivatedRoute } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs'
 import { RegisterService } from '../../shared/services/register.service'
@@ -308,6 +308,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private readonly registerService = inject(RegisterService)
   private readonly authService     = inject(AuthService)
   private readonly router          = inject(Router)
+  private readonly route           = inject(ActivatedRoute)
 
   readonly countries     = COUNTRIES
   readonly currencies    = CURRENCIES
@@ -360,7 +361,15 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private readonly SESSION_KEY = 'saem_reg_draft'
 
   ngOnInit(): void {
-    this.restoreSession()
+    const emailParam = this.route.snapshot.queryParamMap.get('email')
+    if (emailParam) {
+      // Lien cliqué depuis l'email de vérification → aller directement à l'étape 4
+      this.pendingEmail.set(decodeURIComponent(emailParam))
+      this.step.set(4)
+      this.startResendCountdown()
+    } else {
+      this.restoreSession()
+    }
   }
 
   /** Sauvegarde l'état courant dans localStorage (persiste après fermeture d'onglet).

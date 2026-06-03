@@ -96,6 +96,14 @@ class MailService {
             <div style="margin-top:12px;font-size:12px;color:#999;">Valide pendant <strong>15 minutes</strong></div>
           </div>
 
+          <div style="text-align:center;margin-bottom:28px;">
+            <a href="${env.get('FRONTEND_URL') ?? 'https://saemenus.com'}/register?email=${encodeURIComponent(email)}"
+               style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:15px;font-weight:700;
+                      text-decoration:none;padding:14px 32px;border-radius:8px;letter-spacing:.2px;">
+              Entrer mon code de vérification →
+            </a>
+          </div>
+
           <p style="margin:0;font-size:14px;color:#666;line-height:1.6;">
             Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email.
           </p>

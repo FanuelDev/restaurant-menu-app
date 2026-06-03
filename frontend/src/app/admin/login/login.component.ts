@@ -151,6 +151,10 @@ import { AuthService } from '../../shared/services/auth.service'
       a { color: var(--brand); font-weight: 500; text-decoration: none; }
       a:hover { text-decoration: underline; }
     }
+    .af-footer-verify {
+      margin-top: var(--space-3); font-size: .8125rem;
+      padding-top: var(--space-3); border-top: 1px solid var(--border);
+    }
 
     .pw-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
     .pw-label-row .form-label { margin-bottom: 0; }
