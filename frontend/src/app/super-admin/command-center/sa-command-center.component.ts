@@ -9,6 +9,7 @@ import {
 import { CommonModule, DatePipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { FormsModule } from '@angular/forms'
+import { TranslocoModule } from '@jsverse/transloco'
 import { interval, forkJoin } from 'rxjs'
 import { switchMap, filter } from 'rxjs/operators'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
@@ -18,7 +19,7 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
 @Component({
   selector: 'app-sa-command-center',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, DatePipe],
+  imports: [CommonModule, RouterLink, FormsModule, DatePipe, TranslocoModule],
   templateUrl: './sa-command-center.component.html',
   styles: [`
     /* ── Shell ─────────────────────────────────────────────────────────── */

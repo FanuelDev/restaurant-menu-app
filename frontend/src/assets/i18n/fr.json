@@ -575,6 +575,92 @@
       "canceled": "Annulé",
       "suspended": "Suspendu",
       "blocked": "Bloqué"
+    },
+    "commandCenter": {
+      "title": "Centre de commandement",
+      "subtitle": "Vue intelligente · actualisation auto 30 s",
+      "lastRefresh": "· dernière :",
+      "healthHealthy": "🟢 Plateforme saine",
+      "healthWarning": "🟠 Attention requise",
+      "live": "Live",
+      "paused": "Pausé",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "refresh": "Actualiser",
+      "criticalAlert_one": "{{count}} alerte critique nécessite votre attention",
+      "criticalAlert_other": "{{count}} alertes critiques nécessitent votre attention",
+      "kpi": {
+        "mrr": "MRR",
+        "vsPrevMonth": "vs mois dernier",
+        "conversionRate": "Taux de conversion",
+        "conversionSub": "Actifs / total restaurants",
+        "criticalTrials": "Trials critiques",
+        "criticalTrialsSub": "Expirent dans les 24 h",
+        "churnRisk": "Risque churn",
+        "churnRiskSub": "Trials > 10 jours sans payer",
+        "upsell": "Upsell possible",
+        "upsellSub": "Plan Free avec menu riche"
+      },
+      "activeAlerts": "Alertes actives",
+      "trials": {
+        "title": "Trials expirant",
+        "today": "Aujourd'hui",
+        "empty": "Aucun trial expirant dans cette période 🎉",
+        "assignPlan": "Attribuer plan"
+      },
+      "churn": {
+        "title": "Risque churn",
+        "subtitle": "En trial > 10 jours sans souscrire",
+        "empty": "Aucun restaurant à risque 🎉",
+        "convert": "Convertir"
+      },
+      "signups": {
+        "title": "Nouvelles inscriptions",
+        "subtitle": "Dernières 24 heures",
+        "empty": "Aucune nouvelle inscription dans les 24 h",
+        "verify": "Vérifier"
+      },
+      "upsellPanel": {
+        "title": "Upsell — Plan Free saturé",
+        "empty": "Aucune opportunité upsell détectée",
+        "upgrade": "Upgrade",
+        "items": "articles · Plan"
+      },
+      "recentActions": {
+        "title": "Actions récentes (super-admin)",
+        "seeAll": "Voir tout →",
+        "empty": "Aucune action récente",
+        "by": "par"
+      },
+      "blocked": {
+        "title": "🔒 Bloqués cette semaine",
+        "blockedAt": "Bloqué",
+        "unblock": "Débloquer →"
+      },
+      "registered": "Inscrit",
+      "expires": "expire",
+      "grantModal": {
+        "title": "Attribuer un plan",
+        "planLabel": "Plan",
+        "cycleLabel": "Cycle",
+        "monthly": "Mensuel",
+        "yearly": "Annuel",
+        "durationLabel": "Durée (mois)",
+        "amountLabel": "Montant payé (XOF) — 0 = gratuit",
+        "free": "GRATUIT",
+        "noteLabel": "Note interne (optionnelle)",
+        "notePlaceholder": "Ex : promotion partenaire, compensation...",
+        "cancel": "Annuler",
+        "confirm": "Confirmer l'attribution"
+      },
+      "blockModal": {
+        "title": "Bloquer le restaurant",
+        "warning": "Cette action désactivera immédiatement l'accès au restaurant et à son menu public.",
+        "reasonLabel": "Raison du blocage *",
+        "reasonPlaceholder": "Ex : violation des conditions d'utilisation, impayé...",
+        "cancel": "Annuler",
+        "confirm": "Bloquer définitivement"
+      }
     }
   },
   "public": {

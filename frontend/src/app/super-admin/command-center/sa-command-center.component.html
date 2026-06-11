@@ -1,13 +1,13 @@
-<div class="cc">
+<div class="cc" *transloco="let t">
 
   <!-- ══ HEADER ═══════════════════════════════════════════════════════════════ -->
   <div class="cc-header">
     <div>
-      <h1 class="cc-title">Centre de commandement</h1>
+      <h1 class="cc-title">{{ t('superAdmin.commandCenter.title') }}</h1>
       <p class="cc-sub">
         <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2" stroke-linecap="round"/></svg>
-        Vue intelligente · actualisation auto 30 s
-        <span *ngIf="lastRefresh()"> · dernière : {{ lastRefresh() | date:'HH:mm:ss' }}</span>
+        {{ t('superAdmin.commandCenter.subtitle') }}
+        <span *ngIf="lastRefresh()"> {{ t('superAdmin.commandCenter.lastRefresh') }} {{ lastRefresh() | date:'HH:mm:ss' }}</span>
       </p>
     </div>
 
@@ -16,14 +16,14 @@
       <span *ngIf="intelligence()" class="live-indicator"
             [class.alert-banner]="intelligence()!.platformHealth.status === 'warning'"
             style="font-size:.72rem">
-        <span *ngIf="intelligence()!.platformHealth.status === 'healthy'">🟢 Plateforme saine</span>
-        <span *ngIf="intelligence()!.platformHealth.status === 'warning'">🟠 Attention requise</span>
+        <span *ngIf="intelligence()!.platformHealth.status === 'healthy'">{{ t('superAdmin.commandCenter.healthHealthy') }}</span>
+        <span *ngIf="intelligence()!.platformHealth.status === 'warning'">{{ t('superAdmin.commandCenter.healthWarning') }}</span>
       </span>
 
       <!-- Live dot -->
       <div class="live-indicator">
         <div class="live-dot" [class.active]="autoRefresh()"></div>
-        <span>{{ autoRefresh() ? 'Live' : 'Pausé' }}</span>
+        <span>{{ autoRefresh() ? t('superAdmin.commandCenter.live') : t('superAdmin.commandCenter.paused') }}</span>
       </div>
 
       <!-- Toggle auto-refresh -->
@@ -31,7 +31,7 @@
         <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <path d="M4 9a5 5 0 109 3.5" /><path d="M4 5v4h4"/>
         </svg>
-        {{ autoRefresh() ? 'Pause' : 'Reprendre' }}
+        {{ autoRefresh() ? t('superAdmin.commandCenter.pause') : t('superAdmin.commandCenter.resume') }}
       </button>
 
       <!-- Manual refresh -->
@@ -39,7 +39,7 @@
         <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <path d="M15 9A6 6 0 105 6" /><path d="M5 2v4h4"/>
         </svg>
-        Actualiser
+        {{ t('superAdmin.commandCenter.refresh') }}
       </button>
     </div>
   </div>
@@ -48,7 +48,9 @@
   <div class="alert-banner"
        *ngIf="!loading() && intelligence() && intelligence()!.alerts.criticalAlertCount > 0">
     <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 1l7.5 15H1.5z"/><path d="M9 7v4M9 13h.01"/></svg>
-    {{ intelligence()!.alerts.criticalAlertCount }} alerte{{ intelligence()!.alerts.criticalAlertCount > 1 ? 's' : '' }} critique{{ intelligence()!.alerts.criticalAlertCount > 1 ? 's' : '' }} nécessitent votre attention
+    {{ intelligence()!.alerts.criticalAlertCount > 1
+      ? t('superAdmin.commandCenter.criticalAlert_other', { count: intelligence()!.alerts.criticalAlertCount })
+      : t('superAdmin.commandCenter.criticalAlert_one', { count: intelligence()!.alerts.criticalAlertCount }) }}
   </div>
 
   <!-- ══ KPI STRIP — skeleton ═══════════════════════════════════════════════════ -->
@@ -61,7 +63,7 @@
     <!-- MRR -->
     <div class="kpi-card" style="--d:0">
       <div class="kpi-accent" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div>
-      <div class="kpi-label">MRR</div>
+      <div class="kpi-label">{{ t('superAdmin.commandCenter.kpi.mrr') }}</div>
       <div class="kpi-value">{{ formatMoney(intelligence()!.insights.mrrCents) }}</div>
       <div class="kpi-sub" [class.trend-up]="intelligence()!.insights.mrrGrowthPct > 0"
                             [class.trend-down]="intelligence()!.insights.mrrGrowthPct < 0"
@@ -70,44 +72,44 @@
           <path *ngIf="intelligence()!.insights.mrrGrowthPct >= 0" d="M4 14l5-9 5 9"/>
           <path *ngIf="intelligence()!.insights.mrrGrowthPct < 0"  d="M4 4l5 10 5-10"/>
         </svg>
-        {{ intelligence()!.insights.mrrGrowthPct >= 0 ? '+' : '' }}{{ intelligence()!.insights.mrrGrowthPct }}% vs mois dernier
+        {{ intelligence()!.insights.mrrGrowthPct >= 0 ? '+' : '' }}{{ intelligence()!.insights.mrrGrowthPct }}% {{ t('superAdmin.commandCenter.kpi.vsPrevMonth') }}
       </div>
     </div>
 
     <!-- Taux de conversion -->
     <div class="kpi-card" style="--d:1">
       <div class="kpi-accent" style="background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
-      <div class="kpi-label">Taux de conversion</div>
+      <div class="kpi-label">{{ t('superAdmin.commandCenter.kpi.conversionRate') }}</div>
       <div class="kpi-value">{{ intelligence()!.insights.conversionRate }}<span style="font-size:1rem;font-weight:600">%</span></div>
-      <div class="kpi-sub trend-flat">Actifs / total restaurants</div>
+      <div class="kpi-sub trend-flat">{{ t('superAdmin.commandCenter.kpi.conversionSub') }}</div>
     </div>
 
     <!-- Trials expirant -->
     <div class="kpi-card" style="--d:2">
       <div class="kpi-accent" style="background:linear-gradient(90deg,#ef4444,#f87171)"></div>
-      <div class="kpi-label">Trials critiques</div>
+      <div class="kpi-label">{{ t('superAdmin.commandCenter.kpi.criticalTrials') }}</div>
       <div class="kpi-value" [style.color]="intelligence()!.alerts.trialsExpiringToday.length > 0 ? '#dc2626' : 'var(--text-primary)'">
         {{ intelligence()!.alerts.trialsExpiringToday.length }}
       </div>
-      <div class="kpi-sub trend-flat">Expirent dans les 24 h</div>
+      <div class="kpi-sub trend-flat">{{ t('superAdmin.commandCenter.kpi.criticalTrialsSub') }}</div>
     </div>
 
     <!-- Risque churn -->
     <div class="kpi-card" style="--d:3">
       <div class="kpi-accent" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
-      <div class="kpi-label">Risque churn</div>
+      <div class="kpi-label">{{ t('superAdmin.commandCenter.kpi.churnRisk') }}</div>
       <div class="kpi-value" [style.color]="intelligence()!.insights.churnRiskCount > 5 ? '#d97706' : 'var(--text-primary)'">
         {{ intelligence()!.insights.churnRiskCount }}
       </div>
-      <div class="kpi-sub trend-flat">Trials &gt; 10 jours sans payer</div>
+      <div class="kpi-sub trend-flat">{{ t('superAdmin.commandCenter.kpi.churnRiskSub') }}</div>
     </div>
 
     <!-- Upsell -->
     <div class="kpi-card" style="--d:4">
       <div class="kpi-accent" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
-      <div class="kpi-label">Upsell possible</div>
+      <div class="kpi-label">{{ t('superAdmin.commandCenter.kpi.upsell') }}</div>
       <div class="kpi-value">{{ intelligence()!.insights.upsellCount }}</div>
-      <div class="kpi-sub trend-flat">Plan Free avec menu riche</div>
+      <div class="kpi-sub trend-flat">{{ t('superAdmin.commandCenter.kpi.upsellSub') }}</div>
     </div>
   </div>
 
@@ -116,7 +118,7 @@
 
     <p class="section-label" style="--d:5">
       <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 1l7.5 15H1.5z"/><path d="M9 7v4M9 13h.01" stroke-linecap="round"/></svg>
-      Alertes actives
+      {{ t('superAdmin.commandCenter.activeAlerts') }}
       <span class="count-badge">{{ intelligence()!.alerts.criticalAlertCount }}</span>
     </p>
 
@@ -127,7 +129,7 @@
         <div class="alert-card-head">
           <div class="alert-icon">⏰</div>
           <div>
-            <p class="alert-card-title">Trials expirant</p>
+            <p class="alert-card-title">{{ t('superAdmin.commandCenter.trials.title') }}</p>
             <!-- Tabs -->
             <div style="display:flex;gap:4px;margin-top:4px">
               <button type="button" (click)="trialTab.set('today')"
@@ -135,7 +137,7 @@
                       [style.background]="trialTab()==='today'?'#dc2626':'transparent'"
                       [style.color]="trialTab()==='today'?'#fff':'#991b1b'"
                       style="border:none;border-radius:4px;padding:1px 6px;font-size:.65rem;cursor:pointer">
-                Aujourd'hui ({{ intelligence()!.alerts.trialsExpiringToday.length }})
+                {{ t('superAdmin.commandCenter.trials.today') }} ({{ intelligence()!.alerts.trialsExpiringToday.length }})
               </button>
               <button type="button" (click)="trialTab.set('3d')"
                       [style.fontWeight]="trialTab()==='3d'?'700':'500'"
@@ -157,7 +159,7 @@
         </div>
         <div class="alert-card-body">
           <div *ngIf="trialsShown().length === 0" class="empty-card">
-            Aucun trial expirant dans cette période 🎉
+            {{ t('superAdmin.commandCenter.trials.empty') }}
           </div>
           <div *ngFor="let r of trialsShown(); trackBy: trackById" class="rest-row">
             <div class="rest-avatar">{{ initials(r.name) }}</div>
@@ -170,7 +172,7 @@
             </div>
             <div class="rest-actions">
               <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
-                Attribuer plan
+                {{ t('superAdmin.commandCenter.trials.assignPlan') }}
               </button>
               <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
             </div>
@@ -183,27 +185,27 @@
         <div class="alert-card-head">
           <div class="alert-icon">🔥</div>
           <div>
-            <p class="alert-card-title">Risque churn</p>
-            <p style="font-size:.70rem;color:#92400e;margin:2px 0 0">En trial &gt; 10 jours sans souscrire</p>
+            <p class="alert-card-title">{{ t('superAdmin.commandCenter.churn.title') }}</p>
+            <p style="font-size:.70rem;color:#92400e;margin:2px 0 0">{{ t('superAdmin.commandCenter.churn.subtitle') }}</p>
           </div>
           <span class="alert-card-count">{{ intelligence()!.alerts.churnRisk.length }}</span>
         </div>
         <div class="alert-card-body">
           <div *ngIf="intelligence()!.alerts.churnRisk.length === 0" class="empty-card">
-            Aucun restaurant à risque 🎉
+            {{ t('superAdmin.commandCenter.churn.empty') }}
           </div>
           <div *ngFor="let r of intelligence()!.alerts.churnRisk; trackBy: trackById" class="rest-row">
             <div class="rest-avatar">{{ initials(r.name) }}</div>
             <div class="rest-info">
               <div class="rest-name">{{ r.name }}</div>
               <div class="rest-meta">
-                Inscrit {{ r.createdAt | date:'dd/MM/yy' }}
-                <span *ngIf="r.trialEndsAt"> · expire {{ r.trialEndsAt | date:'dd/MM' }}</span>
+                {{ t('superAdmin.commandCenter.registered') }} {{ r.createdAt | date:'dd/MM/yy' }}
+                <span *ngIf="r.trialEndsAt"> · {{ t('superAdmin.commandCenter.expires') }} {{ r.trialEndsAt | date:'dd/MM' }}</span>
               </div>
             </div>
             <div class="rest-actions">
               <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
-                Convertir
+                {{ t('superAdmin.commandCenter.churn.convert') }}
               </button>
               <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
             </div>
@@ -216,14 +218,14 @@
         <div class="alert-card-head">
           <div class="alert-icon">🆕</div>
           <div>
-            <p class="alert-card-title">Nouvelles inscriptions</p>
-            <p style="font-size:.70rem;color:#166534;margin:2px 0 0">Dernières 24 heures</p>
+            <p class="alert-card-title">{{ t('superAdmin.commandCenter.signups.title') }}</p>
+            <p style="font-size:.70rem;color:#166534;margin:2px 0 0">{{ t('superAdmin.commandCenter.signups.subtitle') }}</p>
           </div>
           <span class="alert-card-count">{{ intelligence()!.alerts.newSignups24h.length }}</span>
         </div>
         <div class="alert-card-body">
           <div *ngIf="intelligence()!.alerts.newSignups24h.length === 0" class="empty-card">
-            Aucune nouvelle inscription dans les 24 h
+            {{ t('superAdmin.commandCenter.signups.empty') }}
           </div>
           <div *ngFor="let r of intelligence()!.alerts.newSignups24h; trackBy: trackById" class="rest-row">
             <div class="rest-avatar">{{ initials(r.name) }}</div>
@@ -236,8 +238,8 @@
             </div>
             <div class="rest-actions">
               <button class="action-btn success" type="button" (click)="verifyUser(r)"
-                      title="Vérifier le compte manuellement">
-                Vérifier
+                      [title]="t('superAdmin.commandCenter.signups.verify')">
+                {{ t('superAdmin.commandCenter.signups.verify') }}
               </button>
               <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
             </div>
@@ -254,22 +256,22 @@
       <div class="panel alert-card alert-blue" style="--d:3">
         <div class="panel-head alert-card-head">
           <div class="alert-icon">💡</div>
-          <p class="panel-title" style="margin:0">Upsell — Plan Free saturé</p>
+          <p class="panel-title" style="margin:0">{{ t('superAdmin.commandCenter.upsellPanel.title') }}</p>
           <span class="alert-card-count">{{ intelligence()!.insights.upsellCount }}</span>
         </div>
         <div class="panel-body">
           <div *ngIf="intelligence()!.insights.upsellCandidates.length === 0" class="empty-card">
-            Aucune opportunité upsell détectée
+            {{ t('superAdmin.commandCenter.upsellPanel.empty') }}
           </div>
           <div *ngFor="let r of intelligence()!.insights.upsellCandidates; trackBy: trackById" class="rest-row">
             <div class="rest-avatar">{{ initials(r.name) }}</div>
             <div class="rest-info">
               <div class="rest-name">{{ r.name }}</div>
-              <div class="rest-meta">{{ r.itemCount }} articles · Plan {{ r.planName }}</div>
+              <div class="rest-meta">{{ r.itemCount }} {{ t('superAdmin.commandCenter.upsellPanel.items') }} {{ r.planName }}</div>
             </div>
             <div class="rest-actions">
               <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
-                Upgrade
+                {{ t('superAdmin.commandCenter.upsellPanel.upgrade') }}
               </button>
             </div>
           </div>
@@ -279,12 +281,12 @@
       <!-- Dernières actions super-admin ───────────────────────────── -->
       <div class="panel" style="--d:4">
         <div class="panel-head">
-          <p class="panel-title">Actions récentes (super-admin)</p>
-          <a class="panel-see" routerLink="/super-admin/audit-logs">Voir tout →</a>
+          <p class="panel-title">{{ t('superAdmin.commandCenter.recentActions.title') }}</p>
+          <a class="panel-see" routerLink="/super-admin/audit-logs">{{ t('superAdmin.commandCenter.recentActions.seeAll') }}</a>
         </div>
         <div class="panel-body">
           <div *ngIf="intelligence()!.insights.recentAdminActions.length === 0" class="empty-card">
-            Aucune action récente
+            {{ t('superAdmin.commandCenter.recentActions.empty') }}
           </div>
           <div *ngFor="let a of intelligence()!.insights.recentAdminActions; trackBy: trackById" class="action-row">
             <div class="action-dot" [style.background]="actionDotColor(a.action)"></div>
@@ -293,7 +295,7 @@
                 <span class="action-badge" [ngClass]="actionBadgeClass(a.action)">{{ actionLabel(a.action) }}</span>
                 <span *ngIf="a.resourceName">{{ a.resourceName }}</span>
               </div>
-              <div class="action-by">par {{ a.userEmail }}</div>
+              <div class="action-by">{{ t('superAdmin.commandCenter.recentActions.by') }} {{ a.userEmail }}</div>
             </div>
             <div class="action-time">{{ a.createdAt | date:'HH:mm' }}</div>
           </div>
@@ -306,7 +308,7 @@
     <div *ngIf="intelligence()!.alerts.blockedRecently.length > 0"
          class="panel" style="margin-bottom:var(--space-4);--d:5">
       <div class="panel-head">
-        <p class="panel-title">🔒 Bloqués cette semaine</p>
+        <p class="panel-title">{{ t('superAdmin.commandCenter.blocked.title') }}</p>
         <span class="alert-card-count" style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700">
           {{ intelligence()!.alerts.blockedRecently.length }}
         </span>
@@ -317,13 +319,13 @@
           <div class="rest-info">
             <div class="rest-name">{{ r.name }}</div>
             <div class="rest-meta" style="color:#ef4444">
-              Bloqué {{ r.blockedAt | date:'dd/MM HH:mm' }}
+              {{ t('superAdmin.commandCenter.blocked.blockedAt') }} {{ r.blockedAt | date:'dd/MM HH:mm' }}
               <span *ngIf="r.blockedReason"> · {{ r.blockedReason }}</span>
             </div>
           </div>
           <div class="rest-actions">
             <a class="action-btn success" [routerLink]="['/super-admin/restaurants', r.id]">
-              Débloquer →
+              {{ t('superAdmin.commandCenter.blocked.unblock') }}
             </a>
           </div>
         </div>
@@ -337,7 +339,7 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-head">
         <div>
-          <p class="modal-title">Attribuer un plan</p>
+          <p class="modal-title">{{ t('superAdmin.commandCenter.grantModal.title') }}</p>
           <p class="modal-subtitle">{{ selectedTarget()?.name }}</p>
         </div>
         <button class="modal-close" (click)="closeModal()" type="button">
@@ -347,7 +349,7 @@
       <div class="modal-body">
         <!-- Plan -->
         <div class="field">
-          <label>Plan</label>
+          <label>{{ t('superAdmin.commandCenter.grantModal.planLabel') }}</label>
           <select [ngModel]="grantPlanSlug()" (ngModelChange)="grantPlanSlug.set($event)">
             <option *ngFor="let p of plans()" [value]="p.slug">{{ p.name }}</option>
           </select>
@@ -355,14 +357,14 @@
         <!-- Cycle + Durée -->
         <div class="field-row">
           <div class="field">
-            <label>Cycle</label>
+            <label>{{ t('superAdmin.commandCenter.grantModal.cycleLabel') }}</label>
             <select [ngModel]="grantCycle()" (ngModelChange)="grantCycle.set($event)">
-              <option value="monthly">Mensuel</option>
-              <option value="yearly">Annuel</option>
+              <option value="monthly">{{ t('superAdmin.commandCenter.grantModal.monthly') }}</option>
+              <option value="yearly">{{ t('superAdmin.commandCenter.grantModal.yearly') }}</option>
             </select>
           </div>
           <div class="field">
-            <label>Durée (mois)</label>
+            <label>{{ t('superAdmin.commandCenter.grantModal.durationLabel') }}</label>
             <input type="number" min="1" max="24"
                    [ngModel]="grantDuration()"
                    (ngModelChange)="grantDuration.set(+$event)" />
@@ -370,7 +372,7 @@
         </div>
         <!-- Montant payé -->
         <div class="field">
-          <label>Montant payé (XOF) — 0 = gratuit</label>
+          <label>{{ t('superAdmin.commandCenter.grantModal.amountLabel') }}</label>
           <input type="number" min="0"
                  [ngModel]="grantAmount()"
                  (ngModelChange)="grantAmount.set(+$event)" />
@@ -380,21 +382,21 @@
           <span class="price-original">{{ formatMoney(originalPriceCents()) }}</span>
           <span class="price-paid">{{ formatMoney(grantAmount() * 100) }}</span>
           <span class="price-discount" *ngIf="discountPct() > 0">-{{ discountPct() }}%</span>
-          <span class="price-discount" *ngIf="grantAmount() === 0" style="background:#dcfce7;color:#166534">GRATUIT</span>
+          <span class="price-discount" *ngIf="grantAmount() === 0" style="background:#dcfce7;color:#166534">{{ t('superAdmin.commandCenter.grantModal.free') }}</span>
         </div>
         <!-- Note -->
         <div class="field">
-          <label>Note interne (optionnelle)</label>
+          <label>{{ t('superAdmin.commandCenter.grantModal.noteLabel') }}</label>
           <textarea [ngModel]="grantNote()" (ngModelChange)="grantNote.set($event)"
-                    placeholder="Ex : promotion partenaire, compensation..."></textarea>
+                    [placeholder]="t('superAdmin.commandCenter.grantModal.notePlaceholder')"></textarea>
         </div>
       </div>
       <div class="modal-foot">
-        <button class="btn-cancel" (click)="closeModal()" type="button">Annuler</button>
+        <button class="btn-cancel" (click)="closeModal()" type="button">{{ t('superAdmin.commandCenter.grantModal.cancel') }}</button>
         <button class="btn-primary" (click)="submitGrant()"
                 [disabled]="!grantPlanSlug() || actionLoading()" type="button">
           <span class="mini-spinner" *ngIf="actionLoading()"></span>
-          Confirmer l'attribution
+          {{ t('superAdmin.commandCenter.grantModal.confirm') }}
         </button>
       </div>
     </div>
@@ -405,7 +407,7 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-head">
         <div>
-          <p class="modal-title" style="color:#dc2626">Bloquer le restaurant</p>
+          <p class="modal-title" style="color:#dc2626">{{ t('superAdmin.commandCenter.blockModal.title') }}</p>
           <p class="modal-subtitle">{{ selectedTarget()?.name }}</p>
         </div>
         <button class="modal-close" (click)="closeModal()" type="button">
@@ -414,21 +416,21 @@
       </div>
       <div class="modal-body">
         <div class="alert-banner" style="margin:0">
-          Cette action désactivera immédiatement l'accès au restaurant et à son menu public.
+          {{ t('superAdmin.commandCenter.blockModal.warning') }}
         </div>
         <div class="field">
-          <label>Raison du blocage *</label>
+          <label>{{ t('superAdmin.commandCenter.blockModal.reasonLabel') }}</label>
           <textarea [ngModel]="blockReason()" (ngModelChange)="blockReason.set($event)"
-                    placeholder="Ex : violation des conditions d'utilisation, impayé..."
+                    [placeholder]="t('superAdmin.commandCenter.blockModal.reasonPlaceholder')"
                     rows="3"></textarea>
         </div>
       </div>
       <div class="modal-foot">
-        <button class="btn-cancel" (click)="closeModal()" type="button">Annuler</button>
+        <button class="btn-cancel" (click)="closeModal()" type="button">{{ t('superAdmin.commandCenter.blockModal.cancel') }}</button>
         <button class="btn-danger" (click)="submitBlock()"
                 [disabled]="!blockReason().trim() || actionLoading()" type="button">
           <span class="mini-spinner" *ngIf="actionLoading()"></span>
-          Bloquer définitivement
+          {{ t('superAdmin.commandCenter.blockModal.confirm') }}
         </button>
       </div>
     </div>

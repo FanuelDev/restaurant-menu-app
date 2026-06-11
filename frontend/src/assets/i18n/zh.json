@@ -575,6 +575,92 @@
       "canceled": "已取消",
       "suspended": "已暂停",
       "blocked": "已封禁"
+    },
+    "commandCenter": {
+      "title": "指挥中心",
+      "subtitle": "智能视图 · 每30秒自动刷新",
+      "lastRefresh": "· 最后更新：",
+      "healthHealthy": "🟢 平台正常",
+      "healthWarning": "🟠 需要关注",
+      "live": "实时",
+      "paused": "已暂停",
+      "pause": "暂停",
+      "resume": "继续",
+      "refresh": "刷新",
+      "criticalAlert_one": "{{count}} 个严重警报需要您的关注",
+      "criticalAlert_other": "{{count}} 个严重警报需要您的关注",
+      "kpi": {
+        "mrr": "MRR",
+        "vsPrevMonth": "对比上月",
+        "conversionRate": "转化率",
+        "conversionSub": "活跃 / 总餐厅数",
+        "criticalTrials": "紧急试用",
+        "criticalTrialsSub": "24小时内到期",
+        "churnRisk": "流失风险",
+        "churnRiskSub": "试用超10天未付款",
+        "upsell": "可升级销售",
+        "upsellSub": "有丰富菜单的免费套餐"
+      },
+      "activeAlerts": "活跃警报",
+      "trials": {
+        "title": "即将到期试用",
+        "today": "今天",
+        "empty": "此期间内无到期试用 🎉",
+        "assignPlan": "分配套餐"
+      },
+      "churn": {
+        "title": "流失风险",
+        "subtitle": "试用超10天未订阅",
+        "empty": "没有高风险餐厅 🎉",
+        "convert": "转化"
+      },
+      "signups": {
+        "title": "新注册",
+        "subtitle": "最近24小时",
+        "empty": "最近24小时内没有新注册",
+        "verify": "验证"
+      },
+      "upsellPanel": {
+        "title": "升级销售 — 免费套餐已满",
+        "empty": "未检测到升级销售机会",
+        "upgrade": "升级",
+        "items": "菜品 · 套餐"
+      },
+      "recentActions": {
+        "title": "最近操作（超级管理员）",
+        "seeAll": "查看全部 →",
+        "empty": "暂无最近操作",
+        "by": "由"
+      },
+      "blocked": {
+        "title": "🔒 本周已封禁",
+        "blockedAt": "封禁于",
+        "unblock": "解封 →"
+      },
+      "registered": "注册于",
+      "expires": "到期",
+      "grantModal": {
+        "title": "分配套餐",
+        "planLabel": "套餐",
+        "cycleLabel": "周期",
+        "monthly": "月付",
+        "yearly": "年付",
+        "durationLabel": "时长（月）",
+        "amountLabel": "支付金额（XOF）— 0 = 免费",
+        "free": "免费",
+        "noteLabel": "内部备注（可选）",
+        "notePlaceholder": "例：合作伙伴促销、补偿...",
+        "cancel": "取消",
+        "confirm": "确认分配"
+      },
+      "blockModal": {
+        "title": "封禁餐厅",
+        "warning": "此操作将立即禁用该餐厅及其公开菜单的访问权限。",
+        "reasonLabel": "封禁原因 *",
+        "reasonPlaceholder": "例：违反服务条款、欠款...",
+        "cancel": "取消",
+        "confirm": "永久封禁"
+      }
     }
   },
   "public": {

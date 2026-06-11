@@ -575,6 +575,92 @@
       "canceled": "Gekündigt",
       "suspended": "Gesperrt",
       "blocked": "Blockiert"
+    },
+    "commandCenter": {
+      "title": "Kommandozentrale",
+      "subtitle": "Intelligente Ansicht · Auto-Aktualisierung alle 30 s",
+      "lastRefresh": "· letzte:",
+      "healthHealthy": "🟢 Plattform gesund",
+      "healthWarning": "🟠 Aufmerksamkeit erforderlich",
+      "live": "Live",
+      "paused": "Pausiert",
+      "pause": "Pause",
+      "resume": "Fortsetzen",
+      "refresh": "Aktualisieren",
+      "criticalAlert_one": "{{count}} kritischer Alert erfordert Ihre Aufmerksamkeit",
+      "criticalAlert_other": "{{count}} kritische Alerts erfordern Ihre Aufmerksamkeit",
+      "kpi": {
+        "mrr": "MRR",
+        "vsPrevMonth": "vs. letzten Monat",
+        "conversionRate": "Konversionsrate",
+        "conversionSub": "Aktiv / Gesamt Restaurants",
+        "criticalTrials": "Kritische Trials",
+        "criticalTrialsSub": "Ablauf in 24 h",
+        "churnRisk": "Abwanderungsrisiko",
+        "churnRiskSub": "Trials > 10 Tage ohne Zahlung",
+        "upsell": "Upsell möglich",
+        "upsellSub": "Free-Plan mit reichem Menü"
+      },
+      "activeAlerts": "Aktive Alerts",
+      "trials": {
+        "title": "Ablaufende Trials",
+        "today": "Heute",
+        "empty": "Kein ablaufender Trial in diesem Zeitraum 🎉",
+        "assignPlan": "Plan zuweisen"
+      },
+      "churn": {
+        "title": "Abwanderungsrisiko",
+        "subtitle": "Im Trial > 10 Tage ohne Abonnement",
+        "empty": "Kein Restaurant gefährdet 🎉",
+        "convert": "Konvertieren"
+      },
+      "signups": {
+        "title": "Neue Anmeldungen",
+        "subtitle": "Letzte 24 Stunden",
+        "empty": "Keine neuen Anmeldungen in den letzten 24 h",
+        "verify": "Verifizieren"
+      },
+      "upsellPanel": {
+        "title": "Upsell — Gesättigter Free-Plan",
+        "empty": "Keine Upsell-Möglichkeit erkannt",
+        "upgrade": "Upgrade",
+        "items": "Artikel · Plan"
+      },
+      "recentActions": {
+        "title": "Letzte Aktionen (Super-Admin)",
+        "seeAll": "Alle anzeigen →",
+        "empty": "Keine kürzlichen Aktionen",
+        "by": "von"
+      },
+      "blocked": {
+        "title": "🔒 Diese Woche gesperrt",
+        "blockedAt": "Gesperrt",
+        "unblock": "Entsperren →"
+      },
+      "registered": "Eingeschrieben",
+      "expires": "läuft ab",
+      "grantModal": {
+        "title": "Plan zuweisen",
+        "planLabel": "Plan",
+        "cycleLabel": "Zyklus",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich",
+        "durationLabel": "Dauer (Monate)",
+        "amountLabel": "Gezahlter Betrag (XOF) — 0 = kostenlos",
+        "free": "KOSTENLOS",
+        "noteLabel": "Interne Notiz (optional)",
+        "notePlaceholder": "z. B. Partnerpromotion, Kompensation...",
+        "cancel": "Abbrechen",
+        "confirm": "Zuweisung bestätigen"
+      },
+      "blockModal": {
+        "title": "Restaurant sperren",
+        "warning": "Diese Aktion deaktiviert sofort den Zugang zum Restaurant und seinem öffentlichen Menü.",
+        "reasonLabel": "Sperrgrund *",
+        "reasonPlaceholder": "z. B. Verstoß gegen Nutzungsbedingungen, Zahlungsrückstand...",
+        "cancel": "Abbrechen",
+        "confirm": "Dauerhaft sperren"
+      }
     }
   },
   "public": {
