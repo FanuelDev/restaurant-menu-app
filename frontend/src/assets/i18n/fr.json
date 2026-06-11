@@ -394,37 +394,67 @@
     "empty": "Aucune entrée",
     "emptyMessage": "Le journal est vide pour les filtres sélectionnés.",
     "actions": {
-      "category.created": "Catégorie créée",
-      "category.updated": "Catégorie modifiée",
-      "category.deleted": "Catégorie supprimée",
-      "menu_item.created": "Plat ajouté",
-      "menu_item.updated": "Plat modifié",
-      "menu_item.deleted": "Plat supprimé",
-      "menu_item.toggled": "Disponibilité modifiée",
-      "user.created": "Caissier ajouté",
-      "user.updated": "Caissier modifié",
-      "user.deleted": "Caissier supprimé",
-      "restaurant.updated": "Restaurant modifié",
-      "restaurant.logo_uploaded": "Logo mis à jour",
-      "subscription.created": "Abonnement initié",
-      "subscription.canceled": "Abonnement annulé",
-      "subscription.granted": "Abonnement attribué (gratuit)",
-      "restaurant.blocked": "Restaurant bloqué",
-      "restaurant.unblocked": "Restaurant débloqué",
-      "category.reordered": "Catégories réordonnées",
-      "order.created": "Commande passée",
-      "order.created_by_admin": "Commande créée (admin)",
-      "order.status_updated": "Statut de commande modifié",
-      "order.gift_revoked": "QR cadeau révoqué",
-      "reservation.created": "Réservation créée",
-      "reservation.created_by_admin": "Réservation créée (admin)",
-      "reservation.status_updated": "Statut de réservation modifié",
-      "expense.created": "Dépense ajoutée",
-      "expense.updated": "Dépense modifiée",
-      "expense.deleted": "Dépense supprimée",
-      "income.created": "Revenu ajouté",
-      "income.updated": "Revenu modifié",
-      "income.deleted": "Revenu supprimé"
+      "category": {
+        "created": "Catégorie créée",
+        "updated": "Catégorie modifiée",
+        "deleted": "Catégorie supprimée",
+        "reordered": "Catégories réordonnées"
+      },
+      "menu_item": {
+        "created": "Plat ajouté",
+        "updated": "Plat modifié",
+        "deleted": "Plat supprimé",
+        "toggled": "Disponibilité modifiée"
+      },
+      "user": {
+        "created": "Caissier ajouté",
+        "updated": "Caissier modifié",
+        "deleted": "Caissier supprimé",
+        "email_verified_by_admin": "Email vérifié par admin"
+      },
+      "restaurant": {
+        "updated": "Restaurant modifié",
+        "logo_uploaded": "Logo mis à jour",
+        "blocked": "Restaurant bloqué",
+        "unblocked": "Restaurant débloqué"
+      },
+      "subscription": {
+        "created": "Abonnement initié",
+        "canceled": "Abonnement annulé",
+        "granted": "Abonnement attribué (gratuit)"
+      },
+      "order": {
+        "created": "Commande passée",
+        "created_by_admin": "Commande créée (admin)",
+        "status_updated": "Statut de commande modifié",
+        "gift_revoked": "QR cadeau révoqué"
+      },
+      "reservation": {
+        "created": "Réservation créée",
+        "created_by_admin": "Réservation créée (admin)",
+        "status_updated": "Statut de réservation modifié"
+      },
+      "expense": {
+        "created": "Dépense ajoutée",
+        "updated": "Dépense modifiée",
+        "deleted": "Dépense supprimée"
+      },
+      "income": {
+        "created": "Revenu ajouté",
+        "updated": "Revenu modifié",
+        "deleted": "Revenu supprimé"
+      },
+      "marketing_voucher": {
+        "created": "Bon de réduction créé",
+        "updated": "Bon de réduction modifié",
+        "deleted": "Bon de réduction supprimé",
+        "redeemed": "Bon de réduction utilisé"
+      },
+      "plan": {
+        "created": "Plan créé",
+        "updated": "Plan modifié",
+        "deleted": "Plan supprimé"
+      }
     }
   },
   "planLimit": {

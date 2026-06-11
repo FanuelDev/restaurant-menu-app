@@ -229,12 +229,48 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme
     .sidebar-mini .sb-logout { justify-content: center; padding: 7px; }
 
     /* ── Main content ───────────────────────────── */
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .main-content {
       flex: 1; overflow-y: auto;
       padding: var(--space-8) var(--space-8);
     }
     @media (max-width: 1024px) {
       .main-content { padding: var(--space-5) var(--space-5); }
+    }
+
+    /* ── Trial countdown banner ──────────────────── */
+    .trial-banner {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 10px var(--space-6); flex-shrink: 0;
+      background: linear-gradient(90deg, #1d4ed8, #2563eb);
+      color: #fff; font-size: .8125rem; font-weight: 500;
+      animation: slideDown .3s ease both;
+    }
+    .trial-banner.trial-urgent {
+      background: linear-gradient(90deg, #b91c1c, #dc2626);
+      animation: pulse-bg 2s ease-in-out infinite;
+    }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-100%)} to{opacity:1;transform:none} }
+    @keyframes pulse-bg {
+      0%,100% { background: linear-gradient(90deg,#b91c1c,#dc2626); }
+      50%      { background: linear-gradient(90deg,#991b1b,#b91c1c); }
+    }
+    .trial-icon { font-size: 1rem; flex-shrink: 0; }
+    .trial-text { flex: 1; }
+    .trial-text strong { font-weight: 800; }
+    .trial-cta {
+      background: rgba(255,255,255,.2); color: #fff;
+      border: 1px solid rgba(255,255,255,.4); border-radius: var(--radius-md);
+      padding: 5px 12px; font-size: .8rem; font-weight: 700;
+      text-decoration: none; white-space: nowrap; flex-shrink: 0;
+      transition: background var(--t-fast);
+      &:hover { background: rgba(255,255,255,.3); }
+    }
+    .trial-dismiss {
+      background: none; border: none; cursor: pointer; color: rgba(255,255,255,.7);
+      font-size: 1rem; line-height: 1; padding: 2px 4px; flex-shrink: 0;
+      border-radius: var(--radius-sm); transition: color var(--t-fast);
+      &:hover { color: #fff; }
     }
   `],
 })
@@ -282,6 +318,30 @@ export class AdminLayoutComponent implements OnInit {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
     return f['stats'] === true || f['api_access'] === true
   })
+
+  // ── Trial countdown banner ────────────────────────────────────────────────
+  readonly trialDaysLeft = computed<number | null>(() => {
+    const r = this.authService.restaurant()
+    if (r?.subscriptionStatus !== 'trialing' || !r?.trialEndsAt) return null
+    const diff = new Date(r.trialEndsAt).getTime() - Date.now()
+    return Math.max(0, Math.ceil(diff / 86_400_000))
+  })
+  readonly showTrialBanner = computed(() => {
+    const days = this.trialDaysLeft()
+    if (days === null) return false
+    const dismissed = localStorage.getItem(`trial_banner_dismissed_${this.authService.restaurant()?.id}`)
+    if (dismissed === new Date().toDateString()) return false
+    return days <= 7
+  })
+  readonly trialBannerUrgent = computed(() => (this.trialDaysLeft() ?? 99) <= 2)
+
+  dismissTrialBanner(): void {
+    const id = this.authService.restaurant()?.id
+    if (id) localStorage.setItem(`trial_banner_dismissed_${id}`, new Date().toDateString())
+    // Force re-evaluation — patch the signal via a no-op restaurant update
+    this.restaurantService.loadAdmin().subscribe()
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   // ── Upgrade toast ─────────────────────────────────────────────────────────
   readonly toast = signal<{ label: string; plan: string } | null>(null)

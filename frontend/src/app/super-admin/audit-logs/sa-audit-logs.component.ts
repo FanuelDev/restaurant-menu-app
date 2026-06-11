@@ -24,11 +24,15 @@ const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
 const ACTION_KEYS = [
   'category.created', 'category.updated', 'category.deleted', 'category.reordered',
   'menu_item.created', 'menu_item.updated', 'menu_item.deleted', 'menu_item.toggled',
-  'user.created', 'user.updated', 'user.deleted',
+  'user.created', 'user.updated', 'user.deleted', 'user.email_verified_by_admin',
   'restaurant.updated', 'restaurant.logo_uploaded', 'restaurant.blocked', 'restaurant.unblocked',
   'subscription.created', 'subscription.canceled', 'subscription.granted',
-  'order.created', 'order.status_updated', 'order.gift_revoked',
-  'reservation.created', 'reservation.status_updated',
+  'order.created', 'order.created_by_admin', 'order.status_updated', 'order.gift_revoked',
+  'reservation.created', 'reservation.created_by_admin', 'reservation.status_updated',
+  'expense.created', 'expense.updated', 'expense.deleted',
+  'income.created', 'income.updated', 'income.deleted',
+  'marketing_voucher.created', 'marketing_voucher.updated', 'marketing_voucher.deleted', 'marketing_voucher.redeemed',
+  'plan.created', 'plan.updated', 'plan.deleted',
 ]
 
 @Component({

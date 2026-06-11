@@ -394,37 +394,67 @@
     "empty": "Keine Einträge",
     "emptyMessage": "Das Protokoll ist für die ausgewählten Filter leer.",
     "actions": {
-      "category.created": "Kategorie erstellt",
-      "category.updated": "Kategorie geändert",
-      "category.deleted": "Kategorie gelöscht",
-      "menu_item.created": "Gericht hinzugefügt",
-      "menu_item.updated": "Gericht geändert",
-      "menu_item.deleted": "Gericht gelöscht",
-      "menu_item.toggled": "Verfügbarkeit geändert",
-      "user.created": "Kassierer hinzugefügt",
-      "user.updated": "Kassierer geändert",
-      "user.deleted": "Kassierer gelöscht",
-      "restaurant.updated": "Restaurant geändert",
-      "restaurant.logo_uploaded": "Logo aktualisiert",
-      "subscription.created": "Abonnement gestartet",
-      "subscription.canceled": "Abonnement gekündigt",
-      "subscription.granted": "Abonnement zugewiesen (kostenlos)",
-      "restaurant.blocked": "Restaurant gesperrt",
-      "restaurant.unblocked": "Restaurant entsperrt",
-      "category.reordered": "Kategorien neu angeordnet",
-      "order.created": "Bestellung aufgegeben",
-      "order.created_by_admin": "Bestellung erstellt (Admin)",
-      "order.status_updated": "Bestellstatus geändert",
-      "order.gift_revoked": "Geschenk-QR widerrufen",
-      "reservation.created": "Reservierung erstellt",
-      "reservation.created_by_admin": "Reservierung erstellt (Admin)",
-      "reservation.status_updated": "Reservierungsstatus geändert",
-      "expense.created": "Ausgabe hinzugefügt",
-      "expense.updated": "Ausgabe aktualisiert",
-      "expense.deleted": "Ausgabe gelöscht",
-      "income.created": "Einnahme hinzugefügt",
-      "income.updated": "Einnahme aktualisiert",
-      "income.deleted": "Einnahme gelöscht"
+      "category": {
+        "created": "Kategorie erstellt",
+        "updated": "Kategorie aktualisiert",
+        "deleted": "Kategorie gelöscht",
+        "reordered": "Kategorien umsortiert"
+      },
+      "menu_item": {
+        "created": "Gericht hinzugefügt",
+        "updated": "Gericht aktualisiert",
+        "deleted": "Gericht gelöscht",
+        "toggled": "Verfügbarkeit geändert"
+      },
+      "user": {
+        "created": "Kassierer hinzugefügt",
+        "updated": "Kassierer aktualisiert",
+        "deleted": "Kassierer entfernt",
+        "email_verified_by_admin": "E-Mail vom Admin verifiziert"
+      },
+      "restaurant": {
+        "updated": "Restaurant aktualisiert",
+        "logo_uploaded": "Logo aktualisiert",
+        "blocked": "Restaurant gesperrt",
+        "unblocked": "Restaurant entsperrt"
+      },
+      "subscription": {
+        "created": "Abonnement gestartet",
+        "canceled": "Abonnement gekündigt",
+        "granted": "Plan zugewiesen (kostenlos)"
+      },
+      "order": {
+        "created": "Bestellung aufgegeben",
+        "created_by_admin": "Bestellung erstellt (Admin)",
+        "status_updated": "Bestellstatus aktualisiert",
+        "gift_revoked": "Geschenk-QR widerrufen"
+      },
+      "reservation": {
+        "created": "Reservierung erstellt",
+        "created_by_admin": "Reservierung erstellt (Admin)",
+        "status_updated": "Reservierungsstatus aktualisiert"
+      },
+      "expense": {
+        "created": "Ausgabe hinzugefügt",
+        "updated": "Ausgabe aktualisiert",
+        "deleted": "Ausgabe gelöscht"
+      },
+      "income": {
+        "created": "Einnahme hinzugefügt",
+        "updated": "Einnahme aktualisiert",
+        "deleted": "Einnahme gelöscht"
+      },
+      "marketing_voucher": {
+        "created": "Gutschein erstellt",
+        "updated": "Gutschein aktualisiert",
+        "deleted": "Gutschein gelöscht",
+        "redeemed": "Gutschein eingelöst"
+      },
+      "plan": {
+        "created": "Plan erstellt",
+        "updated": "Plan aktualisiert",
+        "deleted": "Plan gelöscht"
+      }
     }
   },
   "planLimit": {

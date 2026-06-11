@@ -394,37 +394,67 @@
     "empty": "暂无记录",
     "emptyMessage": "所选筛选条件下日志为空。",
     "actions": {
-      "category.created": "已创建分类",
-      "category.updated": "已修改分类",
-      "category.deleted": "已删除分类",
-      "menu_item.created": "已添加菜品",
-      "menu_item.updated": "已修改菜品",
-      "menu_item.deleted": "已删除菜品",
-      "menu_item.toggled": "已修改可用状态",
-      "user.created": "已添加收银员",
-      "user.updated": "已修改收银员",
-      "user.deleted": "已删除收银员",
-      "restaurant.updated": "已修改餐厅",
-      "restaurant.logo_uploaded": "已更新Logo",
-      "subscription.created": "已发起订阅",
-      "subscription.canceled": "已取消订阅",
-      "subscription.granted": "已授予订阅（免费）",
-      "restaurant.blocked": "餐厅已封禁",
-      "restaurant.unblocked": "餐厅已解封",
-      "category.reordered": "已重新排序分类",
-      "order.created": "已下订单",
-      "order.created_by_admin": "已创建订单（管理员）",
-      "order.status_updated": "已更改订单状态",
-      "order.gift_revoked": "礼品二维码已撤销",
-      "reservation.created": "已创建预订",
-      "reservation.created_by_admin": "已创建预订（管理员）",
-      "reservation.status_updated": "已更改预订状态",
-      "expense.created": "已添加支出",
-      "expense.updated": "已更新支出",
-      "expense.deleted": "已删除支出",
-      "income.created": "已添加收入",
-      "income.updated": "已更新收入",
-      "income.deleted": "已删除收入"
+      "category": {
+        "created": "创建分类",
+        "updated": "更新分类",
+        "deleted": "删除分类",
+        "reordered": "分类重新排序"
+      },
+      "menu_item": {
+        "created": "添加菜品",
+        "updated": "更新菜品",
+        "deleted": "删除菜品",
+        "toggled": "可用性已更改"
+      },
+      "user": {
+        "created": "添加收银员",
+        "updated": "更新收银员",
+        "deleted": "删除收银员",
+        "email_verified_by_admin": "管理员已验证邮箱"
+      },
+      "restaurant": {
+        "updated": "餐厅已更新",
+        "logo_uploaded": "Logo已更新",
+        "blocked": "餐厅已封禁",
+        "unblocked": "餐厅已解封"
+      },
+      "subscription": {
+        "created": "订阅已创建",
+        "canceled": "订阅已取消",
+        "granted": "套餐已授予（免费）"
+      },
+      "order": {
+        "created": "订单已下",
+        "created_by_admin": "订单已创建（管理员）",
+        "status_updated": "订单状态已更新",
+        "gift_revoked": "礼品二维码已撤销"
+      },
+      "reservation": {
+        "created": "预订已创建",
+        "created_by_admin": "预订已创建（管理员）",
+        "status_updated": "预订状态已更新"
+      },
+      "expense": {
+        "created": "支出已添加",
+        "updated": "支出已更新",
+        "deleted": "支出已删除"
+      },
+      "income": {
+        "created": "收入已添加",
+        "updated": "收入已更新",
+        "deleted": "收入已删除"
+      },
+      "marketing_voucher": {
+        "created": "优惠券已创建",
+        "updated": "优惠券已更新",
+        "deleted": "优惠券已删除",
+        "redeemed": "优惠券已使用"
+      },
+      "plan": {
+        "created": "套餐已创建",
+        "updated": "套餐已更新",
+        "deleted": "套餐已删除"
+      }
     }
   },
   "planLimit": {

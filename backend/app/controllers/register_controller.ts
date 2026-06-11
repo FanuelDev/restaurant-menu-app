@@ -202,6 +202,12 @@ export default class RegisterController {
 
     await user.load('restaurant', (q) => q.preload('plan'))
 
+    const frontendUrl = process.env.FRONTEND_URL ?? 'https://saemenus.com'
+    const menuUrl = `${frontendUrl}/menu/${user.restaurant.slug}`
+    mailService.sendWelcome(user.email, user.fullName ?? user.email, user.restaurant.name, menuUrl).catch((err) => {
+      console.error('[Mail] Erreur envoi welcome :', err)
+    })
+
     return response.ok({
       message: 'Email vérifié avec succès. Bienvenue sur SaeMenus !',
       restaurant: {

@@ -283,9 +283,28 @@
       </aside>
 
       <!-- Contenu principal -->
-      <main class="main-content">
-        <router-outlet />
-      </main>
+      <div class="main-wrapper">
+
+        <!-- Trial countdown banner (≤ 7 jours restants) -->
+        @if (showTrialBanner()) {
+          <div class="trial-banner" [class.trial-urgent]="trialBannerUrgent()">
+            <span class="trial-icon">{{ trialBannerUrgent() ? '🚨' : '⏰' }}</span>
+            <span class="trial-text">
+              @if (trialDaysLeft() === 0) {
+                Votre essai gratuit <strong>expire aujourd'hui</strong> — passez à Pro pour ne pas perdre l'accès.
+              } @else {
+                Votre essai gratuit expire dans <strong>{{ trialDaysLeft() }} jour{{ trialDaysLeft()! > 1 ? 's' : '' }}</strong>.
+              }
+            </span>
+            <a routerLink="/admin/subscription" class="trial-cta">Passer à Pro →</a>
+            <button class="trial-dismiss" (click)="dismissTrialBanner()" aria-label="Fermer">✕</button>
+          </div>
+        }
+
+        <main class="main-content">
+          <router-outlet />
+        </main>
+      </div>
 
     <!-- Toast upgrade plan -->
     @if (toast()) {

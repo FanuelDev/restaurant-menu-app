@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal, computed, ElementRef, ViewChild, AfterViewInit } from '@angular/core'
+﻿import { Component, inject, OnInit, signal, computed, AfterViewInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
@@ -167,6 +167,58 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
     }
     .qa-item:hover .qa-icon { background: var(--brand); border-color: var(--brand); color: white; }
 
+    /* Onboarding checklist */
+    .onboarding-card {
+      background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+      border: 1px solid #bfdbfe; border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6); margin-bottom: var(--space-6);
+      animation: slideUpFade .4s var(--ease-spring) both;
+    }
+    .ob-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+    .ob-title { font-size: 1rem; font-weight: 700; color: #1e40af; margin: 0; }
+    .ob-progress-text { font-size: .8125rem; font-weight: 600; color: #1e40af; }
+    .ob-bar { height: 6px; background: #bfdbfe; border-radius: 999px; margin-bottom: var(--space-4); overflow: hidden; }
+    .ob-bar-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #22c55e); border-radius: 999px; transition: width .5s var(--ease-spring); }
+    .ob-steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+    @media(max-width:700px) { .ob-steps { grid-template-columns: 1fr; } }
+    .ob-step {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-3); border-radius: var(--radius-md);
+      text-decoration: none; color: inherit;
+      background: rgba(255,255,255,.7); border: 1px solid rgba(59,130,246,.15);
+      transition: all var(--t-fast);
+      &:hover:not(.ob-done) { background: #fff; border-color: #93c5fd; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(59,130,246,.1); }
+    }
+    .ob-step.ob-done { opacity: .6; }
+    .ob-check {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #93c5fd; color: #93c5fd; font-size: .7rem;
+      transition: all var(--t-fast);
+    }
+    .ob-done .ob-check { background: #22c55e; border-color: #22c55e; color: #fff; }
+    .ob-step-label { font-size: .8125rem; font-weight: 500; color: var(--text-primary); }
+    .ob-done .ob-step-label { text-decoration: line-through; color: var(--text-muted); }
+    .ob-step-hint { font-size: .7rem; color: var(--text-muted); margin-top: 1px; }
+    .ob-all-done {
+      text-align: center; padding: var(--space-4);
+      font-size: .9375rem; font-weight: 700; color: #166534;
+      display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+    }
+
+    /* QR share row */
+    .qr-share-row { display: flex; gap: var(--space-2); margin-top: var(--space-4); flex-wrap: wrap; }
+    .qr-share-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: var(--radius-md);
+      font-size: .78rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary);
+      text-decoration: none; transition: all var(--t-fast);
+      &:hover { background: var(--gray-100); color: var(--text-primary); }
+    }
+    .qr-share-btn.wa  { border-color: #86efac; color: #166534; background: #f0fdf4; &:hover { background: #dcfce7; } }
+    .qr-share-btn.copied { border-color: #93c5fd; color: #1e40af; background: #eff6ff; }
+
     /* Subscription status pill */
     .sub-status {
       display: flex; align-items: center; gap: var(--space-3);
@@ -210,8 +262,47 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   readonly totalItems       = computed(() => this.menuItems().length)
   readonly availableItems   = computed(() => this.menuItems().filter((i) => i.isAvailable).length)
   readonly unavailableItems = computed(() => this.menuItems().filter((i) => !i.isAvailable).length)
-  readonly qrDataUrl        = signal<string | null>(null)
-  readonly qrLoading        = signal(false)
+  readonly qrDataUrl   = signal<string | null>(null)
+  readonly qrLoading   = signal(false)
+  readonly linkCopied  = signal(false)
+  readonly menuShared  = signal(false)
+
+  // ── Onboarding checklist ──────────────────────────────────────────────────
+  private readonly SHARED_KEY = () => `menu_shared_${this.authService.restaurant()?.id ?? ''}`
+
+  readonly onboardingSteps = computed(() => [
+    {
+      label: 'Logo du restaurant',
+      hint: 'Importez votre logo depuis Paramètres',
+      done: !!this.restaurant()?.logoUrl,
+      link: '/admin/restaurant',
+    },
+    {
+      label: 'Première catégorie créée',
+      hint: 'Ex : Entrées, Plats, Desserts…',
+      done: this.categories().length > 0,
+      link: '/admin/categories',
+    },
+    {
+      label: 'Premier plat ajouté',
+      hint: 'Ajoutez au moins un article à votre menu',
+      done: this.menuItems().length > 0,
+      link: '/admin/menu-items',
+    },
+    {
+      label: 'Lien du menu partagé',
+      hint: 'Copiez ou partagez votre QR code',
+      done: this.menuShared(),
+      link: '',
+    },
+  ])
+
+  readonly onboardingProgress = computed(() => {
+    const steps = this.onboardingSteps()
+    return Math.round((steps.filter((s) => s.done).length / steps.length) * 100)
+  })
+
+  readonly showOnboarding = computed(() => this.onboardingProgress() < 100)
 
   readonly firstName = computed(() => {
     const name = this.user()?.fullName || 'Admin'
@@ -240,7 +331,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.menuService.loadAdminCategories().subscribe()
     this.menuService.loadAdminItems().subscribe()
     this.restaurantService.loadAdmin().subscribe({
-      next: () => this.generateQr(),
+      next: () => {
+        this.generateQr()
+        this.menuShared.set(!!localStorage.getItem(this.SHARED_KEY()))
+      },
     })
   }
 
@@ -266,8 +360,29 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       const slug = this.restaurant()?.slug ?? 'menu'
       const brandColor = this.restaurant()?.brandColor ?? '#111827'
       await this.qrCodeService.download(url, `qrcode-menu-${slug}.png`, brandColor)
+      this.markShared()
     } finally {
       this.qrLoading.set(false)
     }
+  }
+
+  async copyMenuLink(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.menuUrl())
+      this.linkCopied.set(true)
+      this.markShared()
+      setTimeout(() => this.linkCopied.set(false), 2500)
+    } catch { /* ignore */ }
+  }
+
+  shareOnWhatsApp(): void {
+    const msg = `Retrouvez notre menu en ligne : ${this.menuUrl()}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank')
+    this.markShared()
+  }
+
+  private markShared(): void {
+    localStorage.setItem(this.SHARED_KEY(), '1')
+    this.menuShared.set(true)
   }
 }

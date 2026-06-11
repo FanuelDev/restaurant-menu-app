@@ -4,6 +4,8 @@ import Plan from '#models/plan'
 import Restaurant from '#models/restaurant'
 import Subscription from '#models/subscription'
 import CinetPayService from '#services/cinetpay_service'
+import { mailService } from '#services/mail_service'
+import User from '#models/user'
 
 const TRIAL_DAYS = 14
 
@@ -140,6 +142,22 @@ export default class SubscriptionService {
       restaurant.trialEndsAt = null
       await restaurant.save()
     })
+
+    // Notification email (fire-and-forget)
+    const owner = await User.query().where('restaurant_id', subscription.restaurantId).where('role', 'admin').first()
+    if (owner) {
+      const restaurant = await Restaurant.findOrFail(subscription.restaurantId)
+      const invoiceNumber = `INV-${transactionId.slice(-8).toUpperCase()}`
+      const periodEndFmt = periodEnd.setLocale('fr').toLocaleString(DateTime.DATE_FULL)
+      mailService.sendSubscriptionActivated(
+        owner.email,
+        owner.fullName ?? owner.email,
+        restaurant.name,
+        plan.name,
+        periodEndFmt,
+        invoiceNumber
+      ).catch((err) => console.error('[Mail] Erreur envoi subscription activated :', err))
+    }
   }
 
   /** Annule un abonnement (fin de période) */

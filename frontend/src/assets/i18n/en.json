@@ -394,37 +394,67 @@
     "empty": "No entries",
     "emptyMessage": "The log is empty for the selected filters.",
     "actions": {
-      "category.created": "Category created",
-      "category.updated": "Category updated",
-      "category.deleted": "Category deleted",
-      "menu_item.created": "Item added",
-      "menu_item.updated": "Item updated",
-      "menu_item.deleted": "Item deleted",
-      "menu_item.toggled": "Availability changed",
-      "user.created": "Cashier added",
-      "user.updated": "Cashier updated",
-      "user.deleted": "Cashier deleted",
-      "restaurant.updated": "Restaurant updated",
-      "restaurant.logo_uploaded": "Logo updated",
-      "subscription.created": "Subscription initiated",
-      "subscription.canceled": "Subscription cancelled",
-      "subscription.granted": "Subscription granted (free)",
-      "restaurant.blocked": "Restaurant blocked",
-      "restaurant.unblocked": "Restaurant unblocked",
-      "category.reordered": "Categories reordered",
-      "order.created": "Order placed",
-      "order.created_by_admin": "Order created (admin)",
-      "order.status_updated": "Order status changed",
-      "order.gift_revoked": "Gift QR revoked",
-      "reservation.created": "Reservation created",
-      "reservation.created_by_admin": "Reservation created (admin)",
-      "reservation.status_updated": "Reservation status changed",
-      "expense.created": "Expense added",
-      "expense.updated": "Expense updated",
-      "expense.deleted": "Expense deleted",
-      "income.created": "Income added",
-      "income.updated": "Income updated",
-      "income.deleted": "Income deleted"
+      "category": {
+        "created": "Category created",
+        "updated": "Category updated",
+        "deleted": "Category deleted",
+        "reordered": "Categories reordered"
+      },
+      "menu_item": {
+        "created": "Item added",
+        "updated": "Item updated",
+        "deleted": "Item deleted",
+        "toggled": "Availability toggled"
+      },
+      "user": {
+        "created": "Cashier added",
+        "updated": "Cashier updated",
+        "deleted": "Cashier removed",
+        "email_verified_by_admin": "Email verified by admin"
+      },
+      "restaurant": {
+        "updated": "Restaurant updated",
+        "logo_uploaded": "Logo updated",
+        "blocked": "Restaurant blocked",
+        "unblocked": "Restaurant unblocked"
+      },
+      "subscription": {
+        "created": "Subscription initiated",
+        "canceled": "Subscription canceled",
+        "granted": "Plan granted (free)"
+      },
+      "order": {
+        "created": "Order placed",
+        "created_by_admin": "Order created (admin)",
+        "status_updated": "Order status updated",
+        "gift_revoked": "Gift QR revoked"
+      },
+      "reservation": {
+        "created": "Reservation created",
+        "created_by_admin": "Reservation created (admin)",
+        "status_updated": "Reservation status updated"
+      },
+      "expense": {
+        "created": "Expense added",
+        "updated": "Expense updated",
+        "deleted": "Expense deleted"
+      },
+      "income": {
+        "created": "Income added",
+        "updated": "Income updated",
+        "deleted": "Income deleted"
+      },
+      "marketing_voucher": {
+        "created": "Voucher created",
+        "updated": "Voucher updated",
+        "deleted": "Voucher deleted",
+        "redeemed": "Voucher redeemed"
+      },
+      "plan": {
+        "created": "Plan created",
+        "updated": "Plan updated",
+        "deleted": "Plan deleted"
+      }
     }
   },
   "planLimit": {

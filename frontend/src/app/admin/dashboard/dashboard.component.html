@@ -16,6 +16,44 @@
         </a>
       </header>
 
+      <!-- Onboarding checklist (masqué quand 100%) -->
+      @if (showOnboarding()) {
+        <div class="onboarding-card">
+          <div class="ob-header">
+            <h2 class="ob-title">🚀 Configurez votre restaurant</h2>
+            <span class="ob-progress-text">{{ onboardingProgress() }}% complété</span>
+          </div>
+          <div class="ob-bar">
+            <div class="ob-bar-fill" [style.width.%]="onboardingProgress()"></div>
+          </div>
+          <div class="ob-steps">
+            @for (step of onboardingSteps(); track step.label) {
+              @if (step.link) {
+                <a [routerLink]="step.link" class="ob-step" [class.ob-done]="step.done">
+                  <div class="ob-check">
+                    @if (step.done) { ✓ } @else {
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 5h6M5 2l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    }
+                  </div>
+                  <div>
+                    <div class="ob-step-label">{{ step.label }}</div>
+                    @if (!step.done) { <div class="ob-step-hint">{{ step.hint }}</div> }
+                  </div>
+                </a>
+              } @else {
+                <div class="ob-step" [class.ob-done]="step.done">
+                  <div class="ob-check">@if (step.done) { ✓ } @else { · }</div>
+                  <div>
+                    <div class="ob-step-label">{{ step.label }}</div>
+                    @if (!step.done) { <div class="ob-step-hint">{{ step.hint }}</div> }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+
       <!-- KPI cards -->
       <div class="kpi-grid">
         <a routerLink="/admin/categories" class="kpi-card animate-up delay-1">
@@ -160,7 +198,29 @@
                     <span class="qr-url-label">{{ t('dashboard.menuUrl') }}</span>
                     <a [href]="menuUrl()" target="_blank" rel="noopener" class="qr-url">{{ menuUrl() }}</a>
                   </div>
-                  <div class="qr-tips">
+
+                  <!-- Boutons de partage -->
+                  <div class="qr-share-row">
+                    <button class="qr-share-btn" [class.copied]="linkCopied()" (click)="copyMenuLink()" type="button">
+                      @if (linkCopied()) {
+                        <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l4 4 8-8"/></svg>
+                        Copié !
+                      } @else {
+                        <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="6" y="6" width="10" height="10" rx="1.5"/><path d="M4 12H3a1.5 1.5 0 01-1.5-1.5V3A1.5 1.5 0 013 1.5h7.5A1.5 1.5 0 0112 3v1"/></svg>
+                        Copier le lien
+                      }
+                    </button>
+                    <button class="qr-share-btn wa" (click)="shareOnWhatsApp()" type="button">
+                      <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9 1.5C4.86 1.5 1.5 4.86 1.5 9c0 1.36.36 2.64 1 3.75L1.5 16.5l3.9-1.02A7.5 7.5 0 109 1.5z"/><path d="M7 6.5c.2.7.7 1.4 1.2 1.9s1.2 1 1.9 1.2c.3.1.7-.1.8-.4l.3-.8c.1-.3 0-.6-.2-.8L10.5 7a.9.9 0 00-1 0c-.1.1-.3.1-.4 0-.4-.3-.9-.9-1.1-1.4 0-.1 0-.3.1-.4A.9.9 0 008.1 4l-.6-.5c-.2-.2-.5-.3-.8-.2-.3.1-.5.5-.4.8l.3.8c.1.3.2.5.4.6z"/></svg>
+                      WhatsApp
+                    </button>
+                    <a [href]="menuUrl()" target="_blank" rel="noopener" class="qr-share-btn">
+                      <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 9s3.5-7 8-7 8 7 8 7-3.5 7-8 7-8-7-8-7z"/><circle cx="9" cy="9" r="2.5"/></svg>
+                      Voir le menu
+                    </a>
+                  </div>
+
+                  <div class="qr-tips" style="margin-top:var(--space-3)">
                     <div class="qr-tip">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>

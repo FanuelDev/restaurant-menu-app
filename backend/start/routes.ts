@@ -37,6 +37,7 @@ const InvoicesController = () => import('#controllers/invoices_controller')
 // API keys (admin management) + External API v1
 const ApiKeysController    = () => import('#controllers/api_keys_controller')
 const ExternalApiController = () => import('#controllers/external_api_controller')
+const CronController = () => import('#controllers/cron_controller')
 
 // ─── Static / health ──────────────────────────────────────────────────────────
 router.get('/health', async ({ response }) => response.ok({ status: 'ok', timestamp: new Date().toISOString() }))
@@ -85,6 +86,9 @@ router.post('/api/register/verify-email', [RegisterController, 'verifyEmail'])
 router.post('/api/register/resend-verification', [RegisterController, 'resendVerification'])
   .use((ctx, next) => registerRateLimiter.handle(ctx, next))
 router.get('/api/register/check-slug', [RegisterController, 'checkSlug'])
+
+// ─── Cron (scheduler externe) ─────────────────────────────────────────────────
+router.post('/api/cron/trial-reminders', [CronController, 'trialReminders'])
 
 // ─── Public plans pricing page (no tenant, no auth) ──────────────────────────
 router.get('/api/public/plans', [SubscriptionsController, 'publicPlans'])
