@@ -61,12 +61,13 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
     /* ── Alert banner ─────────────────────────────────────────────── */
     .alert-banner {
       display: flex; align-items: center; gap: var(--space-3);
-      background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-lg);
+      background: var(--error-bg); border: 1px solid var(--error-border);
+      border-radius: var(--radius-lg);
       padding: var(--space-3) var(--space-4); margin-bottom: var(--space-5);
-      font-size: .875rem; font-weight: 600; color: #991b1b;
+      font-size: .875rem; font-weight: 600; color: var(--error);
       animation: slideUpFade .3s var(--ease-spring) both;
     }
-    .alert-banner.warning { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .alert-banner.warning { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
 
     /* ── KPI Strip ─────────────────────────────────────────────────── */
     .kpi-strip {
@@ -135,19 +136,23 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
       padding: 2px 8px; border-radius: var(--radius-full);
     }
 
-    /* Color variants */
-    .alert-red    .alert-card-head { background: #fef2f2; }
-    .alert-red    .alert-icon      { background: #fee2e2; }
-    .alert-red    .alert-card-count { background: #dc2626; color: #fff; }
-    .alert-orange .alert-card-head { background: #fffbeb; }
-    .alert-orange .alert-icon      { background: #fef3c7; }
-    .alert-orange .alert-card-count { background: #d97706; color: #fff; }
-    .alert-green  .alert-card-head { background: #f0fdf4; }
-    .alert-green  .alert-icon      { background: #dcfce7; }
-    .alert-green  .alert-card-count { background: #16a34a; color: #fff; }
-    .alert-blue   .alert-card-head { background: #eff6ff; }
-    .alert-blue   .alert-icon      { background: #dbeafe; }
-    .alert-blue   .alert-card-count { background: #2563eb; color: #fff; }
+    /* Color variants — use CSS vars for dark mode compatibility */
+    .alert-red    .alert-card-head  { background: var(--error-bg); border-bottom-color: var(--error-border); }
+    .alert-red    .alert-icon       { background: var(--error-border); color: var(--error); }
+    .alert-red    .alert-card-title { color: var(--error); }
+    .alert-red    .alert-card-count { background: var(--error); color: #fff; }
+    .alert-orange .alert-card-head  { background: var(--warning-bg); border-bottom-color: var(--warning-border); }
+    .alert-orange .alert-icon       { background: var(--warning-border); color: var(--warning); }
+    .alert-orange .alert-card-title { color: var(--warning); }
+    .alert-orange .alert-card-count { background: var(--warning); color: #fff; }
+    .alert-green  .alert-card-head  { background: var(--success-bg); border-bottom-color: var(--success-border); }
+    .alert-green  .alert-icon       { background: var(--success-border); color: var(--success); }
+    .alert-green  .alert-card-title { color: var(--success); }
+    .alert-green  .alert-card-count { background: var(--success); color: #fff; }
+    .alert-blue   .alert-card-head  { background: var(--info-bg); border-bottom-color: var(--info-border); }
+    .alert-blue   .alert-icon       { background: var(--info-border); color: var(--info); }
+    .alert-blue   .alert-card-title { color: var(--info); }
+    .alert-blue   .alert-card-count { background: var(--info); color: #fff; }
 
     .alert-card-body { max-height: 280px; overflow-y: auto; }
 
@@ -183,10 +188,10 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
       &:hover { opacity: .85; }
     }
     .action-btn.danger {
-      &:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+      &:hover { background: var(--error-bg); border-color: var(--error-border); color: var(--error); }
     }
     .action-btn.success {
-      &:hover { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+      &:hover { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
     }
 
     .empty-card {
@@ -229,12 +234,12 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
       display: inline-block; font-size: .65rem; font-weight: 700;
       padding: 1px 5px; border-radius: 3px; margin-right: 4px;
     }
-    .ab-block    { background: #fee2e2; color: #991b1b; }
-    .ab-grant    { background: #dcfce7; color: #166534; }
-    .ab-verify   { background: #dbeafe; color: #1e40af; }
-    .ab-update   { background: #f5f5f4; color: #44403c; }
-    .ab-delete   { background: #fef3c7; color: #92400e; }
-    .ab-default  { background: var(--gray-100); color: var(--text-secondary); }
+    .ab-block    { background: var(--error-bg);   color: var(--error);   border: 1px solid var(--error-border); }
+    .ab-grant    { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+    .ab-verify   { background: var(--info-bg);    color: var(--info);    border: 1px solid var(--info-border); }
+    .ab-update   { background: var(--surface-2);  color: var(--text-secondary); border: 1px solid var(--border); }
+    .ab-delete   { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+    .ab-default  { background: var(--surface-2);  color: var(--text-secondary); border: 1px solid var(--border); }
 
     /* ── Modal overlay ─────────────────────────────────────────────── */
     .modal-overlay {
@@ -282,13 +287,13 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
     .field textarea { resize: vertical; min-height: 72px; font-family: inherit; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .price-preview {
-      background: var(--gray-50); border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md);
       padding: var(--space-3); display: flex; justify-content: space-between; align-items: center;
       font-size: .875rem;
     }
     .price-original { color: var(--text-muted); text-decoration: line-through; }
     .price-paid     { font-weight: 700; color: var(--text-primary); font-size: 1rem; }
-    .price-discount { font-size: .75rem; background: #dcfce7; color: #166534; padding: 1px 6px; border-radius: var(--radius-full); font-weight: 700; }
+    .price-discount { font-size: .75rem; background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); padding: 1px 6px; border-radius: var(--radius-full); font-weight: 700; }
 
     .btn-cancel {
       background: none; border: 1px solid var(--border); border-radius: var(--radius-md);

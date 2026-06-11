@@ -3,11 +3,12 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuthService } from '../../shared/services/auth.service'
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-super-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule, ThemeToggleComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslocoModule, ThemeToggleComponent, LangSwitcherComponent],
   templateUrl: './super-admin-layout.component.html',
   styles: [`
     .sa-shell {

@@ -268,6 +268,10 @@
               <span class="sb-theme-label">Thème</span>
               <app-theme-toggle />
             </div>
+            <div class="sb-theme-row">
+              <span class="sb-theme-label">Langue</span>
+              <app-lang-switcher />
+            </div>
           }
 
           <button class="sb-logout" (click)="logout()" [title]="collapsed() ? t('nav.logout') : ''" [attr.aria-label]="t('nav.logout')">

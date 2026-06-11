@@ -80,10 +80,14 @@
             </div>
           </div>
 
-          <!-- Theme toggle -->
+          <!-- Theme + Langue -->
           <div class="sa-theme-row">
             <span class="sa-theme-label">Thème</span>
             <app-theme-toggle />
+          </div>
+          <div class="sa-theme-row">
+            <span class="sa-theme-label">Langue</span>
+            <app-lang-switcher />
           </div>
 
           <button class="sa-logout" (click)="authService.logout()">

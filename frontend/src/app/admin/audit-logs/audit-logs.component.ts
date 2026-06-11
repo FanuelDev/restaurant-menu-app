@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { TranslocoModule } from '@jsverse/transloco'
 import { AuditService, AuditLogFilters } from '../../shared/services/audit.service'
+import { AuditActionLabelPipe } from '../../shared/pipes/audit-action-label.pipe'
 import type { AuditLog, PaginatedResponse } from '../../shared/models'
 
 const ACTION_COLORS: Record<string, { bg: string; color: string }> = {
@@ -38,7 +39,7 @@ const ACTION_KEYS = [
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslocoModule],
+  imports: [CommonModule, FormsModule, TranslocoModule, AuditActionLabelPipe],
   templateUrl: './audit-logs.component.html',
   styles: [`
     /* Filter bar */

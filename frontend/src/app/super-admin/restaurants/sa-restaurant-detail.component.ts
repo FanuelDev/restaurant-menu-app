@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { SuperAdminService } from '../../shared/services/super-admin.service'
+import { AuditActionLabelPipe } from '../../shared/pipes/audit-action-label.pipe'
 import type { Restaurant, AuditLog, Plan, BillingCycle, SaInvoice } from '../../shared/models'
 
 @Component({
   selector: 'app-sa-restaurant-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslocoModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslocoModule, AuditActionLabelPipe],
   templateUrl: './sa-restaurant-detail.component.html',
   styles: [`
     .detail-page { max-width: 1060px; }

@@ -17,7 +17,7 @@
             <select class="form-control" [(ngModel)]="filterAction" (ngModelChange)="applyFilters()">
               <option value="">{{ t('auditLogs.filterAll') }}</option>
               @for (key of actionKeys; track key) {
-                <option [value]="key">{{ t('auditLogs.actions.' + key) }}</option>
+                <option [value]="key">{{ key | auditActionLabel }}</option>
               }
             </select>
             <span class="select-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span>
@@ -134,7 +134,7 @@
             <div class="log-entry" (click)="toggleDetails(log.id)" [class.is-expanded]="expandedId() === log.id">
               <div class="log-main">
                 <span class="action-badge" [style.background]="actionBg(log.action)" [style.color]="actionFg(log.action)">
-                  {{ t('auditLogs.actions.' + log.action) || log.action }}
+                  {{ log.action | auditActionLabel }}
                 </span>
                 @if (log.resourceName) {
                   <span class="log-resource">{{ log.resourceName }}</span>

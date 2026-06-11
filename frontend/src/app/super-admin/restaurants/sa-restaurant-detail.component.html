@@ -228,7 +228,7 @@
                     <div class="timeline-item">
                       <div class="timeline-dot"></div>
                       <div class="timeline-content">
-                        <div class="log-action">{{ t('auditLogs.actions.' + log.action) || log.action }}</div>
+                        <div class="log-action">{{ log.action | auditActionLabel }}</div>
                         <div class="log-meta">
                           <span class="log-user">{{ log.userEmail }}</span>
                           <span class="log-time">{{ log.createdAt | date:'dd/MM à HH:mm' }}</span>

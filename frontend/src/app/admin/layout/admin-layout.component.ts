@@ -8,11 +8,12 @@ import { AuthService } from '../../shared/services/auth.service'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { NotificationService } from '../../shared/services/notification.service'
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule, ThemeToggleComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslocoModule, ThemeToggleComponent, LangSwitcherComponent],
   templateUrl: './admin-layout.component.html',
   styles: [`
     /* ── Shell ──────────────────────────────────── */
