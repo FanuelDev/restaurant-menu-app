@@ -126,45 +126,113 @@ class MailService {
 
     const html = this.wrap(`
       <tr>
-        <td style="padding:40px;">
-          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111;">Bienvenue sur SaeMenus, ${firstName} 🎉</p>
-          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
-            Votre restaurant <strong>${restaurantName}</strong> est maintenant actif.
-            Votre menu digital est en ligne et vos clients peuvent le consulter dès maintenant.
-          </p>
+        <td style="padding:0;">
 
-          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:24px;margin-bottom:28px;">
-            <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px;">✅ Vos 3 premières actions</div>
-            <div style="margin-bottom:12px;display:flex;align-items:flex-start;gap:12px;">
-              <div style="width:24px;height:24px;background:${BRAND_RED};border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;line-height:24px;">1</div>
-              <div><strong style="color:#111;">Ajoutez votre logo</strong><br/><span style="font-size:13px;color:#666;">Personnalisez l'apparence de votre menu</span></div>
+          <!-- Hero banner -->
+          <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:36px 40px 32px;text-align:center;">
+            <div style="font-size:40px;margin-bottom:12px;">🎉</div>
+            <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
+              Bienvenue, ${firstName} !
+            </p>
+            <p style="margin:0;font-size:14px;color:rgba(255,255,255,.65);font-weight:400;">
+              Votre restaurant est prêt à accueillir vos clients
+            </p>
+          </div>
+
+          <!-- Restaurant name pill -->
+          <div style="text-align:center;margin-top:-16px;margin-bottom:0;padding:0 40px;">
+            <span style="display:inline-block;background:#fff;border:2px solid #e5e7eb;border-radius:999px;
+                         padding:8px 20px;font-size:14px;font-weight:700;color:#111;
+                         box-shadow:0 2px 8px rgba(0,0,0,.08);">
+              🍽️ ${restaurantName}
+            </span>
+          </div>
+
+          <!-- Body -->
+          <div style="padding:32px 40px 0;">
+            <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.7;text-align:center;">
+              Votre menu digital est <strong style="color:#111;">en ligne</strong> et vos clients peuvent le consulter dès maintenant.
+            </p>
+
+            <!-- Steps -->
+            <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:28px;">
+              <div style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:18px;text-transform:uppercase;letter-spacing:1px;">
+                3 étapes pour bien démarrer
+              </div>
+
+              <!-- Step 1 -->
+              <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:14px;">
+                <tr>
+                  <td style="width:36px;vertical-align:top;">
+                    <div style="width:32px;height:32px;background:${BRAND_RED};border-radius:8px;
+                                color:#fff;font-size:14px;font-weight:800;text-align:center;line-height:32px;">1</div>
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:2px;">Ajoutez votre logo</div>
+                    <div style="font-size:12px;color:#6b7280;">Personnalisez l'apparence de votre menu</div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Step 2 -->
+              <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:14px;">
+                <tr>
+                  <td style="width:36px;vertical-align:top;">
+                    <div style="width:32px;height:32px;background:${BRAND_RED};border-radius:8px;
+                                color:#fff;font-size:14px;font-weight:800;text-align:center;line-height:32px;">2</div>
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:2px;">Créez vos catégories</div>
+                    <div style="font-size:12px;color:#6b7280;">Entrées, Plats, Desserts, Boissons…</div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Step 3 -->
+              <table cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td style="width:36px;vertical-align:top;">
+                    <div style="width:32px;height:32px;background:${BRAND_RED};border-radius:8px;
+                                color:#fff;font-size:14px;font-weight:800;text-align:center;line-height:32px;">3</div>
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:2px;">Partagez votre QR code</div>
+                    <div style="font-size:12px;color:#6b7280;">Imprimez-le et placez-le sur vos tables</div>
+                  </td>
+                </tr>
+              </table>
             </div>
-            <div style="margin-bottom:12px;display:flex;align-items:flex-start;gap:12px;">
-              <div style="width:24px;height:24px;background:${BRAND_RED};border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;line-height:24px;">2</div>
-              <div><strong style="color:#111;">Créez vos catégories</strong><br/><span style="font-size:13px;color:#666;">Entrées, Plats, Desserts, Boissons…</span></div>
+
+            <!-- CTA principal -->
+            <div style="text-align:center;margin-bottom:16px;">
+              <a href="${frontendUrl}/admin/dashboard"
+                 style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:15px;font-weight:700;
+                        text-decoration:none;padding:15px 36px;border-radius:10px;letter-spacing:.2px;
+                        box-shadow:0 4px 14px rgba(192,57,43,.35);">
+                Accéder à mon espace admin →
+              </a>
             </div>
-            <div style="display:flex;align-items:flex-start;gap:12px;">
-              <div style="width:24px;height:24px;background:${BRAND_RED};border-radius:50%;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;line-height:24px;">3</div>
-              <div><strong style="color:#111;">Partagez votre QR code</strong><br/><span style="font-size:13px;color:#666;">Imprimez-le et placez-le sur vos tables</span></div>
+
+            <!-- CTA secondaire -->
+            <div style="text-align:center;margin-bottom:28px;">
+              <a href="${menuUrl}"
+                 style="font-size:13px;color:${BRAND_RED};font-weight:600;text-decoration:none;">
+                Voir mon menu en ligne ↗
+              </a>
+            </div>
+
+            <!-- Trial badge -->
+            <div style="background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fed7aa;
+                        border-radius:10px;padding:16px 20px;text-align:center;margin-bottom:32px;">
+              <div style="font-size:13px;font-weight:600;color:#92400e;">
+                ⏰ Essai gratuit de <strong>14 jours</strong> activé
+              </div>
+              <div style="font-size:12px;color:#b45309;margin-top:4px;">
+                Toutes les fonctionnalités disponibles, sans engagement
+              </div>
             </div>
           </div>
 
-          <div style="text-align:center;margin-bottom:24px;">
-            <a href="${frontendUrl}/admin/dashboard"
-               style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:15px;font-weight:700;
-                      text-decoration:none;padding:14px 32px;border-radius:8px;margin-bottom:12px;display:block;">
-              Accéder à mon espace admin →
-            </a>
-            <a href="${menuUrl}"
-               style="display:inline-block;font-size:13px;color:${BRAND_RED};font-weight:600;text-decoration:none;margin-top:8px;">
-              Voir mon menu en ligne ↗
-            </a>
-          </div>
-
-          <p style="margin:0;font-size:13px;color:#888;line-height:1.6;text-align:center;">
-            Votre essai gratuit de <strong>14 jours</strong> est maintenant actif.
-            Profitez de toutes les fonctionnalités sans engagement.
-          </p>
         </td>
       </tr>`)
 

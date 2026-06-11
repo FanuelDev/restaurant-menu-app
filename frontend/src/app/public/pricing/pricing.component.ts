@@ -3,12 +3,13 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common'
 import { RouterLink } from '@angular/router'
 import { TranslocoModule } from '@jsverse/transloco'
 import { SubscriptionService } from '../../shared/services/subscription.service'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 import type { Plan, BillingCycle } from '../../shared/models'
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [CommonModule, NgTemplateOutlet, RouterLink, TranslocoModule],
+  imports: [CommonModule, NgTemplateOutlet, RouterLink, TranslocoModule, LangSwitcherComponent],
   templateUrl: './pricing.component.html',
   styles: [`
     .pricing-page {

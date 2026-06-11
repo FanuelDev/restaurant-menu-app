@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { take } from 'rxjs/operators'
 import { SubscriptionService } from '../../shared/services/subscription.service'
+import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lang-switcher.component'
 import type { Plan, BillingCycle } from '../../shared/models'
 
 interface Feature { icon: string; color: string; badge?: string }
@@ -32,7 +33,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslocoModule],
+  imports: [CommonModule, RouterLink, TranslocoModule, LangSwitcherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './landing.component.html',
   styles: [`

@@ -131,6 +131,16 @@ const BADGE_KEYS: Record<string, string> = {
     }
     .form-control:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
     .form-error { color: var(--color-error); font-size: 0.8125rem; display: block; margin-top: var(--space-1); }
+    .price-input-wrap { display: flex; align-items: stretch; }
+    .price-input { border-right: none; border-radius: var(--radius-md) 0 0 var(--radius-md); flex: 1; }
+    .price-input:focus { z-index: 1; }
+    .currency-badge {
+      display: flex; align-items: center; padding: 0 12px;
+      background: var(--gray-100); border: 1px solid var(--border);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-size: .8125rem; font-weight: 700; color: var(--text-secondary);
+      white-space: nowrap; user-select: none;
+    }
     .alert-error { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error); padding: var(--space-3); border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: var(--space-4); }
     .toggle-label { display: flex; justify-content: space-between; align-items: center; }
 

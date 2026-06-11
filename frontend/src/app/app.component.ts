@@ -26,5 +26,6 @@ export class AppComponent {
   readonly showGlobalLang = computed(() => {
     const url = this.router.url
     return !url.startsWith('/admin') && !url.startsWith('/super-admin')
+      && !url.startsWith('/pricing') && (url !== '/')
   })
 }
