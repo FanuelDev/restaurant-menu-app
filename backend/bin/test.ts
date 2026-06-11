@@ -1,5 +1,4 @@
 import { configure, processCLIArgs, run } from '@japa/runner'
-import app from '@adonisjs/core/services/app'
 
 processCLIArgs(process.argv.splice(2))
 
@@ -20,7 +19,7 @@ configure({
   reporters: {
     activated: ['spec'],
   },
-  importer: (filePath) => import(filePath),
+  importer: (filePath) => import(filePath.toString()),
 })
 
 run()
