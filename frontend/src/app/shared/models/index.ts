@@ -460,6 +460,53 @@ export interface ApiKeyCreated extends ApiKeyItem {
   key: string
 }
 
+// ─── Super Admin Intelligence ────────────────────────────────────────────────
+export interface SaAlertRestaurant {
+  id: number
+  name: string
+  slug: string
+  email: string | null
+  trialEndsAt?: string | null
+  createdAt?: string
+  planName?: string | null
+  planSlug?: string | null
+  subscriptionStatus?: SubscriptionStatus
+  blockedAt?: string | null
+  blockedReason?: string | null
+  itemCount?: number
+}
+
+export interface SaIntelligence {
+  alerts: {
+    trialsExpiringToday: SaAlertRestaurant[]
+    trialsExpiring3Days: SaAlertRestaurant[]
+    trialsExpiring7Days: SaAlertRestaurant[]
+    newSignups24h: SaAlertRestaurant[]
+    blockedRecently: SaAlertRestaurant[]
+    churnRisk: SaAlertRestaurant[]
+    criticalAlertCount: number
+  }
+  insights: {
+    mrrCents: number
+    mrrGrowthPct: number
+    conversionRate: number
+    churnRiskCount: number
+    upsellCount: number
+    upsellCandidates: SaAlertRestaurant[]
+    recentAdminActions: {
+      id: number
+      action: string
+      resourceType: string | null
+      resourceName: string | null
+      userEmail: string
+      createdAt: string
+      restaurantId: number
+    }[]
+  }
+  platformHealth: { status: 'healthy' | 'warning' | 'critical' }
+  refreshedAt: string
+}
+
 // ─── Misc ────────────────────────────────────────────────────────────────────
 export interface ApiError {
   message: string

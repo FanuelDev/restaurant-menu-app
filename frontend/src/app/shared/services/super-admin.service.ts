@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog, SaInvoice, SaRevenueStats } from '../models'
+import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog, SaInvoice, SaRevenueStats, SaIntelligence } from '../models'
 
 export interface RestaurantFilters {
   page?: number
@@ -88,5 +88,9 @@ export class SuperAdminService {
 
   getRevenue(): Observable<SaRevenueStats> {
     return this.http.get<SaRevenueStats>(`${environment.apiUrl}/super-admin/revenue`)
+  }
+
+  getIntelligence(): Observable<SaIntelligence> {
+    return this.http.get<SaIntelligence>(`${environment.apiUrl}/super-admin/intelligence`)
   }
 }

@@ -1,0 +1,444 @@
+<div class="cc">
+
+  <!-- ══ HEADER ═══════════════════════════════════════════════════════════════ -->
+  <div class="cc-header">
+    <div>
+      <h1 class="cc-title">Centre de commandement</h1>
+      <p class="cc-sub">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2" stroke-linecap="round"/></svg>
+        Vue intelligente · actualisation auto 30 s
+        <span *ngIf="lastRefresh()"> · dernière : {{ lastRefresh() | date:'HH:mm:ss' }}</span>
+      </p>
+    </div>
+
+    <div class="cc-header-right">
+      <!-- Health badge -->
+      <span *ngIf="intelligence()" class="live-indicator"
+            [class.alert-banner]="intelligence()!.platformHealth.status === 'warning'"
+            style="font-size:.72rem">
+        <span *ngIf="intelligence()!.platformHealth.status === 'healthy'">🟢 Plateforme saine</span>
+        <span *ngIf="intelligence()!.platformHealth.status === 'warning'">🟠 Attention requise</span>
+      </span>
+
+      <!-- Live dot -->
+      <div class="live-indicator">
+        <div class="live-dot" [class.active]="autoRefresh()"></div>
+        <span>{{ autoRefresh() ? 'Live' : 'Pausé' }}</span>
+      </div>
+
+      <!-- Toggle auto-refresh -->
+      <button class="btn-icon" (click)="toggleAutoRefresh()" type="button">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M4 9a5 5 0 109 3.5" /><path d="M4 5v4h4"/>
+        </svg>
+        {{ autoRefresh() ? 'Pause' : 'Reprendre' }}
+      </button>
+
+      <!-- Manual refresh -->
+      <button class="btn-icon" [class.spinning]="refreshing()" (click)="loadAll()" [disabled]="refreshing()" type="button">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M15 9A6 6 0 105 6" /><path d="M5 2v4h4"/>
+        </svg>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ ALERT BANNER ══════════════════════════════════════════════════════════ -->
+  <div class="alert-banner"
+       *ngIf="!loading() && intelligence() && intelligence()!.alerts.criticalAlertCount > 0">
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 1l7.5 15H1.5z"/><path d="M9 7v4M9 13h.01"/></svg>
+    {{ intelligence()!.alerts.criticalAlertCount }} alerte{{ intelligence()!.alerts.criticalAlertCount > 1 ? 's' : '' }} critique{{ intelligence()!.alerts.criticalAlertCount > 1 ? 's' : '' }} nécessitent votre attention
+  </div>
+
+  <!-- ══ KPI STRIP — skeleton ═══════════════════════════════════════════════════ -->
+  <div class="kpi-strip-skeleton" *ngIf="loading()">
+    <div class="skeleton kpi-skeleton" *ngFor="let _ of [1,2,3,4,5]"></div>
+  </div>
+
+  <!-- ══ KPI STRIP — data ══════════════════════════════════════════════════════ -->
+  <div class="kpi-strip" *ngIf="!loading() && intelligence()">
+    <!-- MRR -->
+    <div class="kpi-card" style="--d:0">
+      <div class="kpi-accent" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div>
+      <div class="kpi-label">MRR</div>
+      <div class="kpi-value">{{ formatMoney(intelligence()!.insights.mrrCents) }}</div>
+      <div class="kpi-sub" [class.trend-up]="intelligence()!.insights.mrrGrowthPct > 0"
+                            [class.trend-down]="intelligence()!.insights.mrrGrowthPct < 0"
+                            [class.trend-flat]="intelligence()!.insights.mrrGrowthPct === 0">
+        <svg width="11" height="11" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path *ngIf="intelligence()!.insights.mrrGrowthPct >= 0" d="M4 14l5-9 5 9"/>
+          <path *ngIf="intelligence()!.insights.mrrGrowthPct < 0"  d="M4 4l5 10 5-10"/>
+        </svg>
+        {{ intelligence()!.insights.mrrGrowthPct >= 0 ? '+' : '' }}{{ intelligence()!.insights.mrrGrowthPct }}% vs mois dernier
+      </div>
+    </div>
+
+    <!-- Taux de conversion -->
+    <div class="kpi-card" style="--d:1">
+      <div class="kpi-accent" style="background:linear-gradient(90deg,#22c55e,#4ade80)"></div>
+      <div class="kpi-label">Taux de conversion</div>
+      <div class="kpi-value">{{ intelligence()!.insights.conversionRate }}<span style="font-size:1rem;font-weight:600">%</span></div>
+      <div class="kpi-sub trend-flat">Actifs / total restaurants</div>
+    </div>
+
+    <!-- Trials expirant -->
+    <div class="kpi-card" style="--d:2">
+      <div class="kpi-accent" style="background:linear-gradient(90deg,#ef4444,#f87171)"></div>
+      <div class="kpi-label">Trials critiques</div>
+      <div class="kpi-value" [style.color]="intelligence()!.alerts.trialsExpiringToday.length > 0 ? '#dc2626' : 'var(--text-primary)'">
+        {{ intelligence()!.alerts.trialsExpiringToday.length }}
+      </div>
+      <div class="kpi-sub trend-flat">Expirent dans les 24 h</div>
+    </div>
+
+    <!-- Risque churn -->
+    <div class="kpi-card" style="--d:3">
+      <div class="kpi-accent" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div>
+      <div class="kpi-label">Risque churn</div>
+      <div class="kpi-value" [style.color]="intelligence()!.insights.churnRiskCount > 5 ? '#d97706' : 'var(--text-primary)'">
+        {{ intelligence()!.insights.churnRiskCount }}
+      </div>
+      <div class="kpi-sub trend-flat">Trials &gt; 10 jours sans payer</div>
+    </div>
+
+    <!-- Upsell -->
+    <div class="kpi-card" style="--d:4">
+      <div class="kpi-accent" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
+      <div class="kpi-label">Upsell possible</div>
+      <div class="kpi-value">{{ intelligence()!.insights.upsellCount }}</div>
+      <div class="kpi-sub trend-flat">Plan Free avec menu riche</div>
+    </div>
+  </div>
+
+  <!-- ══ ALERT CARDS ═══════════════════════════════════════════════════════════ -->
+  <div *ngIf="!loading() && intelligence()">
+
+    <p class="section-label" style="--d:5">
+      <svg width="13" height="13" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 1l7.5 15H1.5z"/><path d="M9 7v4M9 13h.01" stroke-linecap="round"/></svg>
+      Alertes actives
+      <span class="count-badge">{{ intelligence()!.alerts.criticalAlertCount }}</span>
+    </p>
+
+    <div class="alert-grid">
+
+      <!-- Trials expirant ─────────────────────────────────────── -->
+      <div class="alert-card alert-red" style="--d:0">
+        <div class="alert-card-head">
+          <div class="alert-icon">⏰</div>
+          <div>
+            <p class="alert-card-title">Trials expirant</p>
+            <!-- Tabs -->
+            <div style="display:flex;gap:4px;margin-top:4px">
+              <button type="button" (click)="trialTab.set('today')"
+                      [style.fontWeight]="trialTab()==='today'?'700':'500'"
+                      [style.background]="trialTab()==='today'?'#dc2626':'transparent'"
+                      [style.color]="trialTab()==='today'?'#fff':'#991b1b'"
+                      style="border:none;border-radius:4px;padding:1px 6px;font-size:.65rem;cursor:pointer">
+                Aujourd'hui ({{ intelligence()!.alerts.trialsExpiringToday.length }})
+              </button>
+              <button type="button" (click)="trialTab.set('3d')"
+                      [style.fontWeight]="trialTab()==='3d'?'700':'500'"
+                      [style.background]="trialTab()==='3d'?'#dc2626':'transparent'"
+                      [style.color]="trialTab()==='3d'?'#fff':'#991b1b'"
+                      style="border:none;border-radius:4px;padding:1px 6px;font-size:.65rem;cursor:pointer">
+                3 j ({{ intelligence()!.alerts.trialsExpiring3Days.length }})
+              </button>
+              <button type="button" (click)="trialTab.set('7d')"
+                      [style.fontWeight]="trialTab()==='7d'?'700':'500'"
+                      [style.background]="trialTab()==='7d'?'#dc2626':'transparent'"
+                      [style.color]="trialTab()==='7d'?'#fff':'#991b1b'"
+                      style="border:none;border-radius:4px;padding:1px 6px;font-size:.65rem;cursor:pointer">
+                7 j ({{ intelligence()!.alerts.trialsExpiring7Days.length }})
+              </button>
+            </div>
+          </div>
+          <span class="alert-card-count">{{ trialsShown().length }}</span>
+        </div>
+        <div class="alert-card-body">
+          <div *ngIf="trialsShown().length === 0" class="empty-card">
+            Aucun trial expirant dans cette période 🎉
+          </div>
+          <div *ngFor="let r of trialsShown(); trackBy: trackById" class="rest-row">
+            <div class="rest-avatar">{{ initials(r.name) }}</div>
+            <div class="rest-info">
+              <div class="rest-name">{{ r.name }}</div>
+              <div class="rest-meta">
+                J-{{ trialDaysLeft(r.trialEndsAt) }} · {{ r.trialEndsAt | date:'dd/MM HH:mm' }}
+                <span *ngIf="r.planName"> · {{ r.planName }}</span>
+              </div>
+            </div>
+            <div class="rest-actions">
+              <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
+                Attribuer plan
+              </button>
+              <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risque churn ─────────────────────────────────────────── -->
+      <div class="alert-card alert-orange" style="--d:1">
+        <div class="alert-card-head">
+          <div class="alert-icon">🔥</div>
+          <div>
+            <p class="alert-card-title">Risque churn</p>
+            <p style="font-size:.70rem;color:#92400e;margin:2px 0 0">En trial &gt; 10 jours sans souscrire</p>
+          </div>
+          <span class="alert-card-count">{{ intelligence()!.alerts.churnRisk.length }}</span>
+        </div>
+        <div class="alert-card-body">
+          <div *ngIf="intelligence()!.alerts.churnRisk.length === 0" class="empty-card">
+            Aucun restaurant à risque 🎉
+          </div>
+          <div *ngFor="let r of intelligence()!.alerts.churnRisk; trackBy: trackById" class="rest-row">
+            <div class="rest-avatar">{{ initials(r.name) }}</div>
+            <div class="rest-info">
+              <div class="rest-name">{{ r.name }}</div>
+              <div class="rest-meta">
+                Inscrit {{ r.createdAt | date:'dd/MM/yy' }}
+                <span *ngIf="r.trialEndsAt"> · expire {{ r.trialEndsAt | date:'dd/MM' }}</span>
+              </div>
+            </div>
+            <div class="rest-actions">
+              <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
+                Convertir
+              </button>
+              <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nouvelles inscriptions ───────────────────────────────── -->
+      <div class="alert-card alert-green" style="--d:2">
+        <div class="alert-card-head">
+          <div class="alert-icon">🆕</div>
+          <div>
+            <p class="alert-card-title">Nouvelles inscriptions</p>
+            <p style="font-size:.70rem;color:#166534;margin:2px 0 0">Dernières 24 heures</p>
+          </div>
+          <span class="alert-card-count">{{ intelligence()!.alerts.newSignups24h.length }}</span>
+        </div>
+        <div class="alert-card-body">
+          <div *ngIf="intelligence()!.alerts.newSignups24h.length === 0" class="empty-card">
+            Aucune nouvelle inscription dans les 24 h
+          </div>
+          <div *ngFor="let r of intelligence()!.alerts.newSignups24h; trackBy: trackById" class="rest-row">
+            <div class="rest-avatar">{{ initials(r.name) }}</div>
+            <div class="rest-info">
+              <div class="rest-name">{{ r.name }}</div>
+              <div class="rest-meta">
+                {{ r.createdAt | date:'dd/MM HH:mm' }}
+                <span *ngIf="r.email"> · {{ r.email }}</span>
+              </div>
+            </div>
+            <div class="rest-actions">
+              <button class="action-btn success" type="button" (click)="verifyUser(r)"
+                      title="Vérifier le compte manuellement">
+                Vérifier
+              </button>
+              <a class="action-btn" [routerLink]="['/super-admin/restaurants', r.id]">↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ BOTTOM GRID (upsell + actions + blocked) ════════════════════════ -->
+    <div class="bottom-grid">
+
+      <!-- Opportunités upsell ─────────────────────────────────────── -->
+      <div class="panel alert-card alert-blue" style="--d:3">
+        <div class="panel-head alert-card-head">
+          <div class="alert-icon">💡</div>
+          <p class="panel-title" style="margin:0">Upsell — Plan Free saturé</p>
+          <span class="alert-card-count">{{ intelligence()!.insights.upsellCount }}</span>
+        </div>
+        <div class="panel-body">
+          <div *ngIf="intelligence()!.insights.upsellCandidates.length === 0" class="empty-card">
+            Aucune opportunité upsell détectée
+          </div>
+          <div *ngFor="let r of intelligence()!.insights.upsellCandidates; trackBy: trackById" class="rest-row">
+            <div class="rest-avatar">{{ initials(r.name) }}</div>
+            <div class="rest-info">
+              <div class="rest-name">{{ r.name }}</div>
+              <div class="rest-meta">{{ r.itemCount }} articles · Plan {{ r.planName }}</div>
+            </div>
+            <div class="rest-actions">
+              <button class="action-btn primary" type="button" (click)="openGrantModal(r)">
+                Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dernières actions super-admin ───────────────────────────── -->
+      <div class="panel" style="--d:4">
+        <div class="panel-head">
+          <p class="panel-title">Actions récentes (super-admin)</p>
+          <a class="panel-see" routerLink="/super-admin/audit-logs">Voir tout →</a>
+        </div>
+        <div class="panel-body">
+          <div *ngIf="intelligence()!.insights.recentAdminActions.length === 0" class="empty-card">
+            Aucune action récente
+          </div>
+          <div *ngFor="let a of intelligence()!.insights.recentAdminActions; trackBy: trackById" class="action-row">
+            <div class="action-dot" [style.background]="actionDotColor(a.action)"></div>
+            <div style="flex:1;min-width:0">
+              <div class="action-text">
+                <span class="action-badge" [ngClass]="actionBadgeClass(a.action)">{{ actionLabel(a.action) }}</span>
+                <span *ngIf="a.resourceName">{{ a.resourceName }}</span>
+              </div>
+              <div class="action-by">par {{ a.userEmail }}</div>
+            </div>
+            <div class="action-time">{{ a.createdAt | date:'HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Restaurants bloqués récemment -->
+    <div *ngIf="intelligence()!.alerts.blockedRecently.length > 0"
+         class="panel" style="margin-bottom:var(--space-4);--d:5">
+      <div class="panel-head">
+        <p class="panel-title">🔒 Bloqués cette semaine</p>
+        <span class="alert-card-count" style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700">
+          {{ intelligence()!.alerts.blockedRecently.length }}
+        </span>
+      </div>
+      <div class="panel-body" style="max-height:160px">
+        <div *ngFor="let r of intelligence()!.alerts.blockedRecently; trackBy: trackById" class="rest-row">
+          <div class="rest-avatar" style="background:#fee2e2;color:#dc2626">{{ initials(r.name) }}</div>
+          <div class="rest-info">
+            <div class="rest-name">{{ r.name }}</div>
+            <div class="rest-meta" style="color:#ef4444">
+              Bloqué {{ r.blockedAt | date:'dd/MM HH:mm' }}
+              <span *ngIf="r.blockedReason"> · {{ r.blockedReason }}</span>
+            </div>
+          </div>
+          <div class="rest-actions">
+            <a class="action-btn success" [routerLink]="['/super-admin/restaurants', r.id]">
+              Débloquer →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ MODAL — Attribuer plan ═══════════════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="activeModal() === 'grant'" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <p class="modal-title">Attribuer un plan</p>
+          <p class="modal-subtitle">{{ selectedTarget()?.name }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()" type="button">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Plan -->
+        <div class="field">
+          <label>Plan</label>
+          <select [ngModel]="grantPlanSlug()" (ngModelChange)="grantPlanSlug.set($event)">
+            <option *ngFor="let p of plans()" [value]="p.slug">{{ p.name }}</option>
+          </select>
+        </div>
+        <!-- Cycle + Durée -->
+        <div class="field-row">
+          <div class="field">
+            <label>Cycle</label>
+            <select [ngModel]="grantCycle()" (ngModelChange)="grantCycle.set($event)">
+              <option value="monthly">Mensuel</option>
+              <option value="yearly">Annuel</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Durée (mois)</label>
+            <input type="number" min="1" max="24"
+                   [ngModel]="grantDuration()"
+                   (ngModelChange)="grantDuration.set(+$event)" />
+          </div>
+        </div>
+        <!-- Montant payé -->
+        <div class="field">
+          <label>Montant payé (XOF) — 0 = gratuit</label>
+          <input type="number" min="0"
+                 [ngModel]="grantAmount()"
+                 (ngModelChange)="grantAmount.set(+$event)" />
+        </div>
+        <!-- Prix preview -->
+        <div class="price-preview" *ngIf="selectedPlan()">
+          <span class="price-original">{{ formatMoney(originalPriceCents()) }}</span>
+          <span class="price-paid">{{ formatMoney(grantAmount() * 100) }}</span>
+          <span class="price-discount" *ngIf="discountPct() > 0">-{{ discountPct() }}%</span>
+          <span class="price-discount" *ngIf="grantAmount() === 0" style="background:#dcfce7;color:#166534">GRATUIT</span>
+        </div>
+        <!-- Note -->
+        <div class="field">
+          <label>Note interne (optionnelle)</label>
+          <textarea [ngModel]="grantNote()" (ngModelChange)="grantNote.set($event)"
+                    placeholder="Ex : promotion partenaire, compensation..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="closeModal()" type="button">Annuler</button>
+        <button class="btn-primary" (click)="submitGrant()"
+                [disabled]="!grantPlanSlug() || actionLoading()" type="button">
+          <span class="mini-spinner" *ngIf="actionLoading()"></span>
+          Confirmer l'attribution
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL — Bloquer restaurant ══════════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="activeModal() === 'block'" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <div>
+          <p class="modal-title" style="color:#dc2626">Bloquer le restaurant</p>
+          <p class="modal-subtitle">{{ selectedTarget()?.name }}</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()" type="button">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="alert-banner" style="margin:0">
+          Cette action désactivera immédiatement l'accès au restaurant et à son menu public.
+        </div>
+        <div class="field">
+          <label>Raison du blocage *</label>
+          <textarea [ngModel]="blockReason()" (ngModelChange)="blockReason.set($event)"
+                    placeholder="Ex : violation des conditions d'utilisation, impayé..."
+                    rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="closeModal()" type="button">Annuler</button>
+        <button class="btn-danger" (click)="submitBlock()"
+                [disabled]="!blockReason().trim() || actionLoading()" type="button">
+          <span class="mini-spinner" *ngIf="actionLoading()"></span>
+          Bloquer définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TOASTS ════════════════════════════════════════════════════════════════ -->
+  <div class="toast-wrap">
+    <div *ngFor="let t of toasts()" class="toast" [class.error]="t.error">
+      {{ t.msg }}
+    </div>
+  </div>
+
+</div>

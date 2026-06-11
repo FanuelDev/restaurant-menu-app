@@ -35,15 +35,29 @@ dependencies:
   # Utils
   intl: ^0.19.0
 
-flutter_icons:
-  android: true
+flutter_launcher_icons:
+  android: "ic_launcher"
   ios: true
   image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
+  web:
+    generate: false
+
+flutter_native_splash:
+  color: "#C0392B"
+  image: assets/icon/logo.png
+  android_12:
+    color: "#C0392B"
+    image: assets/icon/logo.png
+    icon_background_color: "#C0392B"
+  fullscreen: false
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true

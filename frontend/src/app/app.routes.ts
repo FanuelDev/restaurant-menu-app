@@ -190,7 +190,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./super-admin/layout/super-admin-layout.component').then((m) => m.SuperAdminLayoutComponent),
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: '', redirectTo: 'command-center', pathMatch: 'full' },
+      {
+        path: 'command-center',
+        loadComponent: () =>
+          import('./super-admin/command-center/sa-command-center.component').then((m) => m.SaCommandCenterComponent),
+        title: 'Super Admin — Centre de commandement',
+      },
       {
         path: 'dashboard',
         loadComponent: () =>
