@@ -201,7 +201,7 @@ const BADGE_KEYS: Record<string, string> = {
 export class MenuItemsComponent implements OnInit {
   private readonly menuService = inject(MenuService)
   private readonly subscriptionService = inject(SubscriptionService)
-  private readonly restaurantService = inject(RestaurantService)
+  readonly restaurantService = inject(RestaurantService)
   private readonly notify = inject(NotificationService)
   private readonly fb = inject(FormBuilder)
   private readonly transloco = inject(TranslocoService)
