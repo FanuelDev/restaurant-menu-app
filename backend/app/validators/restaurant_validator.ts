@@ -33,5 +33,6 @@ export const updateRestaurantValidator = vine.compile(
       })
       .optional()
       .nullable(),
+    autoAvailabilityByHours: vine.boolean().optional(),
   })
 )

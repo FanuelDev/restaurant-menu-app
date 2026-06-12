@@ -1,7 +1,7 @@
 ﻿// frontend/src/app/admin/restaurant/restaurant.component.ts
 import { Component, inject, OnInit, signal, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { AuthService } from '../../shared/services/auth.service'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
@@ -158,6 +158,21 @@ const DAYS: { key: string }[] = [
     .hours-day { font-weight: 500; flex: 1; font-size: 0.9375rem; }
     .hours-time { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
     .hours-closed { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+
+    .auto-row { display: flex; align-items: center; gap: var(--space-4); }
+    .auto-info { flex: 1; }
+    .auto-label { font-size: 0.9375rem; font-weight: 500; color: var(--text-primary); margin-bottom: var(--space-1); }
+    .auto-desc { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.5; }
+    .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider {
+      width: 44px; height: 24px; background: var(--gray-300); border-radius: 999px;
+      transition: background .2s; position: relative; flex-shrink: 0;
+      &::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+        background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    }
+    .toggle input:checked + .toggle-slider { background: var(--color-brand); }
+    .toggle input:checked + .toggle-slider::after { transform: translateX(20px); }
 
     /* ── Template selector ─────────────────────────── */
     .tpl-card { margin-top: var(--space-5); }
@@ -428,6 +443,7 @@ export class RestaurantComponent implements OnInit {
 
   readonly days = DAYS
   readonly currencyOptions = CURRENCIES
+  readonly autoAvailabilityCtrl = new FormControl(false)
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -451,7 +467,13 @@ export class RestaurantComponent implements OnInit {
         currency: r.currency ?? 'XOF',
       })
       this.selectedTemplate.set(r.templateId ?? 1)
+      this.autoAvailabilityCtrl.setValue((r as any).autoAvailabilityByHours ?? false, { emitEvent: false })
     })
+  }
+
+  saveAutoAvailability(): void {
+    const value = this.autoAvailabilityCtrl.value ?? false
+    this.restaurantService.update({ autoAvailabilityByHours: value } as never).subscribe()
   }
 
   selectTemplate(id: 1 | 2 | 3 | 4 | 5): void {

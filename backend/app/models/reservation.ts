@@ -39,6 +39,9 @@ export default class Reservation extends BaseModel {
   @column()
   declare notes: string | null
 
+  @column.dateTime()
+  declare reminderSentAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

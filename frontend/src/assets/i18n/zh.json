@@ -269,7 +269,10 @@
       "friday": "星期五",
       "saturday": "星期六",
       "sunday": "星期日"
-    }
+    },
+    "automationTitle": "自动化",
+    "autoAvailabilityLabel": "根据营业时间自动切换可用性",
+    "autoAvailabilityDesc": "根据餐厅营业时间自动启用和禁用菜品（每15分钟运行一次）。"
   },
   "team": {
     "title": "团队",

@@ -51,4 +51,9 @@ export default await Env.create(new URL('../', import.meta.url), {
   SMTP_USER: Env.schema.string.optional(),
   SMTP_PASS: Env.schema.string.optional(),
   SMTP_FROM: Env.schema.string.optional(),
+
+  // Cron automation
+  CRON_SECRET: Env.schema.string.optional(),
+  SUPER_ADMIN_EMAIL: Env.schema.string.optional(),
+  CRITICAL_ALERT_THRESHOLD: Env.schema.number.optional(),
 })

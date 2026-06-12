@@ -269,7 +269,10 @@
       "friday": "Friday",
       "saturday": "Saturday",
       "sunday": "Sunday"
-    }
+    },
+    "automationTitle": "Automation",
+    "autoAvailabilityLabel": "Availability based on hours",
+    "autoAvailabilityDesc": "Automatically enables and disables dishes based on your opening hours (runs every 15 min)."
   },
   "team": {
     "title": "Team",

@@ -84,6 +84,18 @@ export default class Restaurant extends BaseModel {
   @column()
   declare blockedById: number | null
 
+  @column.dateTime()
+  declare upsellEmailSentAt: DateTime | null
+
+  @column.dateTime()
+  declare suspensionEmailSentAt: DateTime | null
+
+  @column.dateTime()
+  declare alertEmailSentAt: DateTime | null
+
+  @column()
+  declare autoAvailabilityByHours: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

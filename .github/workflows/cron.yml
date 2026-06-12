@@ -1,0 +1,131 @@
+name: Automation Cron Jobs
+
+on:
+  schedule:
+    # ─── Toutes les heures ───────────────────────────────────────────────────
+    - cron: '0 * * * *'    # subscription-lifecycle, cinetpay-reconcile
+    # ─── Toutes les 15 minutes ──────────────────────────────────────────────
+    - cron: '*/15 * * * *' # availability-by-hours
+    # ─── Quotidien 07:00 UTC ─────────────────────────────────────────────────
+    - cron: '0 7 * * *'    # trial-reminders, reservation-reminders, upsell-nudge, command-center-alerts
+    # ─── Lundi 07:00 UTC ─────────────────────────────────────────────────────
+    - cron: '0 7 * * 1'    # weekly-reports
+    # ─── 1er de chaque mois 07:00 UTC ────────────────────────────────────────
+    - cron: '0 7 1 * *'    # monthly-mrr-report
+
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run manually'
+        required: true
+        type: choice
+        options:
+          - all-hourly
+          - trial-reminders
+          - subscription-lifecycle
+          - cinetpay-reconcile
+          - upsell-nudge
+          - reservation-reminders
+          - weekly-reports
+          - monthly-mrr-report
+          - availability-by-hours
+          - command-center-alerts
+
+jobs:
+  # ─── Toutes les 15 min : disponibilité horaire ───────────────────────────
+  availability-by-hours:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'availability-by-hours') ||
+      github.event_name == 'schedule'
+    steps:
+      - name: Trigger availability-by-hours
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${{ secrets.API_URL }}/api/cron/availability-by-hours" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  # ─── Toutes les heures ───────────────────────────────────────────────────
+  hourly:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'all-hourly' || github.event.inputs.job == 'subscription-lifecycle' || github.event.inputs.job == 'cinetpay-reconcile') ||
+      github.event_name == 'schedule'
+    steps:
+      - name: Subscription lifecycle
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/subscription-lifecycle" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: CinetPay reconciliation
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/cinetpay-reconcile" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  # ─── Quotidien 07:00 UTC ─────────────────────────────────────────────────
+  daily:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'trial-reminders' || github.event.inputs.job == 'reservation-reminders' || github.event.inputs.job == 'upsell-nudge' || github.event.inputs.job == 'command-center-alerts') ||
+      github.event_name == 'schedule'
+    steps:
+      - name: Trial reminders
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/trial-reminders" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Reservation reminders
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/reservation-reminders" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Upsell nudge
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/upsell-nudge" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Command center alerts
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/command-center-alerts" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  # ─── Hebdomadaire (lundi) ────────────────────────────────────────────────
+  weekly:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'weekly-reports' ||
+      github.event_name == 'schedule'
+    steps:
+      - name: Weekly revenue reports
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/weekly-reports" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  # ─── Mensuel (1er du mois) ───────────────────────────────────────────────
+  monthly:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' && github.event.inputs.job == 'monthly-mrr-report' ||
+      github.event_name == 'schedule'
+    steps:
+      - name: Monthly MRR report
+        run: |
+          curl -s -X POST \
+            "${{ secrets.API_URL }}/api/cron/monthly-mrr-report" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

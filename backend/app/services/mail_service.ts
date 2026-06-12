@@ -373,6 +373,371 @@ class MailService {
     })
   }
 
+  /** Notification de suspension d'abonnement */
+  async sendSubscriptionSuspended(
+    email: string,
+    fullName: string,
+    restaurantName: string,
+    upgradeUrl: string
+  ): Promise<void> {
+    const firstName = (fullName || email).split(' ')[0]
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111;">⛔ Compte suspendu, ${firstName}</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+            L'accès au menu digital de <strong>${restaurantName}</strong> a été <strong style="color:#dc2626;">suspendu</strong>
+            car votre période d'abonnement est arrivée à expiration.
+          </p>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <div style="font-size:13px;font-weight:700;color:#991b1b;margin-bottom:12px;">Ce qui est actuellement suspendu :</div>
+            <div style="font-size:13px;color:#555;line-height:1.8;">
+              🔒 Menu digital inaccessible aux clients<br/>
+              🔒 Gestion des commandes et réservations<br/>
+              🔒 QR codes désactivés<br/>
+              🔒 Toutes les données conservées et récupérables
+            </div>
+          </div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${upgradeUrl}" style="display:inline-block;background:#dc2626;color:#fff;font-size:16px;font-weight:800;
+               text-decoration:none;padding:16px 40px;border-radius:8px;">
+              Réactiver mon abonnement →
+            </a>
+          </div>
+          <p style="text-align:center;font-size:12px;color:#aaa;margin:0;">
+            Vos données sont conservées pendant 30 jours après la suspension.
+          </p>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `⛔ Compte suspendu — ${restaurantName}`,
+      html,
+      text: `Bonjour ${firstName},\n\nLe compte de ${restaurantName} a été suspendu.\nRéactivez votre abonnement : ${upgradeUrl}`,
+    })
+  }
+
+  /** Email de nudge upsell — restaurant Free qui approche de sa limite */
+  async sendUpsellNudge(
+    email: string,
+    fullName: string,
+    restaurantName: string,
+    resource: string,
+    current: number,
+    max: number,
+    upgradeUrl: string
+  ): Promise<void> {
+    const firstName = (fullName || email).split(' ')[0]
+    const pct = Math.round((current / max) * 100)
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111;">📈 ${firstName}, vous atteignez vos limites</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+            Le restaurant <strong>${restaurantName}</strong> approche de la limite du plan gratuit pour <strong>${resource}</strong>.
+          </p>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <div style="font-size:13px;color:#92400e;margin-bottom:12px;font-weight:700;">${resource}</div>
+            <div style="background:#e5e7eb;border-radius:999px;height:10px;overflow:hidden;margin-bottom:8px;">
+              <div style="background:#f59e0b;height:100%;width:${pct}%;border-radius:999px;"></div>
+            </div>
+            <div style="font-size:13px;color:#555;">${current} / ${max} utilisés (${pct}%)</div>
+          </div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${upgradeUrl}" style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:15px;font-weight:700;
+               text-decoration:none;padding:14px 36px;border-radius:8px;box-shadow:0 4px 14px rgba(192,57,43,.35);">
+              Passer au plan Pro →
+            </a>
+          </div>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `📈 ${pct}% de votre limite atteinte — ${restaurantName}`,
+      html,
+      text: `Bonjour ${firstName},\n\n${restaurantName} a utilisé ${current}/${max} (${pct}%) pour ${resource}.\nPassez au Pro : ${upgradeUrl}`,
+    })
+  }
+
+  /** Rappel de réservation envoyé au client 24h avant */
+  async sendReservationReminder(
+    email: string,
+    customerName: string,
+    restaurantName: string,
+    reservedDate: string,
+    reservedTime: string,
+    guestsCount: number,
+    restaurantPhone: string | null
+  ): Promise<void> {
+    const firstName = customerName.split(' ')[0]
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111;">📅 Rappel de votre réservation</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+            Bonjour <strong>${firstName}</strong>, votre réservation chez <strong>${restaurantName}</strong> est confirmée pour demain !
+          </p>
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">📅 Date</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${reservedDate}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">⏰ Heure</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${reservedTime}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">👥 Couverts</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${guestsCount} personne${guestsCount > 1 ? 's' : ''}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">🍽️ Restaurant</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${restaurantName}</td>
+              </tr>
+              ${restaurantPhone ? `<tr><td style="font-size:13px;color:#555;padding:6px 0;">📞 Contact</td><td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${restaurantPhone}</td></tr>` : ''}
+            </table>
+          </div>
+          <p style="text-align:center;font-size:13px;color:#666;margin:0;">
+            Pour annuler ou modifier, contactez directement le restaurant.
+          </p>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `📅 Rappel — Votre réservation demain chez ${restaurantName}`,
+      html,
+      text: `Bonjour ${firstName},\n\nRappel de votre réservation chez ${restaurantName}.\nDate : ${reservedDate} à ${reservedTime}\nCouverts : ${guestsCount}`,
+    })
+  }
+
+  /** Alerte admin : réservation en attente non traitée */
+  async sendAdminPendingReservationAlert(
+    email: string,
+    adminName: string,
+    restaurantName: string,
+    pendingCount: number,
+    reservationsUrl: string
+  ): Promise<void> {
+    const firstName = (adminName || email).split(' ')[0]
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#111;">⚠️ ${pendingCount} réservation${pendingCount > 1 ? 's' : ''} en attente</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+            Bonjour <strong>${firstName}</strong>, le restaurant <strong>${restaurantName}</strong> a
+            <strong style="color:#d97706;">${pendingCount} réservation${pendingCount > 1 ? 's' : ''}</strong>
+            en attente de confirmation depuis plus de 30 minutes.
+          </p>
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${reservationsUrl}" style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:15px;font-weight:700;
+               text-decoration:none;padding:14px 36px;border-radius:8px;">
+              Gérer les réservations →
+            </a>
+          </div>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `⚠️ ${pendingCount} réservation${pendingCount > 1 ? 's' : ''} en attente — ${restaurantName}`,
+      html,
+      text: `Bonjour ${firstName},\n\n${pendingCount} réservation(s) en attente pour ${restaurantName}.\nGérer : ${reservationsUrl}`,
+    })
+  }
+
+  /** Rapport hebdomadaire de revenus envoyé aux admins restaurant */
+  async sendWeeklyRevenueReport(
+    email: string,
+    adminName: string,
+    restaurantName: string,
+    totalRevenue: number,
+    ordersRevenue: number,
+    manualRevenue: number,
+    totalExpenses: number,
+    netProfit: number,
+    currency: string,
+    periodLabel: string
+  ): Promise<void> {
+    const firstName = (adminName || email).split(' ')[0]
+    const fmt = (n: number) => n.toLocaleString('fr-FR')
+    const profitColor = netProfit >= 0 ? '#166534' : '#991b1b'
+    const frontendUrl = env.get('FRONTEND_URL') ?? 'https://saemenus.com'
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111;">📊 Rapport hebdomadaire</p>
+          <p style="margin:0 0 28px;font-size:14px;color:#888;">${periodLabel} · ${restaurantName}</p>
+
+          <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Revenus commandes</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;border-bottom:1px solid #e5e7eb;">${fmt(ordersRevenue)} ${currency}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Revenus manuels</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;border-bottom:1px solid #e5e7eb;">${fmt(manualRevenue)} ${currency}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Total revenus</td>
+                <td style="font-size:14px;font-weight:700;color:#166534;text-align:right;border-bottom:1px solid #e5e7eb;">${fmt(totalRevenue)} ${currency}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Total dépenses</td>
+                <td style="font-size:14px;font-weight:700;color:#991b1b;text-align:right;border-bottom:1px solid #e5e7eb;">−${fmt(totalExpenses)} ${currency}</td>
+              </tr>
+              <tr>
+                <td style="font-size:14px;font-weight:700;color:#111;padding:10px 0;">Bénéfice net</td>
+                <td style="font-size:16px;font-weight:800;color:${profitColor};text-align:right;">${netProfit >= 0 ? '+' : ''}${fmt(netProfit)} ${currency}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${frontendUrl}/admin/finance" style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:14px;font-weight:700;
+               text-decoration:none;padding:12px 28px;border-radius:8px;">
+              Voir le détail →
+            </a>
+          </div>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `📊 Rapport semaine — ${restaurantName} (${fmt(netProfit >= 0 ? netProfit : -netProfit)} ${currency} net)`,
+      html,
+      text: `Rapport hebdomadaire ${restaurantName}\n\nRevenus : ${fmt(totalRevenue)} ${currency}\nDépenses : ${fmt(totalExpenses)} ${currency}\nBénéfice net : ${fmt(netProfit)} ${currency}`,
+    })
+  }
+
+  /** Rapport mensuel MRR envoyé au super-admin */
+  async sendMonthlyMrrReport(
+    email: string,
+    mrrCents: number,
+    mrrGrowthPct: number,
+    newRestaurants: number,
+    churnCount: number,
+    activeCount: number,
+    trialingCount: number,
+    periodLabel: string
+  ): Promise<void> {
+    const mrrFormatted = (mrrCents / 100).toLocaleString('fr-FR')
+    const growthColor = mrrGrowthPct >= 0 ? '#166534' : '#991b1b'
+    const growthSign = mrrGrowthPct >= 0 ? '+' : ''
+    const frontendUrl = env.get('FRONTEND_URL') ?? 'https://saemenus.com'
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111;">📈 Rapport mensuel SaeMenus</p>
+          <p style="margin:0 0 28px;font-size:14px;color:#888;">${periodLabel}</p>
+
+          <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">MRR</td>
+                <td style="font-size:16px;font-weight:800;color:#111;text-align:right;border-bottom:1px solid #e5e7eb;">${mrrFormatted} XOF</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Croissance MRR</td>
+                <td style="font-size:14px;font-weight:700;color:${growthColor};text-align:right;border-bottom:1px solid #e5e7eb;">${growthSign}${mrrGrowthPct}%</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Nouveaux restaurants</td>
+                <td style="font-size:14px;font-weight:700;color:#166534;text-align:right;border-bottom:1px solid #e5e7eb;">+${newRestaurants}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Churn (suspendus/annulés)</td>
+                <td style="font-size:14px;font-weight:700;color:#991b1b;text-align:right;border-bottom:1px solid #e5e7eb;">${churnCount}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;border-bottom:1px solid #e5e7eb;">Abonnés actifs</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;border-bottom:1px solid #e5e7eb;">${activeCount}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:8px 0;">En trial</td>
+                <td style="font-size:14px;font-weight:700;color:#111;text-align:right;">${trialingCount}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${frontendUrl}/super-admin/command-center" style="display:inline-block;background:${BRAND_RED};color:#fff;font-size:14px;font-weight:700;
+               text-decoration:none;padding:12px 28px;border-radius:8px;">
+              Ouvrir le Command Center →
+            </a>
+          </div>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `📈 Rapport mensuel SaeMenus — ${periodLabel} (MRR: ${mrrFormatted} XOF)`,
+      html,
+      text: `Rapport mensuel SaeMenus\n\nMRR : ${mrrFormatted} XOF (${growthSign}${mrrGrowthPct}%)\nNouveaux : +${newRestaurants}\nActifs : ${activeCount}\nTrialing : ${trialingCount}`,
+    })
+  }
+
+  /** Alerte super-admin : indicateurs critiques dépassent un seuil */
+  async sendCommandCenterAlert(
+    email: string,
+    criticalCount: number,
+    trialsExpiringToday: number,
+    churnRiskCount: number,
+    dashboardUrl: string
+  ): Promise<void> {
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:22px;font-weight:800;color:#dc2626;">🚨 Alerte Command Center</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+            SaeMenus détecte <strong style="color:#dc2626;">${criticalCount} alertes critiques</strong> nécessitant votre attention.
+          </p>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:24px;margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">⏰ Trials expirant aujourd'hui</td>
+                <td style="font-size:14px;font-weight:700;color:#dc2626;text-align:right;">${trialsExpiringToday}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#555;padding:6px 0;">📉 Risque churn (>10j sans upgrade)</td>
+                <td style="font-size:14px;font-weight:700;color:#dc2626;text-align:right;">${churnRiskCount}</td>
+              </tr>
+            </table>
+          </div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <a href="${dashboardUrl}" style="display:inline-block;background:#dc2626;color:#fff;font-size:15px;font-weight:700;
+               text-decoration:none;padding:14px 36px;border-radius:8px;">
+              Ouvrir le Command Center →
+            </a>
+          </div>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `🚨 ${criticalCount} alertes critiques — SaeMenus Command Center`,
+      html,
+      text: `Alerte SaeMenus : ${criticalCount} alertes critiques.\nTrials expirant auj. : ${trialsExpiringToday}\nRisque churn : ${churnRiskCount}\nDashboard : ${dashboardUrl}`,
+    })
+  }
+
   /** Lien de réinitialisation du mot de passe */
   async sendPasswordReset(email: string, fullName: string, resetUrl: string): Promise<void> {
     const firstName = (fullName || email).split(' ')[0]

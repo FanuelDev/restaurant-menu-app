@@ -24,6 +24,7 @@ async function serializeRestaurant(restaurant: Restaurant) {
     currency: restaurant.currency,
     subscriptionStatus: restaurant.subscriptionStatus,
     trialEndsAt: restaurant.trialEndsAt,
+    autoAvailabilityByHours: restaurant.autoAvailabilityByHours ?? false,
   }
 }
 

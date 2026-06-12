@@ -269,7 +269,10 @@
       "friday": "Freitag",
       "saturday": "Samstag",
       "sunday": "Sonntag"
-    }
+    },
+    "automationTitle": "Automatisierung",
+    "autoAvailabilityLabel": "Verfügbarkeit nach Öffnungszeiten",
+    "autoAvailabilityDesc": "Aktiviert und deaktiviert Gerichte automatisch basierend auf Ihren Öffnungszeiten (alle 15 Min.)."
   },
   "team": {
     "title": "Team",

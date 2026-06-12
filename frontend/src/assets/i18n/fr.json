@@ -269,7 +269,10 @@
       "friday": "Vendredi",
       "saturday": "Samedi",
       "sunday": "Dimanche"
-    }
+    },
+    "automationTitle": "Automatisation",
+    "autoAvailabilityLabel": "Disponibilité selon les horaires",
+    "autoAvailabilityDesc": "Active et désactive automatiquement les plats selon vos horaires d'ouverture (géré toutes les 15 min)."
   },
   "team": {
     "title": "Équipe",

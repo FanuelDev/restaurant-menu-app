@@ -88,7 +88,15 @@ router.post('/api/register/resend-verification', [RegisterController, 'resendVer
 router.get('/api/register/check-slug', [RegisterController, 'checkSlug'])
 
 // ─── Cron (scheduler externe) ─────────────────────────────────────────────────
-router.post('/api/cron/trial-reminders', [CronController, 'trialReminders'])
+router.post('/api/cron/trial-reminders',        [CronController, 'trialReminders'])
+router.post('/api/cron/subscription-lifecycle', [CronController, 'subscriptionLifecycle'])
+router.post('/api/cron/cinetpay-reconcile',     [CronController, 'cinetpayReconciliation'])
+router.post('/api/cron/upsell-nudge',           [CronController, 'upsellNudge'])
+router.post('/api/cron/reservation-reminders',  [CronController, 'reservationReminders'])
+router.post('/api/cron/weekly-reports',         [CronController, 'weeklyReports'])
+router.post('/api/cron/monthly-mrr-report',     [CronController, 'monthlyMrrReport'])
+router.post('/api/cron/availability-by-hours',  [CronController, 'availabilityByHours'])
+router.post('/api/cron/command-center-alerts',  [CronController, 'commandCenterAlerts'])
 
 // ─── Public plans pricing page (no tenant, no auth) ──────────────────────────
 router.get('/api/public/plans', [SubscriptionsController, 'publicPlans'])

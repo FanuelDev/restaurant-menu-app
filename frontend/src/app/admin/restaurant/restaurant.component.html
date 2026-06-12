@@ -359,6 +359,21 @@
               }
             </div>
           </div>
+
+          <!-- Automatisation -->
+          <div class="card">
+            <h2 class="card-title">⚙️ {{ t('restaurant.automationTitle') }}</h2>
+            <div class="auto-row">
+              <div class="auto-info">
+                <div class="auto-label">{{ t('restaurant.autoAvailabilityLabel') }}</div>
+                <div class="auto-desc">{{ t('restaurant.autoAvailabilityDesc') }}</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [formControl]="autoAvailabilityCtrl" (change)="saveAutoAvailability()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
