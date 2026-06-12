@@ -118,10 +118,10 @@ export function printInvoice(invoice: SaInvoice, restaurant: InvoiceRestaurantIn
 
     <!-- Émetteur (plateforme) -->
     <div>
-      <div style="font-size:22px;font-weight:900;color:#111;letter-spacing:-.02em;line-height:1">MenuDigital</div>
+      <div style="font-size:22px;font-weight:900;color:#111;letter-spacing:-.02em;line-height:1">SaeMenus</div>
       <div style="font-size:11px;color:#888;margin-top:4px;letter-spacing:.04em;text-transform:uppercase">Plateforme SaaS de menus digitaux</div>
       <div style="margin-top:12px;font-size:12px;color:#555;line-height:1.7">
-        <div>support@menudigital.app</div>
+        <div>support@saemenus.com</div>
       </div>
     </div>
 
@@ -225,7 +225,7 @@ export function printInvoice(invoice: SaInvoice, restaurant: InvoiceRestaurantIn
   <!-- ═══ PIED DE PAGE ══════════════════════════════════════════════════ -->
   <div style="margin-top:48px;padding-top:24px;border-top:2px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
     <div style="font-size:11px;color:#aaa;line-height:1.7">
-      <div>Document généré automatiquement par MenuDigital.</div>
+      <div>Document généré automatiquement par SaeMenus.</div>
       <div>Ce document fait office de facture pour l'abonnement mentionné ci-dessus.</div>
     </div>
     <div style="font-size:11px;color:#ccc;font-family:monospace">${invoice.invoiceNumber}</div>
