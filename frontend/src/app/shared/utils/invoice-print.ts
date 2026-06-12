@@ -164,7 +164,7 @@ export function printInvoice(invoice: SaInvoice, restaurant: InvoiceRestaurantIn
         </tr>
         <tr>
           <td style="color:#888;padding:3px 0">Devise</td>
-          <td style="text-align:right">${invoice.currency}</td>
+          <td style="text-align:right">EUR</td>
         </tr>
         ${invoice.granter ? `
         <tr>
