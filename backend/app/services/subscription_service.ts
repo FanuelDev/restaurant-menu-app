@@ -85,7 +85,7 @@ export default class SubscriptionService {
     const result = await this.#cinetpay.initPayment({
       transactionId,
       amountCents,
-      currency: params.restaurant.currency,
+      currency: 'EUR',
       description: `Abonnement ${params.plan.name} — ${params.billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}`,
       customerName: params.customerName,
       customerSurname: params.customerSurname,
@@ -107,7 +107,7 @@ export default class SubscriptionService {
       billingCycle: params.billingCycle,
       status: 'pending',
       amountCents,
-      currency: params.restaurant.currency,
+      currency: 'EUR',
     })
 
     return { paymentUrl: result.paymentUrl, transactionId }

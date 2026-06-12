@@ -209,12 +209,8 @@ export class AdminInvoicesComponent implements OnInit {
     })
   }
 
-  formatAmount(cents: number, currency: string): string {
-    try {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(cents / 100)
-    } catch {
-      return `${cents / 100} ${currency}`
-    }
+  formatAmount(cents: number, _currency: string): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(cents / 100)
   }
 
   getSavings(invoice: SaInvoice): number {

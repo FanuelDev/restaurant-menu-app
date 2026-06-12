@@ -166,12 +166,7 @@ export class SubscriptionComponent implements OnInit {
 
   formatPrice(plan: Plan, cycle: BillingCycle): string {
     const cents = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
-    const currency = this.authService.restaurant()?.currency ?? 'XOF'
-    try {
-      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 0 }).format(cents / 100)
-    } catch {
-      return `${(cents / 100).toLocaleString('fr-FR')} ${currency}`
-    }
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(cents / 100)
   }
 
   statusIcon(status: string): string {

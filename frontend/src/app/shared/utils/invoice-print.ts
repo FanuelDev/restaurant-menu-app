@@ -3,14 +3,10 @@
 
 import type { SaInvoice } from '../models'
 
-function fmtAmt(cents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency', currency, minimumFractionDigits: 0,
-    }).format(cents / 100)
-  } catch {
-    return `${(cents / 100).toLocaleString('fr-FR')} ${currency}`
-  }
+function fmtAmt(cents: number, _currency?: string): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: 0,
+  }).format(cents / 100)
 }
 
 function fmtDate(iso: string): string {
