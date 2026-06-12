@@ -570,7 +570,6 @@ class MailService {
     currency: string,
     periodLabel: string
   ): Promise<void> {
-    const firstName = (adminName || email).split(' ')[0]
     const fmt = (n: number) => n.toLocaleString('fr-FR')
     const profitColor = netProfit >= 0 ? '#166534' : '#991b1b'
     const frontendUrl = env.get('FRONTEND_URL') ?? 'https://saemenus.com'
@@ -578,7 +577,7 @@ class MailService {
     const html = this.wrap(`
       <tr>
         <td style="padding:40px;">
-          <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111;">📊 Rapport hebdomadaire</p>
+          <p style="margin:0 0 4px;font-size:22px;font-weight:800;color:#111;">📊 Rapport hebdomadaire — ${(adminName || email).split(' ')[0]}</p>
           <p style="margin:0 0 28px;font-size:14px;color:#888;">${periodLabel} · ${restaurantName}</p>
 
           <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin-bottom:28px;">

@@ -594,7 +594,7 @@ export default class CronController {
     const frontendUrl = env.get('FRONTEND_URL', 'https://saemenus.com')
     const now = DateTime.now()
 
-    const [trialsToday, churnRisk, superAdminRow] = await Promise.all([
+    const [trialsToday, churnRisk] = await Promise.all([
       db.from('restaurants')
         .where('subscription_status', 'trialing')
         .where('is_active', true)
@@ -607,12 +607,6 @@ export default class CronController {
         .where('is_active', true)
         .whereRaw('created_at <= DATE_SUB(NOW(), INTERVAL 10 DAY)')
         .count('* as total'),
-
-      db.from('users')
-        .where('role', 'super_admin')
-        .where('email', superAdminEmail)
-        .select('alert_email_sent_at')
-        .first(),
     ])
 
     const trialsExpiringToday = Number((trialsToday[0] as any).total ?? 0)
