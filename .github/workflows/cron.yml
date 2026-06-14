@@ -54,16 +54,18 @@ jobs:
       github.event_name == 'schedule'
     steps:
       - name: Subscription lifecycle
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/subscription-lifecycle" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: CinetPay reconciliation
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/cinetpay-reconcile" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
@@ -77,32 +79,36 @@ jobs:
       github.event_name == 'schedule'
     steps:
       - name: Trial reminders
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/trial-reminders" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Reservation reminders
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/reservation-reminders" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Upsell nudge
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/upsell-nudge" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Command center alerts
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/command-center-alerts" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
@@ -116,8 +122,9 @@ jobs:
       github.event_name == 'schedule'
     steps:
       - name: Weekly revenue reports
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/weekly-reports" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
@@ -131,8 +138,9 @@ jobs:
       github.event_name == 'schedule'
     steps:
       - name: Monthly MRR report
+        continue-on-error: true
         run: |
-          curl -s --max-time 120 --connect-timeout 15 -X POST \
+          curl -s --max-time 180 --connect-timeout 30 --retry 2 --retry-delay 5 -X POST \
             "${{ secrets.API_URL }}/api/cron/monthly-mrr-report" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
