@@ -64,11 +64,108 @@ import type { SaIntelligence, SaAlertRestaurant, Plan } from '../../shared/model
       display: flex; align-items: center; gap: var(--space-3);
       background: var(--error-bg); border: 1px solid var(--error-border);
       border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4); margin-bottom: var(--space-5);
+      padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
       font-size: .875rem; font-weight: 600; color: var(--error);
       animation: slideUpFade .3s var(--ease-spring) both;
     }
     .alert-banner.warning { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
+
+    .alert-eye-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(220,38,38,.12); border: 1px solid var(--error-border);
+      border-radius: var(--radius-md); padding: 4px 10px;
+      font-size: .75rem; font-weight: 700; color: var(--error);
+      cursor: pointer; flex-shrink: 0; transition: all var(--t-fast);
+      &:hover { background: rgba(220,38,38,.22); }
+    }
+
+    /* ── Alert detail panel ──────────────────────────────────────── */
+    .alert-detail-panel {
+      background: var(--surface-1); border: 1px solid var(--error-border);
+      border-radius: var(--radius-lg); margin-bottom: var(--space-5);
+      animation: slideUpFade .25s var(--ease-spring) both;
+      overflow: hidden;
+    }
+    .adp-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      background: var(--error-bg); border-bottom: 1px solid var(--error-border);
+    }
+    .adp-title {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .8125rem; font-weight: 700; color: var(--error);
+    }
+    .adp-badge {
+      font-size: .7rem; font-weight: 800; padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--error); color: #fff;
+    }
+    .adp-body { padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+
+    .adp-section { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    .adp-section-head {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 12px; font-size: .75rem; font-weight: 700;
+    }
+    .adp-red    { background: var(--error-bg);   color: var(--error);   border-bottom: 1px solid var(--error-border); }
+    .adp-orange { background: var(--warning-bg); color: var(--warning); border-bottom: 1px solid var(--warning-border); }
+    .adp-blue   { background: var(--info-bg);    color: var(--info);    border-bottom: 1px solid var(--info-border); }
+
+    .adp-count { margin-left: auto; font-size: .65rem; font-weight: 800; padding: 1px 6px; border-radius: var(--radius-full); }
+    .adp-count-red    { background: var(--error);   color: #fff; }
+    .adp-count-orange { background: var(--warning); color: #fff; }
+    .adp-count-blue   { background: var(--info);    color: #fff; }
+
+    .adp-rows { max-height: 180px; overflow-y: auto; }
+    .adp-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 7px 12px; border-bottom: 1px solid var(--border);
+      &:last-child { border-bottom: none; }
+      &:hover { background: var(--gray-50); }
+    }
+    .adp-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .adp-dot-red    { background: var(--error); }
+    .adp-dot-orange { background: var(--warning); }
+    .adp-dot-blue   { background: var(--info); }
+
+    .adp-row-info { flex: 1; min-width: 0; }
+    .adp-row-name { font-size: .8125rem; font-weight: 600; color: var(--text-primary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .adp-row-meta { font-size: .7rem; color: var(--text-muted); display: block; }
+
+    .adp-tag { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: var(--radius-full); flex-shrink: 0; }
+    .adp-tag-red    { background: var(--error-bg);   color: var(--error);   border: 1px solid var(--error-border); }
+    .adp-tag-orange { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+
+    .adp-action-btn {
+      font-size: .7rem; font-weight: 600; padding: 3px 8px;
+      border-radius: var(--radius-sm); border: 1px solid var(--info-border);
+      background: var(--info-bg); color: var(--info);
+      cursor: pointer; flex-shrink: 0; transition: all var(--t-fast);
+      &:hover { background: var(--info); color: #fff; }
+    }
+
+    .adp-empty {
+      display: flex; align-items: center; gap: 8px;
+      padding: var(--space-4); font-size: .8125rem; color: var(--text-muted);
+      justify-content: center;
+    }
+
+    .adp-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--border); background: var(--surface-2);
+    }
+    .adp-foot-note {
+      display: flex; align-items: center; gap: 5px;
+      font-size: .7rem; color: var(--text-muted);
+    }
+    .adp-close-btn {
+      font-size: .75rem; font-weight: 600; padding: 4px 12px;
+      border-radius: var(--radius-md); border: 1px solid var(--border);
+      background: var(--surface-1); color: var(--text-secondary);
+      cursor: pointer; transition: all var(--t-fast);
+      &:hover { background: var(--gray-100); color: var(--text-primary); }
+    }
 
     /* ── KPI Strip ─────────────────────────────────────────────────── */
     .kpi-strip {
@@ -380,6 +477,9 @@ export class SaCommandCenterComponent implements OnInit {
 
   // Block form
   readonly blockReason      = signal('')
+
+  // Alert detail panel
+  readonly alertPanelOpen = signal(false)
 
   // Toasts
   readonly toasts = signal<{ id: number; msg: string; error?: boolean }[]>([])

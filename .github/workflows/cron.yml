@@ -55,17 +55,19 @@ jobs:
     steps:
       - name: Subscription lifecycle
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/subscription-lifecycle" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: CinetPay reconciliation
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/cinetpay-reconcile" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
   # ─── Quotidien 07:00 UTC ─────────────────────────────────────────────────
   daily:
@@ -76,31 +78,35 @@ jobs:
     steps:
       - name: Trial reminders
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/trial-reminders" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Reservation reminders
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/reservation-reminders" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Upsell nudge
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/upsell-nudge" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
       - name: Command center alerts
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/command-center-alerts" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
   # ─── Hebdomadaire (lundi) ────────────────────────────────────────────────
   weekly:
@@ -111,10 +117,11 @@ jobs:
     steps:
       - name: Weekly revenue reports
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/weekly-reports" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
 
   # ─── Mensuel (1er du mois) ───────────────────────────────────────────────
   monthly:
@@ -125,7 +132,8 @@ jobs:
     steps:
       - name: Monthly MRR report
         run: |
-          curl -s -X POST \
+          curl -s --max-time 120 --connect-timeout 15 -X POST \
             "${{ secrets.API_URL }}/api/cron/monthly-mrr-report" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json" \
+            -o /dev/null -w "HTTP %{http_code}\n"
