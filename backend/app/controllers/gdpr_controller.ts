@@ -3,7 +3,7 @@ import vine from '@vinejs/vine'
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import GdprDeletionRequest from '#models/gdpr_deletion_request'
-import mailService from '#services/mail_service'
+import { mailService } from '#services/mail_service'
 
 const deleteApiValidator = vine.compile(
   vine.object({ email: vine.string().trim().email() })
@@ -191,12 +191,12 @@ export default class GdprController {
     let deletedReservations = 0
 
     await db.transaction(async (trx) => {
-      deletedOrders = await trx
+      ;[deletedOrders] = await trx
         .from('orders')
         .whereILike('customer_email', email)
         .update({ customer_name: '[supprimé]', customer_phone: null, customer_email: null })
 
-      deletedReservations = await trx
+      ;[deletedReservations] = await trx
         .from('reservations')
         .whereILike('customer_email', email)
         .update({ customer_name: '[supprimé]', customer_phone: null, customer_email: null })
@@ -209,11 +209,11 @@ export default class GdprController {
     await gdprReq.save()
 
     // Emails en arrière-plan
-    mailService.sendGdprConfirmation(email, deletedOrders + deletedReservations).catch((err) =>
-      console.error('[GDPR] Erreur email confirmation:', err)
+    mailService.sendGdprConfirmation(email, deletedOrders + deletedReservations).catch((_err: unknown) =>
+      console.error('[GDPR] Erreur email confirmation:', _err)
     )
-    mailService.sendGdprAdminNotification(email, ip, deletedOrders, deletedReservations).catch((err) =>
-      console.error('[GDPR] Erreur email admin:', err)
+    mailService.sendGdprAdminNotification(email, ip, deletedOrders, deletedReservations).catch((_err: unknown) =>
+      console.error('[GDPR] Erreur email admin:', _err)
     )
 
     return response.header('Content-Type', 'text/html').send(renderForm({ success: true }))
@@ -230,12 +230,12 @@ export default class GdprController {
     let deletedReservations = 0
 
     await db.transaction(async (trx) => {
-      deletedOrders = await trx
+      ;[deletedOrders] = await trx
         .from('orders')
         .whereILike('customer_email', email)
         .update({ customer_name: '[supprimé]', customer_phone: null, customer_email: null })
 
-      deletedReservations = await trx
+      ;[deletedReservations] = await trx
         .from('reservations')
         .whereILike('customer_email', email)
         .update({ customer_name: '[supprimé]', customer_phone: null, customer_email: null })
@@ -246,11 +246,11 @@ export default class GdprController {
     gdprReq.adminNotes = `API mobile : ${deletedOrders} commande(s), ${deletedReservations} réservation(s) anonymisée(s).`
     await gdprReq.save()
 
-    mailService.sendGdprConfirmation(email, deletedOrders + deletedReservations).catch((err) =>
-      console.error('[GDPR] Erreur email confirmation:', err)
+    mailService.sendGdprConfirmation(email, deletedOrders + deletedReservations).catch((_err: unknown) =>
+      console.error('[GDPR] Erreur email confirmation:', _err)
     )
-    mailService.sendGdprAdminNotification(email, ip, deletedOrders, deletedReservations).catch((err) =>
-      console.error('[GDPR] Erreur email admin:', err)
+    mailService.sendGdprAdminNotification(email, ip, deletedOrders, deletedReservations).catch((_err: unknown) =>
+      console.error('[GDPR] Erreur email admin:', _err)
     )
 
     return response.noContent()
