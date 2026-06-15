@@ -239,6 +239,12 @@ export const routes: Routes = [
           import('./super-admin/revenue/sa-revenue.component').then((m) => m.SaRevenueComponent),
         title: 'Super Admin — Revenus & Analytique',
       },
+      {
+        path: 'gdpr',
+        loadComponent: () =>
+          import('./super-admin/gdpr/sa-gdpr.component').then((m) => m.SaGdprComponent),
+        title: 'Super Admin — Demandes RGPD',
+      },
     ],
   },
 

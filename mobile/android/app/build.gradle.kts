@@ -7,11 +7,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Charge key.properties si présent (dev local), sinon utilise les variables d'env (CI/CD)
 val keyPropertiesFile = rootProject.file("key.properties")
 val keyProperties = Properties()
 if (keyPropertiesFile.exists()) {
     keyProperties.load(FileInputStream(keyPropertiesFile))
 }
+
+fun signingProp(key: String): String? =
+    if (keyPropertiesFile.exists()) keyProperties[key] as String?
+    else System.getenv("ANDROID_$key".uppercase())
 
 android {
     namespace = "com.saemenus.saemenus_client"
@@ -29,11 +34,15 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keyPropertiesFile.exists()) {
-                keyAlias = keyProperties["keyAlias"] as String
-                keyPassword = keyProperties["keyPassword"] as String
-                storeFile = file(keyProperties["storeFile"] as String)
-                storePassword = keyProperties["storePassword"] as String
+            val alias    = signingProp("keyAlias")
+            val keyPass  = signingProp("keyPassword")
+            val store    = signingProp("storeFile")
+            val storePass = signingProp("storePassword")
+            if (alias != null && keyPass != null && store != null && storePass != null) {
+                keyAlias = alias
+                keyPassword = keyPass
+                storeFile = file(store)
+                storePassword = storePass
             }
         }
     }
@@ -48,7 +57,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keyPropertiesFile.exists())
+            val hasSigningConfig = signingProp("keyAlias") != null
+            signingConfig = if (hasSigningConfig)
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")

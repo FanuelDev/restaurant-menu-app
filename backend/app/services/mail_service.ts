@@ -785,4 +785,102 @@ class MailService {
   }
 }
 
+  // ─── RGPD ────────────────────────────────────────────────────────────────────
+
+  async sendGdprConfirmation(email: string, recordCount: number): Promise<void> {
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111;">Demande de suppression confirmée ✓</p>
+          <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
+            Nous avons bien reçu et traité votre demande de suppression de données personnelles sur SaeMenus.
+          </p>
+
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+            <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#15803d;">Ce qui a été supprimé</p>
+            <p style="margin:0;font-size:14px;color:#166534;line-height:1.6;">
+              ${recordCount > 0
+                ? `Vos informations personnelles (nom, téléphone, email) ont été anonymisées dans <strong>${recordCount} enregistrement(s)</strong> (commandes et réservations).`
+                : `Aucun enregistrement associé à cette adresse email n'a été trouvé dans notre base de données.`}
+            </p>
+          </div>
+
+          <div style="background:#f9f9fb;border-radius:10px;padding:16px 20px;border:1px solid #eee;">
+            <p style="margin:0;font-size:13px;color:#666;line-height:1.65;">
+              <strong>Ce qui est conservé :</strong> les données anonymisées nécessaires à la comptabilité
+              (montants, dates, numéros de commande) sans aucune information vous identifiant.<br><br>
+              <strong>Conformité :</strong> cette suppression est conforme au Règlement Général sur la Protection
+              des Données (RGPD / GDPR).
+            </p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:0 40px 32px;">
+          <p style="margin:0;font-size:13px;color:#999;text-align:center;">
+            Pour toute question : <a href="mailto:support@saemenus.com" style="color:${BRAND_RED};">support@saemenus.com</a>
+          </p>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: email,
+      subject: `[SaeMenus] Vos données ont été supprimées`,
+      html,
+      text: `Votre demande de suppression de données a été traitée.\n\n${recordCount} enregistrement(s) anonymisé(s).\n\nPour toute question : support@saemenus.com`,
+    })
+  }
+
+  async sendGdprAdminNotification(
+    email: string,
+    ip: string | null,
+    deletedOrders: number,
+    deletedReservations: number
+  ): Promise<void> {
+    const adminEmail = process.env.SMTP_USER ?? 'sophie@saemenus.com'
+
+    const html = this.wrap(`
+      <tr>
+        <td style="padding:40px;">
+          <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#111;">🔒 Nouvelle demande RGPD traitée</p>
+          <p style="margin:0 0 24px;font-size:14px;color:#666;">
+            Une demande de suppression de données a été automatiquement traitée.
+          </p>
+
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px;">
+            <tr style="background:#f9f9fb;">
+              <td style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #eee;white-space:nowrap;">Email demandeur</td>
+              <td style="padding:10px 14px;color:#111;border-bottom:1px solid #eee;font-family:monospace;">${email}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #eee;">IP</td>
+              <td style="padding:10px 14px;color:#111;border-bottom:1px solid #eee;font-family:monospace;">${ip ?? '—'}</td>
+            </tr>
+            <tr style="background:#f9f9fb;">
+              <td style="padding:10px 14px;font-weight:600;color:#555;border-bottom:1px solid #eee;">Commandes anonymisées</td>
+              <td style="padding:10px 14px;font-weight:700;color:#${deletedOrders > 0 ? '15803d' : '999'};">${deletedOrders}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 14px;font-weight:600;color:#555;">Réservations anonymisées</td>
+              <td style="padding:10px 14px;font-weight:700;color:#${deletedReservations > 0 ? '15803d' : '999'};">${deletedReservations}</td>
+            </tr>
+          </table>
+
+          <p style="margin:0;font-size:13px;color:#888;">
+            Consultez le journal RGPD dans le panneau super admin pour plus de détails.
+          </p>
+        </td>
+      </tr>`)
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: adminEmail,
+      subject: `[RGPD] Suppression données — ${email}`,
+      html,
+      text: `Demande RGPD traitée.\nEmail: ${email}\nIP: ${ip ?? '—'}\nCommandes: ${deletedOrders}\nRéservations: ${deletedReservations}`,
+    })
+  }
+}
+
 export const mailService = new MailService()

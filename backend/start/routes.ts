@@ -22,6 +22,7 @@ const OrdersController = () => import('#controllers/orders_controller')
 const ReservationsController = () => import('#controllers/reservations_controller')
 const FinanceController = () => import('#controllers/finance_controller')
 const MarketingController = () => import('#controllers/marketing_controller')
+const GdprController    = () => import('#controllers/gdpr_controller')
 
 // Super admin
 const SARestaurantsController = () => import('#controllers/super_admin/restaurants_controller')
@@ -100,6 +101,11 @@ router.post('/api/cron/command-center-alerts',  [CronController, 'commandCenterA
 
 // ─── Public plans pricing page (no tenant, no auth) ──────────────────────────
 router.get('/api/public/plans', [SubscriptionsController, 'publicPlans'])
+
+// ─── RGPD – formulaire public + API mobile ────────────────────────────────────
+router.get('/privacy/delete-request',  [GdprController, 'showForm'])
+router.post('/privacy/delete-request', [GdprController, 'handleForm'])
+router.delete('/api/public/user-data', [GdprController, 'deleteUserData'])
 
 // ─── Public tenant routes (tenant required, no auth) ─────────────────────────
 router
@@ -285,6 +291,8 @@ router
     router.get('/invoices/:id', [SaInvoicesController, 'show'])
     router.get('/revenue', [SaRevenueController, 'index'])
     router.get('/intelligence', [SaIntelligenceController, 'index'])
+    router.get('/gdpr-requests',       [GdprController, 'index'])
+    router.patch('/gdpr-requests/:id', [GdprController, 'update'])
   })
   .prefix('/api/super-admin')
   .use([middleware.auth(), middleware.role(['super_admin'])])

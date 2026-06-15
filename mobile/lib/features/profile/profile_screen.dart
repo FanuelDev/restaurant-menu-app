@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/models.dart';
 import '../../core/providers/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -19,6 +20,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late final TextEditingController _emailCtrl;
   bool _saving = false;
   bool _dirty = false;
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -88,6 +90,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref.read(profileProvider.notifier).clear();
       _nameCtrl.clear(); _phoneCtrl.clear(); _emailCtrl.clear();
       setState(() => _dirty = false);
+    }
+  }
+
+  Future<void> _deleteAllData() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Supprimer toutes mes données ?',
+            style: AppTheme.title(AppTheme.charcoal)),
+        content: Text(
+          'Cela supprimera vos informations de profil sur cet appareil '
+          'et enverra une demande de suppression au serveur '
+          '(commandes et réservations liées à votre email).',
+          style: AppTheme.body(AppTheme.grey2),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Annuler', style: AppTheme.body(AppTheme.grey2)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.badgeSpicy,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: Text('Supprimer', style: AppTheme.bodyBold(Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _deleting = true);
+    await ref.read(profileProvider.notifier).deleteAllData(
+      ref.read(apiClientProvider),
+    );
+    _nameCtrl.clear(); _phoneCtrl.clear(); _emailCtrl.clear();
+    setState(() { _dirty = false; _deleting = false; });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Données supprimées', style: AppTheme.body(Colors.white)),
+        backgroundColor: AppTheme.badgeSpicy,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ));
     }
   }
 
@@ -214,6 +264,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             const SizedBox(height: 32),
             _RecentSection(),
+            const SizedBox(height: 24),
+
+            // ── Confidentialité & RGPD ───────────────────────────────────
+            _Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Confidentialité', style: AppTheme.title(AppTheme.charcoal)),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () => launchUrl(
+                      Uri.parse('https://saemenus.com/privacy'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.open_in_new_rounded,
+                            size: 16, color: Color(0xFFC0392B)),
+                        const SizedBox(width: 8),
+                        Text('Politique de confidentialité',
+                            style: AppTheme.body(const Color(0xFFC0392B))
+                                .copyWith(decoration: TextDecoration.underline)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _deleting ? null : _deleteAllData,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.badgeSpicy,
+                        side: const BorderSide(color: AppTheme.badgeSpicy),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: _deleting
+                          ? const SizedBox(
+                              width: 16, height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: AppTheme.badgeSpicy))
+                          : const Icon(Icons.delete_forever_rounded, size: 18),
+                      label: Text(
+                        _deleting ? 'Suppression...' : 'Supprimer toutes mes données',
+                        style: AppTheme.bodyBold(AppTheme.badgeSpicy),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 32),
           ],
         ),

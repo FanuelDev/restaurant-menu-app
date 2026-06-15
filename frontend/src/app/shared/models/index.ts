@@ -565,3 +565,16 @@ export interface SaRevenueStats {
     invoiceCount: number
   }[]
 }
+
+export interface GdprDeletionRequest {
+  id: number
+  email: string
+  ipAddress: string | null
+  status: 'pending' | 'processed' | 'rejected'
+  processedAt: string | null
+  processedById: number | null
+  processedBy: { id: number; fullName: string; email: string } | null
+  adminNotes: string | null
+  createdAt: string
+  updatedAt: string
+}

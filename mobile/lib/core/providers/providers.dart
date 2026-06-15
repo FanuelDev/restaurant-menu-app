@@ -246,11 +246,39 @@ class ProfileNotifier extends StateNotifier<CustomerProfile> {
     state = const CustomerProfile();
     await _prefs.remove(_key);
   }
+
+  Future<void> deleteAllData(ApiClient api) async {
+    final email = state.email;
+    await clear();
+    if (email != null && email.isNotEmpty) {
+      try {
+        await api.deleteUserData(email);
+      } catch (_) {}
+    }
+  }
 }
 
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('Override in main');
 });
+
+// ─── Consent (RGPD – affiché au premier lancement) ───────────────────────────
+
+final consentProvider = StateNotifierProvider<ConsentNotifier, bool>((ref) {
+  return ConsentNotifier(ref.watch(sharedPrefsProvider));
+});
+
+class ConsentNotifier extends StateNotifier<bool> {
+  final SharedPreferences _prefs;
+  static const _key = 'consent_accepted';
+
+  ConsentNotifier(this._prefs) : super(_prefs.getBool(_key) ?? false);
+
+  Future<void> accept() async {
+    state = true;
+    await _prefs.setBool(_key, true);
+  }
+}
 
 final profileProvider = StateNotifierProvider<ProfileNotifier, CustomerProfile>((ref) {
   return ProfileNotifier(ref.watch(sharedPrefsProvider));

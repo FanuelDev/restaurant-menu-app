@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { environment } from '../../../environments/environment'
-import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog, SaInvoice, SaRevenueStats, SaIntelligence } from '../models'
+import type { Restaurant, Plan, PaginatedResponse, SuperAdminStats, AuditLog, SaInvoice, SaRevenueStats, SaIntelligence, GdprDeletionRequest } from '../models'
 
 export interface RestaurantFilters {
   page?: number
@@ -92,5 +92,20 @@ export class SuperAdminService {
 
   getIntelligence(): Observable<SaIntelligence> {
     return this.http.get<SaIntelligence>(`${environment.apiUrl}/super-admin/intelligence`)
+  }
+
+  getGdprRequests(params?: { page?: number; status?: string }): Observable<{ data: GdprDeletionRequest[]; meta: any }> {
+    let httpParams = new HttpParams()
+    if (params?.page)   httpParams = httpParams.set('page', params.page)
+    if (params?.status) httpParams = httpParams.set('status', params.status)
+    return this.http.get<{ data: GdprDeletionRequest[]; meta: any }>(
+      `${environment.apiUrl}/super-admin/gdpr-requests`, { params: httpParams }
+    )
+  }
+
+  updateGdprRequest(id: number, payload: { status: string; adminNotes?: string }): Observable<GdprDeletionRequest> {
+    return this.http.patch<GdprDeletionRequest>(
+      `${environment.apiUrl}/super-admin/gdpr-requests/${id}`, payload
+    )
   }
 }
