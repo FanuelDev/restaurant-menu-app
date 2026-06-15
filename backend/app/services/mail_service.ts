@@ -783,7 +783,6 @@ class MailService {
       text: `Bonjour ${firstName},\n\nRéinitialisez votre mot de passe : ${resetUrl}\n\nLien valide 1 heure.\n\nSi vous n'avez pas fait cette demande, ignorez cet email.`,
     })
   }
-}
 
   // ─── RGPD ────────────────────────────────────────────────────────────────────
 
