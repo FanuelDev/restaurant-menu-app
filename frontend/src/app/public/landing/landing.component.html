@@ -109,100 +109,100 @@
         <div class="hero-visual" aria-hidden="true">
           <div class="mock-glow"></div>
 
-          <!-- Browser mockup — admin dashboard -->
-          <div class="mock-browser">
-            <div class="mock-chrome">
-              <div class="mock-dots">
-                <span class="mock-dot" style="background:#FF5F57"></span>
-                <span class="mock-dot" style="background:#FEBC2E"></span>
-                <span class="mock-dot" style="background:#28C840"></span>
-              </div>
-              <div class="mock-url">saemenus.com/admin/dashboard</div>
+          <!-- Food photo — background left -->
+          <div class="hv-food-wrap">
+            <img
+              class="hv-food-img"
+              src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=520&q=80&auto=format&fit=crop"
+              alt="Plat gastronomique"
+              loading="lazy"
+            />
+            <div class="hv-scan-badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9V5a2 2 0 012-2h4M15 3h4a2 2 0 012 2v4M21 15v4a2 2 0 01-2 2h-4M9 21H5a2 2 0 01-2-2v-4"/></svg>
+              <span>Menu scanné <strong>1 247×</strong></span>
             </div>
-            <div class="mock-body">
-              <div class="mock-sidebar">
-                <div class="mock-logo-sq"></div>
-                <div class="mock-nav-items">
-                  <div class="mock-nav-item mock-nav-active"></div>
-                  <div class="mock-nav-item"></div>
-                  <div class="mock-nav-item"></div>
-                  <div class="mock-nav-item"></div>
-                  <div class="mock-nav-item"></div>
-                </div>
+          </div>
+
+          <!-- Phone frame — customer menu -->
+          <div class="hv-phone">
+            <div class="hv-phone-notch">
+              <div class="hv-notch-pill"></div>
+            </div>
+
+            <!-- Cover -->
+            <div class="hv-cover">
+              <img
+                src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=360&q=80&auto=format&fit=crop"
+                alt="Restaurant"
+                class="hv-cover-img"
+                loading="lazy"
+              />
+              <div class="hv-cover-overlay">
+                <div class="hv-rest-name">Le Gourmet</div>
+                <div class="hv-rest-sub">Cuisine africaine · Abidjan</div>
+                <div class="hv-stars">★★★★★ <span>4.8</span></div>
               </div>
-              <div class="mock-main">
-                <div class="mock-toprow">
-                  <div class="mock-greeting">
-                    <div class="mock-line mock-line-lg"></div>
-                    <div class="mock-line mock-line-sm" style="width:55%"></div>
-                  </div>
-                  <div class="mock-avatar-sm"></div>
+            </div>
+
+            <!-- Categories -->
+            <div class="hv-cats">
+              <span class="hv-cat hv-cat-active">Plats</span>
+              <span class="hv-cat">Boissons</span>
+              <span class="hv-cat">Desserts</span>
+            </div>
+
+            <!-- Menu items -->
+            <div class="hv-items">
+              <div class="hv-item">
+                <img
+                  src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100&q=75&auto=format&fit=crop"
+                  alt="Poulet braisé"
+                  class="hv-item-img"
+                  loading="lazy"
+                />
+                <div class="hv-item-info">
+                  <div class="hv-item-name">Poulet braisé</div>
+                  <div class="hv-item-desc">Marinée aux épices, sauce arachide</div>
+                  <div class="hv-item-price">3 500 FCFA</div>
                 </div>
-                <div class="mock-kpis">
-                  <div class="mock-kpi" style="--kc:#FFF0F0;--kb:#C0392B">
-                    <div class="mock-kpi-top"></div>
-                    <div class="mock-kpi-val" style="color:#C0392B"></div>
-                    <div class="mock-kpi-lbl"></div>
-                  </div>
-                  <div class="mock-kpi" style="--kc:#EFF6FF;--kb:#2563EB">
-                    <div class="mock-kpi-top"></div>
-                    <div class="mock-kpi-val" style="color:#2563EB"></div>
-                    <div class="mock-kpi-lbl"></div>
-                  </div>
-                  <div class="mock-kpi" style="--kc:#F0FDF4;--kb:#16A34A">
-                    <div class="mock-kpi-top"></div>
-                    <div class="mock-kpi-val" style="color:#16A34A"></div>
-                    <div class="mock-kpi-lbl"></div>
-                  </div>
-                  <div class="mock-kpi" style="--kc:#FFFBEB;--kb:#D97706">
-                    <div class="mock-kpi-top"></div>
-                    <div class="mock-kpi-val" style="color:#D97706"></div>
-                    <div class="mock-kpi-lbl"></div>
-                  </div>
+                <button class="hv-add">+</button>
+              </div>
+              <div class="hv-item">
+                <img
+                  src="https://images.unsplash.com/photo-1547592180-85f173990554?w=100&q=75&auto=format&fit=crop"
+                  alt="Riz jollof"
+                  class="hv-item-img"
+                  loading="lazy"
+                />
+                <div class="hv-item-info">
+                  <div class="hv-item-name">Riz Jollof</div>
+                  <div class="hv-item-desc">Tomate, oignon, poivrons grillés</div>
+                  <div class="hv-item-price">2 800 FCFA</div>
                 </div>
-                <div class="mock-section-title"></div>
-                <div class="mock-item-list">
-                  @for (i of [1,2,3,4]; track i) {
-                    <div class="mock-item-row">
-                      <div class="mock-item-img" [style.background]="itemColors[i-1]"></div>
-                      <div class="mock-item-info">
-                        <div class="mock-line" [style.width]="itemWidths[i-1]"></div>
-                        <div class="mock-line mock-line-xs" style="width:50%"></div>
-                      </div>
-                      <div class="mock-item-price"></div>
-                      <div class="mock-item-dot" [class.mock-dot-green]="i !== 3"></div>
-                    </div>
-                  }
+                <button class="hv-add">+</button>
+              </div>
+              <div class="hv-item">
+                <img
+                  src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=100&q=75&auto=format&fit=crop"
+                  alt="Attiéké poisson"
+                  class="hv-item-img"
+                  loading="lazy"
+                />
+                <div class="hv-item-info">
+                  <div class="hv-item-name">Attiéké Poisson</div>
+                  <div class="hv-item-desc">Semoule de manioc, poisson grillé</div>
+                  <div class="hv-item-price">4 200 FCFA</div>
                 </div>
+                <button class="hv-add">+</button>
               </div>
             </div>
           </div>
 
-          <!-- Phone mockup — customer menu -->
-          <div class="mock-phone">
-            <div class="mock-phone-notch"></div>
-            <div class="mock-phone-hero" style="background: linear-gradient(145deg, #B03020, #4A0A06)">
-              <div class="mock-ph-logo"></div>
-              <div class="mock-ph-name"></div>
-              <div class="mock-ph-sub"></div>
-            </div>
-            <div class="mock-phone-body">
-              <div class="mock-ph-cats">
-                <div class="mock-ph-cat mock-ph-cat-active"></div>
-                <div class="mock-ph-cat"></div>
-                <div class="mock-ph-cat"></div>
-              </div>
-              @for (i of [1,2]; track i) {
-                <div class="mock-ph-card">
-                  <div class="mock-ph-card-img" [style.background]="phoneCardColors[i-1]"></div>
-                  <div class="mock-ph-card-body">
-                    <div class="mock-line" style="width:80%"></div>
-                    <div class="mock-line mock-line-xs" style="width:55%"></div>
-                    <div class="mock-ph-price"></div>
-                  </div>
-                </div>
-              }
-            </div>
+          <!-- Floating rating card -->
+          <div class="hv-rating-card">
+            <div class="hv-rating-stars">★★★★★</div>
+            <div class="hv-rating-text">«&nbsp;Interface magnifique&nbsp;»</div>
+            <div class="hv-rating-author">— Kofi A., propriétaire</div>
           </div>
         </div>
       </div>
@@ -220,6 +220,25 @@
             }
           }
         </div>
+      </div>
+    </div>
+
+    <!-- ── Photo gallery strip ───────────────────────────────── -->
+    <div class="lp-gallery" aria-hidden="true">
+      <div class="gallery-track">
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <!-- duplicate for seamless loop -->
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
+        <img class="gallery-photo" src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=420&h=240&q=80&auto=format&fit=crop" alt=""/>
       </div>
     </div>
 
@@ -288,7 +307,7 @@
               <div class="sc-grid">
                 @for (c of cardData; track c.color) {
                   <div class="sc-card">
-                    <div class="sc-card-img" [style.background]="c.color"></div>
+                    <img class="sc-card-img" [src]="c.photo" alt="" loading="lazy"/>
                     <div class="sc-card-body">
                       <div class="mock-line" style="width:85%"></div>
                       <div class="mock-line mock-line-xs" style="width:60%"></div>
@@ -423,11 +442,11 @@
                       <div class="dl-ph-chip"></div>
                     </div>
                     <div class="dl-ph-card">
-                      <div class="dl-ph-card-img" style="background:linear-gradient(135deg,#C0392B,#6b1a12)"></div>
+                      <img class="dl-ph-card-img" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=80&q=70&auto=format&fit=crop" alt="" loading="lazy"/>
                       <div class="dl-ph-card-info"><div class="dl-ph-line"></div><div class="dl-ph-line" style="width:60%;opacity:.5"></div></div>
                     </div>
                     <div class="dl-ph-card">
-                      <div class="dl-ph-card-img" style="background:linear-gradient(135deg,#D97706,#7c4200)"></div>
+                      <img class="dl-ph-card-img" src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=80&q=70&auto=format&fit=crop" alt="" loading="lazy"/>
                       <div class="dl-ph-card-info"><div class="dl-ph-line"></div><div class="dl-ph-line" style="width:75%;opacity:.5"></div></div>
                     </div>
                   </div>

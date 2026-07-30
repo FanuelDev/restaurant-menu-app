@@ -1,6 +1,7 @@
 import { Component, signal, computed, AfterViewInit, OnDestroy, OnInit, PLATFORM_ID, inject, ChangeDetectionStrategy } from '@angular/core'
 import { isPlatformBrowser, CommonModule } from '@angular/common'
 import { RouterLink } from '@angular/router'
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
 import { take } from 'rxjs/operators'
 import { SubscriptionService } from '../../shared/services/subscription.service'
@@ -8,15 +9,74 @@ import { LangSwitcherComponent } from '../../shared/components/lang-switcher/lan
 import type { Plan, BillingCycle } from '../../shared/models'
 
 interface Feature { icon: string; color: string; badge?: string }
+interface FeatureRendered { icon: SafeHtml; color: string; badge?: string }
 
-const FEATURES: Feature[] = [
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`, color: '#C0392B' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`, color: '#D97706' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, color: '#16A34A' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`, color: '#B45309' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`, color: '#8E44AD' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`, color: '#0891B2' },
-  { icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`, color: '#7C3AED', badge: 'Enterprise' },
+const FEATURE_ICONS: Feature[] = [
+  {
+    color: '#C0392B',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="8" height="8" rx="1.5" fill="currentColor" opacity=".9"/>
+      <rect x="14" y="2" width="8" height="8" rx="1.5" fill="currentColor" opacity=".9"/>
+      <rect x="2" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".9"/>
+      <rect x="14" y="14" width="3.5" height="3.5" rx=".8" fill="currentColor"/>
+      <rect x="19.5" y="14" width="2.5" height="2.5" rx=".6" fill="currentColor" opacity=".6"/>
+      <rect x="14" y="18.5" width="2.5" height="3.5" rx=".6" fill="currentColor" opacity=".6"/>
+      <rect x="18" y="18" width="4" height="4" rx=".8" fill="currentColor"/>
+      <rect x="4" y="4" width="4" height="4" rx=".5" fill="white" opacity=".9"/>
+      <rect x="16" y="4" width="4" height="4" rx=".5" fill="white" opacity=".9"/>
+      <rect x="4" y="16" width="4" height="4" rx=".5" fill="white" opacity=".9"/>
+    </svg>`
+  },
+  {
+    color: '#D97706',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" opacity=".85"/>
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".4"/>
+    </svg>`
+  },
+  {
+    color: '#16A34A',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="7" r="4" fill="currentColor" opacity=".9"/>
+      <path d="M1 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".9"/>
+      <circle cx="19" cy="8" r="2.5" fill="currentColor" opacity=".5"/>
+      <path d="M23 21v-.5a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity=".5"/>
+    </svg>`
+  },
+  {
+    color: '#B45309',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="2" width="16" height="20" rx="2" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="2"/>
+      <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="17" cy="17" r="4.5" fill="currentColor"/>
+      <path d="M15.5 17l1.2 1.2L18.5 15.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`
+  },
+  {
+    color: '#8E44AD',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9.5" fill="currentColor" opacity=".12" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 7v5.5l3.5 3.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+    </svg>`
+  },
+  {
+    color: '#0891B2',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="2" width="14" height="20" rx="2.5" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="17.5" r="1.5" fill="currentColor" opacity=".8"/>
+      <rect x="8.5" y="5.5" width="7" height="8" rx="1" fill="currentColor" opacity=".7"/>
+    </svg>`
+  },
+  {
+    color: '#7C3AED',
+    badge: 'Enterprise',
+    icon: `<svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="2"/>
+      <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>`
+  },
 ]
 
 const STEPS = ['01', '02', '03']
@@ -29,6 +89,7 @@ const TESTIMONIALS = [
 ]
 
 const FAQ_INDICES = [0, 1, 2, 3, 4]
+
 
 @Component({
   selector: 'app-landing',
@@ -366,6 +427,89 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     @keyframes slideUpFade { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
     @keyframes slideRightFade { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes floatSlow { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-12px) rotate(-2deg)} }
+
+    /* ── Hero visual — realistic ─────────────────────────────── */
+    .hv-food-wrap {
+      position: absolute; left: -56px; top: 50%; transform: translateY(-50%);
+      width: 230px; border-radius: 20px; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07);
+      animation: floatSlow 6s ease-in-out infinite;
+      z-index: 0;
+    }
+    @media (max-width: 1200px) { .hv-food-wrap { display: none; } }
+    .hv-food-img { width: 100%; height: 280px; object-fit: cover; display: block; }
+    .hv-scan-badge {
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(13,9,7,.82); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 100px;
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+      padding: 7px 14px; font-size: .72rem; color: rgba(245,240,232,.85);
+    }
+    .hv-scan-badge strong { color: white; }
+
+    .hv-phone {
+      position: relative; z-index: 2;
+      width: 240px; background: #0f0b09;
+      border-radius: 36px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.04);
+      overflow: hidden;
+      animation: float 5s ease-in-out infinite;
+    }
+    .hv-phone-notch {
+      height: 28px; background: #0f0b09;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 3;
+    }
+    .hv-notch-pill { width: 72px; height: 10px; background: #1a1210; border-radius: 10px; }
+
+    .hv-cover { position: relative; height: 110px; overflow: hidden; }
+    .hv-cover-img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.65); }
+    .hv-cover-overlay {
+      position: absolute; inset: 0; padding: 12px 14px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .hv-rest-name { font-size: .875rem; font-weight: 800; color: white; letter-spacing: -.02em; line-height: 1.2; }
+    .hv-rest-sub  { font-size: .6rem; color: rgba(255,255,255,.65); margin-top: 2px; }
+    .hv-stars { font-size: .6rem; color: #F59E0B; margin-top: 4px; }
+    .hv-stars span { color: rgba(255,255,255,.7); margin-left: 3px; }
+
+    .hv-cats {
+      display: flex; gap: 6px; padding: 10px 12px 6px;
+      background: white; border-bottom: 1px solid #f0ece6;
+    }
+    .hv-cat {
+      font-size: .6rem; font-weight: 600; padding: 4px 10px; border-radius: 100px;
+      background: #f5f0ea; color: #888; white-space: nowrap;
+    }
+    .hv-cat-active { background: var(--brand); color: white; }
+
+    .hv-items { background: white; padding: 8px 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .hv-item { display: flex; align-items: center; gap: 9px; }
+    .hv-item-img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+    .hv-item-info { flex: 1; min-width: 0; }
+    .hv-item-name { font-size: .65rem; font-weight: 700; color: #1a1410; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hv-item-desc { font-size: .55rem; color: #aaa; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hv-item-price { font-size: .6rem; font-weight: 800; color: var(--brand); margin-top: 3px; }
+    .hv-add {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--brand); color: white;
+      border: none; font-size: .875rem; font-weight: 700; cursor: default;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .hv-rating-card {
+      position: absolute; bottom: -16px; right: -20px; z-index: 3;
+      background: white; border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06);
+      animation: float 5s ease-in-out .8s infinite;
+      min-width: 155px;
+    }
+    @media (max-width: 1024px) { .hv-rating-card { display: none; } }
+    .hv-rating-stars { color: #F59E0B; font-size: .875rem; margin-bottom: 4px; }
+    .hv-rating-text { font-size: .72rem; font-weight: 600; color: #1a1410; line-height: 1.3; }
+    .hv-rating-author { font-size: .6rem; color: #aaa; margin-top: 4px; }
 
     /* ── Trusted bar ─────────────────────────────────────── */
     .lp-trusted {
@@ -388,6 +532,31 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
       color: rgba(245,240,232,.28); letter-spacing: -.01em;
     }
     .trusted-sep { color: rgba(192,57,43,.35); font-size: .75rem; }
+
+    /* ── Photo gallery strip ─────────────────────────────── */
+    .lp-gallery {
+      overflow: hidden; padding: 24px 0;
+      background: #0d0907;
+      border-top: 1px solid rgba(255,255,255,.05);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .gallery-track {
+      display: flex; gap: 12px;
+      animation: galleryScroll 32s linear infinite;
+      width: max-content;
+    }
+    .gallery-track:hover { animation-play-state: paused; }
+    .gallery-photo {
+      width: 280px; height: 170px; border-radius: 14px;
+      object-fit: cover; flex-shrink: 0;
+      filter: brightness(.82) saturate(1.1);
+      transition: filter .3s, transform .3s;
+    }
+    .gallery-photo:hover { filter: brightness(1) saturate(1.2); transform: scale(1.02); }
+    @keyframes galleryScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
 
     /* ── Features ─────────────────────────────────────────── */
     .lp-features { background: #fffcf8; }
@@ -464,7 +633,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     .sc-tag-active { background: var(--brand); color: white; border-color: var(--brand); }
     .sc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
     .sc-card { border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
-    .sc-card-img { height: 72px; }
+    .sc-card-img { height: 72px; width: 100%; object-fit: cover; display: block; }
     .sc-card-body { padding: var(--space-3); }
     .sc-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); }
     .sc-price { height: 8px; background: var(--brand); opacity: .5; border-radius: 3px; width: 45%; }
@@ -831,7 +1000,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
       background: rgba(255,255,255,.05); border-radius: 8px; overflow: hidden;
       display: flex; align-items: center; gap: 6px; padding: 4px;
     }
-    .dl-ph-card-img { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; }
+    .dl-ph-card-img { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; object-fit: cover; }
     .dl-ph-card-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .dl-ph-line { height: 5px; background: rgba(255,255,255,.2); border-radius: 3px; }
 
@@ -910,8 +1079,12 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
   private readonly platformId        = inject(PLATFORM_ID)
   private readonly subscriptionSvc   = inject(SubscriptionService)
   private readonly transloco         = inject(TranslocoService)
+  private readonly sanitizer         = inject(DomSanitizer)
 
-  readonly features     = FEATURES
+  readonly features: FeatureRendered[] = FEATURE_ICONS.map(f => ({
+    ...f,
+    icon: this.sanitizer.bypassSecurityTrustHtml(f.icon),
+  }))
   readonly steps        = STEPS
   readonly stepEmojis   = STEP_EMOJIS
   readonly testimonials = TESTIMONIALS
@@ -942,12 +1115,12 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
   readonly itemWidths   = ['72%', '58%', '85%', '64%']
   readonly phoneCardColors = ['linear-gradient(135deg,#FF6B4A,#C0392B)', 'linear-gradient(135deg,#4A9AF6,#2563EB)']
   readonly cardData = [
-    { color: 'linear-gradient(135deg,#FF8C69,#E67E22)', on: true },
-    { color: 'linear-gradient(135deg,#7CB9E8,#2563EB)', on: true },
-    { color: 'linear-gradient(135deg,#B8E4A8,#16A34A)', on: false },
-    { color: 'linear-gradient(135deg,#FFD580,#D97706)', on: true },
-    { color: 'linear-gradient(135deg,#DDA0DD,#8E44AD)', on: true },
-    { color: 'linear-gradient(135deg,#87CEEB,#0891B2)', on: true },
+    { color: 'linear-gradient(135deg,#FF8C69,#E67E22)', on: true,  photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=220&q=75&auto=format&fit=crop' },
+    { color: 'linear-gradient(135deg,#7CB9E8,#2563EB)', on: true,  photo: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=220&q=75&auto=format&fit=crop' },
+    { color: 'linear-gradient(135deg,#B8E4A8,#16A34A)', on: false, photo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=220&q=75&auto=format&fit=crop' },
+    { color: 'linear-gradient(135deg,#FFD580,#D97706)', on: true,  photo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=220&q=75&auto=format&fit=crop' },
+    { color: 'linear-gradient(135deg,#DDA0DD,#8E44AD)', on: true,  photo: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=220&q=75&auto=format&fit=crop' },
+    { color: 'linear-gradient(135deg,#87CEEB,#0891B2)', on: true,  photo: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=220&q=75&auto=format&fit=crop' },
   ]
 
   private observer?: IntersectionObserver
@@ -992,17 +1165,27 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return
     window.addEventListener('scroll', this.onScroll, { passive: true })
+    // Set up immediately, then re-run after translations are ready in case new elements rendered
+    setTimeout(() => this.setupRevealObserver(), 50)
     this.transloco.selectTranslation().pipe(take(1)).subscribe(() => {
       setTimeout(() => this.setupRevealObserver(), 0)
     })
   }
 
   private setupRevealObserver(): void {
+    this.observer?.disconnect()
     this.observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible') }),
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.05, rootMargin: '60px 0px 0px 0px' }
     )
-    document.querySelectorAll('.reveal').forEach((el) => this.observer!.observe(el))
+    document.querySelectorAll('.reveal').forEach((el) => {
+      const rect = (el as Element).getBoundingClientRect()
+      if (rect.top < window.innerHeight + 60) {
+        el.classList.add('visible')
+      } else {
+        this.observer!.observe(el)
+      }
+    })
   }
 
   ngOnDestroy(): void {
