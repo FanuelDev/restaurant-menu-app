@@ -17,6 +17,19 @@ import { AuthService } from '../../shared/services/auth.service'
       min-height: 100vh;
     }
 
+    /* ── Back home link ──────────────────────────── */
+    .av-back-home {
+      position: absolute; top: 20px; left: 24px; z-index: 10;
+      display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,.7); font-size: .8125rem; font-weight: 600;
+      text-decoration: none;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.18); border-radius: 100px;
+      padding: 7px 14px;
+      transition: background .2s, color .2s;
+    }
+    .av-back-home:hover { background: rgba(255,255,255,.22); color: white; }
+
     /* ── Visual panel (gauche) ─────────────────── */
     .auth-visual {
       flex: 1;
