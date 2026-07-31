@@ -38,11 +38,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   // Limites
   MAX_IMAGE_SIZE_MB: Env.schema.number.optional(),
 
-  // CinetPay
-  CINETPAY_API_KEY: Env.schema.string.optional(),
-  CINETPAY_SITE_ID: Env.schema.string.optional(),
-  CINETPAY_NOTIFY_URL: Env.schema.string.optional(),
-  CINETPAY_RETURN_URL: Env.schema.string.optional(),
+  // FedaPay
+  FEDAPAY_SECRET_KEY: Env.schema.string.optional(),
+  FEDAPAY_WEBHOOK_SECRET: Env.schema.string.optional(),
+  FEDAPAY_CALLBACK_URL: Env.schema.string.optional(),
+  FEDAPAY_RETURN_URL: Env.schema.string.optional(),
+  FEDAPAY_SANDBOX: Env.schema.string.optional(),
 
   // SMTP — emails transactionnels (vérification de compte, etc.)
   SMTP_HOST: Env.schema.string.optional(),

@@ -12,16 +12,19 @@ export default class Subscription extends BaseModel {
   declare id: number
 
   @column()
+  declare paymentProvider: 'fedapay'
+
+  @column()
   declare restaurantId: number
 
   @column()
   declare planId: number
 
   @column()
-  declare cinetpayTransactionId: string | null
+  declare fedapayTransactionId: string | null
 
   @column()
-  declare cinetpayPaymentToken: string | null
+  declare fedapayPaymentToken: string | null
 
   @column()
   declare billingCycle: BillingCycle

@@ -3,14 +3,14 @@ import db from '@adonisjs/lucid/services/db'
 import Plan from '#models/plan'
 import Restaurant from '#models/restaurant'
 import Subscription from '#models/subscription'
-import CinetPayService from '#services/cinetpay_service'
+import FedaPayService from '#services/fedapay_service'
 import { mailService } from '#services/mail_service'
 import User from '#models/user'
 
 const TRIAL_DAYS = 14
 
 export default class SubscriptionService {
-  readonly #cinetpay = new CinetPayService()
+  readonly #fedapay = new FedaPayService()
 
   /** Attache le plan Free et démarre la période d'essai lors de la création du restaurant */
   async startTrial(restaurant: Restaurant): Promise<void> {
@@ -65,7 +65,7 @@ export default class SubscriptionService {
     return { categories, menuItems, users }
   }
 
-  /** Initie un paiement CinetPay pour un abonnement */
+  /** Initie un paiement FedaPay (Mobile Money / Carte) pour un abonnement */
   async initiatePayment(params: {
     restaurant: Restaurant
     plan: Plan
@@ -80,44 +80,40 @@ export default class SubscriptionService {
         ? params.plan.priceYearlyCents
         : params.plan.priceMonthlyCents
 
-    const transactionId = this.#cinetpay.generateTransactionId()
-
-    const result = await this.#cinetpay.initPayment({
-      transactionId,
+    const result = await this.#fedapay.initPayment({
       amountCents,
-      currency: 'EUR',
+      currency: 'XOF',
       description: `Abonnement ${params.plan.name} — ${params.billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}`,
-      customerName: params.customerName,
-      customerSurname: params.customerSurname,
+      customerFirstname: params.customerName,
+      customerLastname:  params.customerSurname,
       customerEmail: params.customerEmail,
       customerPhone: params.customerPhone,
-      metadata: JSON.stringify({
+      metadata: {
         restaurantId: params.restaurant.id,
         planId: params.plan.id,
         billingCycle: params.billingCycle,
-      }),
+      },
     })
 
-    // Crée une subscription en statut pending
     await Subscription.create({
+      paymentProvider: 'fedapay',
       restaurantId: params.restaurant.id,
       planId: params.plan.id,
-      cinetpayTransactionId: transactionId,
-      cinetpayPaymentToken: result.paymentToken,
+      fedapayTransactionId: result.transactionId,
+      fedapayPaymentToken: result.paymentToken,
       billingCycle: params.billingCycle,
       status: 'pending',
       amountCents,
-      currency: 'EUR',
+      currency: 'XOF',
     })
 
-    return { paymentUrl: result.paymentUrl, transactionId }
+    return { paymentUrl: result.paymentUrl, transactionId: result.transactionId }
   }
 
-  /** Appelé par le webhook CinetPay — active l'abonnement après paiement confirmé */
-  async activateSubscription(transactionId: string, rawData: Record<string, unknown>): Promise<void> {
-    const subscription = await Subscription.findByOrFail('cinetpayTransactionId', transactionId)
+  /** Appelé par le webhook FedaPay — active l'abonnement après paiement confirmé */
+  async activateSubscription(fedapayTransactionId: string, rawData: Record<string, unknown>): Promise<void> {
+    const subscription = await Subscription.findByOrFail('fedapayTransactionId', fedapayTransactionId)
 
-    // Idempotency guard: skip if already processed (webhook may fire more than once)
     if (subscription.status === 'active') return
 
     const plan = await Plan.findOrFail(subscription.planId)
@@ -143,11 +139,10 @@ export default class SubscriptionService {
       await restaurant.save()
     })
 
-    // Notification email (fire-and-forget)
     const owner = await User.query().where('restaurant_id', subscription.restaurantId).where('role', 'admin').first()
     if (owner) {
       const restaurant = await Restaurant.findOrFail(subscription.restaurantId)
-      const invoiceNumber = `INV-${transactionId.slice(-8).toUpperCase()}`
+      const invoiceNumber = `INV-FP-${fedapayTransactionId.slice(-8).toUpperCase()}`
       const periodEndFmt = periodEnd.setLocale('fr').toLocaleString(DateTime.DATE_FULL)
       mailService.sendSubscriptionActivated(
         owner.email,

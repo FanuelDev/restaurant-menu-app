@@ -3,10 +3,10 @@ import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import env from '#start/env'
 import { mailService } from '#services/mail_service'
-import CinetPayService from '#services/cinetpay_service'
+import FedaPayService from '#services/fedapay_service'
 import SubscriptionService from '#services/subscription_service'
 
-const cinetpay = new CinetPayService()
+const fedapay = new FedaPayService()
 const subscriptionService = new SubscriptionService()
 
 export default class CronController {
@@ -147,28 +147,28 @@ export default class CronController {
     })
   }
 
-  // ─── 3. CinetPay reconciliation — detect missed webhooks ─────────────────
+  // ─── 3. FedaPay reconciliation — detect missed webhooks ──────────────────
 
-  async cinetpayReconciliation(ctx: HttpContext) {
+  async fedapayReconciliation(ctx: HttpContext) {
     if (!this.authorize(ctx)) return
-    this.asyncCron(ctx, 'cinetpayReconciliation', async () => {
+    this.asyncCron(ctx, 'fedapayReconciliation', async () => {
       const pending = await db
         .from('subscriptions')
         .where('status', 'pending')
         .whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 2 HOUR)')
         .whereRaw('created_at > DATE_SUB(NOW(), INTERVAL 48 HOUR)')
-        .select('id', 'cinetpay_transaction_id as transactionId', 'restaurant_id as restaurantId')
+        .select('id', 'fedapay_transaction_id as transactionId', 'restaurant_id as restaurantId')
 
       for (const sub of pending) {
         if (!sub.transactionId) continue
         try {
-          const { status, raw } = await cinetpay.verifyPayment(sub.transactionId)
+          const { status, raw } = await fedapay.verifyPayment(sub.transactionId)
           if (status === 'ACCEPTED') {
             await subscriptionService.activateSubscription(sub.transactionId, raw as Record<string, unknown>)
           } else if (status === 'REFUSED') {
             await db.from('subscriptions').where('id', sub.id).update({ status: 'canceled' })
           }
-        } catch (err) { console.error(`[Cron] CinetPay reconcile error ${sub.transactionId}:`, err) }
+        } catch (err) { console.error(`[Cron] FedaPay reconcile error ${sub.transactionId}:`, err) }
       }
     })
   }

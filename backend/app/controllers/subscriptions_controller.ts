@@ -40,7 +40,7 @@ export default class SubscriptionsController {
     })
   }
 
-  /** POST /api/admin/subscription — initie un paiement CinetPay */
+  /** POST /api/admin/subscription — initie un paiement FedaPay */
   async subscribe({ request, response, auth, restaurant }: HttpContext) {
     const { planSlug, billingCycle } = await request.validateUsing(subscribeValidator)
     const plan = await Plan.findByOrFail('slug', planSlug)

@@ -66,8 +66,8 @@ router.get('/api/docs', async ({ response }) => {
 </html>`)
 })
 
-// ─── CinetPay webhook (no auth, no tenant) ────────────────────────────────────
-router.post('/webhooks/cinetpay', [WebhooksController, 'cinetpay'])
+// ─── FedaPay webhook (no auth, no tenant) ─────────────────────────────────────
+router.post('/webhooks/fedapay', [WebhooksController, 'fedapay'])
 
 // ─── Auth (no tenant required) ────────────────────────────────────────────────
 router.post('/api/auth/login', [AuthController, 'login'])
@@ -91,7 +91,7 @@ router.get('/api/register/check-slug', [RegisterController, 'checkSlug'])
 // ─── Cron (scheduler externe) ─────────────────────────────────────────────────
 router.post('/api/cron/trial-reminders',        [CronController, 'trialReminders'])
 router.post('/api/cron/subscription-lifecycle', [CronController, 'subscriptionLifecycle'])
-router.post('/api/cron/cinetpay-reconcile',     [CronController, 'cinetpayReconciliation'])
+router.post('/api/cron/fedapay-reconcile',      [CronController, 'fedapayReconciliation'])
 router.post('/api/cron/upsell-nudge',           [CronController, 'upsellNudge'])
 router.post('/api/cron/reservation-reminders',  [CronController, 'reservationReminders'])
 router.post('/api/cron/weekly-reports',         [CronController, 'weeklyReports'])

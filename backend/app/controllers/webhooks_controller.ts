@@ -1,37 +1,41 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import CinetPayService, { type CinetPayNotification } from '#services/cinetpay_service'
+import FedaPayService, { type FedaPayWebhookEvent } from '#services/fedapay_service'
 import SubscriptionService from '#services/subscription_service'
 
 export default class WebhooksController {
-  readonly #cinetpay = new CinetPayService()
+  readonly #fedapay = new FedaPayService()
   readonly #subscriptionService = new SubscriptionService()
 
   /**
-   * POST /webhooks/cinetpay
-   * CinetPay envoie une notification POST à cette URL après un paiement.
-   * On re-vérifie via l'API CinetPay (ne pas faire confiance au payload seul).
+   * POST /webhooks/fedapay
+   * FedaPay envoie une notification POST à cette URL après un événement de paiement.
+   * On valide la signature HMAC puis on active l'abonnement si le paiement est approuvé.
    */
-  async cinetpay({ request, response }: HttpContext) {
-    const payload = request.body() as CinetPayNotification
+  async fedapay({ request, response }: HttpContext) {
+    const rawBody = request.raw() ?? ''
+    const signature = request.header('FedaPay-Signature') ?? ''
 
-    // Vérification basique du site_id
-    if (!this.#cinetpay.validateWebhookSignature(payload)) {
+    if (!this.#fedapay.validateWebhookSignature(rawBody, signature)) {
       return response.unauthorized({ message: 'Signature invalide.' })
     }
 
-    const transactionId = payload.cpm_trans_id as string
-    if (!transactionId) {
-      return response.badRequest({ message: 'transaction_id manquant.' })
+    const event = request.body() as FedaPayWebhookEvent
+
+    // On traite uniquement les événements de transaction approuvée
+    if (event.name === 'transaction.approved' || event.name === 'transaction.transferred') {
+      const tx = event.entity as { id?: number | string; status?: string }
+      const fedapayTransactionId = String(tx.id ?? '')
+
+      if (fedapayTransactionId) {
+        // Re-vérifier via l'API FedaPay pour éviter les faux webhooks
+        const { status, raw } = await this.#fedapay.verifyPayment(fedapayTransactionId)
+        if (status === 'ACCEPTED') {
+          await this.#subscriptionService.activateSubscription(fedapayTransactionId, raw)
+        }
+      }
     }
 
-    // Re-vérifier le statut via l'API CinetPay
-    const { status, raw } = await this.#cinetpay.verifyPayment(transactionId)
-
-    if (status === 'ACCEPTED') {
-      await this.#subscriptionService.activateSubscription(transactionId, raw)
-    }
-
-    // CinetPay attend toujours un 200 en réponse
-    return response.ok({ message: 'OK', status })
+    // FedaPay attend un 200
+    return response.ok({ message: 'OK' })
   }
 }

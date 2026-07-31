@@ -1205,6 +1205,6 @@ export class LandingComponent implements AfterViewInit, OnDestroy, OnInit {
 
   formatPrice(plan: Plan, cycle: BillingCycle): string {
     const cents = cycle === 'yearly' ? plan.priceYearlyCents : plan.priceMonthlyCents
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(cents / 100)
   }
 }
