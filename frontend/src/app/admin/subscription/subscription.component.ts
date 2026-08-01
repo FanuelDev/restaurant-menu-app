@@ -1,10 +1,13 @@
-﻿import { Component, signal, inject, OnInit, computed } from '@angular/core'
+﻿import { Component, signal, inject, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { SubscriptionService, SubscriptionShowResponse } from '../../shared/services/subscription.service'
 import { AuthService } from '../../shared/services/auth.service'
 import type { Plan, BillingCycle } from '../../shared/models'
 import { TranslocoModule } from '@jsverse/transloco'
+import { environment } from '../../../environments/environment'
+
+declare const FedaPay: any
 
 @Component({
   selector: 'app-subscription',
@@ -126,7 +129,8 @@ import { TranslocoModule } from '@jsverse/transloco'
       &:hover:not(:disabled) { background: var(--brand-dark); }
       &:disabled { opacity: .6; cursor: not-allowed; }
     }
-    .error-msg { background: var(--error-bg); color: var(--error); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: .875rem; border: 1px solid var(--error-border); margin-top: var(--space-4); }
+    .error-msg   { background: var(--error-bg);   color: var(--error);   padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: .875rem; border: 1px solid var(--error-border);   margin-top: var(--space-4); }
+    .success-msg { background: var(--success-bg); color: var(--success); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: .875rem; border: 1px solid var(--success); margin-top: var(--space-4); font-weight: 500; }
   `],
 })
 export class SubscriptionComponent implements OnInit {
@@ -138,6 +142,7 @@ export class SubscriptionComponent implements OnInit {
   readonly actionLoading = signal(false)
   readonly showCancelConfirm = signal(false)
   readonly error = signal<string | null>(null)
+  readonly successMsg = signal<string | null>(null)
   readonly cycle = signal<BillingCycle>('monthly')
   readonly selectedPlan = signal<Plan | null>(null)
 
@@ -193,16 +198,47 @@ export class SubscriptionComponent implements OnInit {
     this.selectedPlan.set(plan)
     this.actionLoading.set(true)
     this.error.set(null)
+    this.successMsg.set(null)
 
     this.subscriptionService.subscribe({ planSlug: plan.slug, billingCycle: this.cycle() }).subscribe({
       next: (res) => {
-        window.location.href = res.paymentUrl
+        this.actionLoading.set(false)
+        this.openCheckout(Number(res.transactionId), plan)
       },
       error: (err) => {
         this.actionLoading.set(false)
-        this.error.set(err.error?.message ?? 'common.error')
+        this.selectedPlan.set(null)
+        const msg: string = err.error?.message ?? ''
+        if (msg.includes('non configuré')) {
+          this.error.set('Le système de paiement n\'est pas encore configuré. Contactez l\'administrateur.')
+        } else {
+          this.error.set(msg || 'Une erreur est survenue.')
+        }
       },
     })
+  }
+
+  private openCheckout(transactionId: number, plan: Plan): void {
+    if (typeof FedaPay === 'undefined') {
+      this.error.set('Le module de paiement n\'est pas chargé. Vérifiez votre connexion et rechargez la page.')
+      return
+    }
+
+    const widget = FedaPay.init({
+      public_key: environment.fedapayPublicKey,
+      environment: environment.fedapayEnvironment,
+      transaction: { id: transactionId },
+      onComplete: (reason: string) => {
+        if (reason === FedaPay.CHECKOUT_COMPLETED || reason === 'CHECKOUT COMPLETE') {
+          this.successMsg.set(`Paiement effectué ! Votre abonnement ${plan.name} est en cours d'activation (quelques secondes).`)
+          this.error.set(null)
+          // Recharge après 4s pour laisser le webhook activer l'abonnement
+          setTimeout(() => this.load(), 4000)
+        }
+      },
+    })
+
+    widget.open()
   }
 
   cancelSubscription(): void {

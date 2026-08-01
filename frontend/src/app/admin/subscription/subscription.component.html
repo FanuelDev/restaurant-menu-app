@@ -90,6 +90,9 @@
           </div>
         </div>
 
+        @if (successMsg()) {
+          <div class="success-msg">✅ {{ successMsg() }}</div>
+        }
         @if (error()) {
           <div class="error-msg">{{ error() }}</div>
         }
