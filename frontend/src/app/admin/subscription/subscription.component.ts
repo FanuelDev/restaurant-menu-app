@@ -155,7 +155,9 @@ export class SubscriptionComponent implements OnInit {
 
   enabledFeatures(plan: Plan): string[] {
     if (!plan.features) return []
-    return Object.entries(plan.features).filter(([, v]) => v).map(([k]) => k)
+    return Object.entries(plan.features)
+      .filter(([k, v]) => v && /\s|[^\x00-\x7F]/.test(k))  // garde seulement les labels lisibles (avec espace ou accent)
+      .map(([k]) => k)
   }
 
   isCurrentPlan(plan: Plan): boolean {
