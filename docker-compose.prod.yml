@@ -81,10 +81,11 @@ services:
       CORS_ORIGIN:         https://saemenus.com
       MAX_IMAGE_SIZE_MB:   5
 
-      CINETPAY_API_KEY:    ${CINETPAY_API_KEY}
-      CINETPAY_SITE_ID:    ${CINETPAY_SITE_ID}
-      CINETPAY_NOTIFY_URL: ${CINETPAY_NOTIFY_URL}
-      CINETPAY_RETURN_URL: ${CINETPAY_RETURN_URL}
+      FEDAPAY_SECRET_KEY:      ${FEDAPAY_SECRET_KEY}
+      FEDAPAY_WEBHOOK_SECRET:  ${FEDAPAY_WEBHOOK_SECRET}
+      FEDAPAY_CALLBACK_URL:    https://saemenus.com/webhooks/fedapay
+      FEDAPAY_RETURN_URL:      https://saemenus.com/admin/subscription
+      FEDAPAY_SANDBOX:         false
 
       SMTP_HOST:           ${SMTP_HOST}
       SMTP_PORT:           ${SMTP_PORT}
