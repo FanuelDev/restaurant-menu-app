@@ -79,9 +79,8 @@
                   @if (isCurrentPlan(plan)) {
                     <div class="current-badge">{{ t('subscription.currentPlanBadge') }}</div>
                   } @else {
-                    <button class="btn-subscribe" (click)="initPayment(plan)"
-                            [disabled]="actionLoading()">
-                      {{ actionLoading() && selectedPlan()?.id === plan.id ? t('subscription.redirecting') : t('subscription.selectPlan') }}
+                    <button class="btn-subscribe" (click)="selectPlan(plan)">
+                      {{ t('subscription.selectPlan') }}
                     </button>
                   }
                 </div>
@@ -90,13 +89,41 @@
           </div>
         </div>
 
-        @if (successMsg()) {
-          <div class="success-msg">✅ {{ successMsg() }}</div>
-        }
         @if (error()) {
           <div class="error-msg">{{ error() }}</div>
         }
       }
     </div>
+
+    <!-- Modale contact pour activer un abonnement -->
+    @if (showContactModal() && contactPlan()) {
+      <div class="confirm-overlay" (click)="showContactModal.set(false)">
+        <div class="confirm-box" (click)="$event.stopPropagation()">
+          <h3>Activer le plan <span class="contact-plan-badge">{{ contactPlan()!.name }}</span></h3>
+          <p style="color:var(--text-secondary);font-size:.9rem;margin:0 0 var(--space-4);line-height:1.6;">
+            Le paiement en ligne n'est pas encore disponible. Contactez-nous pour activer votre abonnement — nous procédons manuellement sous 24 h.
+          </p>
+          <div class="contact-modal-body">
+            <div class="contact-row">
+              <div class="contact-row-icon">📧</div>
+              <div class="contact-row-info">
+                <div class="contact-row-label">Email</div>
+                <div class="contact-row-value"><a href="mailto:sophie@saemenus.com">sophie&#64;saemenus.com</a></div>
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="contact-row-icon">💬</div>
+              <div class="contact-row-info">
+                <div class="contact-row-label">WhatsApp</div>
+                <div class="contact-row-value"><a href="https://wa.me/22892580305" target="_blank">+228 92 58 03 05</a></div>
+              </div>
+            </div>
+          </div>
+          <div class="confirm-actions">
+            <button class="btn-outline" (click)="showContactModal.set(false)">Fermer</button>
+          </div>
+        </div>
+      </div>
+    }
     </ng-container>
   

@@ -5,9 +5,6 @@ import { SubscriptionService, SubscriptionShowResponse } from '../../shared/serv
 import { AuthService } from '../../shared/services/auth.service'
 import type { Plan, BillingCycle } from '../../shared/models'
 import { TranslocoModule } from '@jsverse/transloco'
-import { environment } from '../../../environments/environment'
-
-declare const FedaPay: any
 
 @Component({
   selector: 'app-subscription',
@@ -131,6 +128,25 @@ declare const FedaPay: any
     }
     .error-msg   { background: var(--error-bg);   color: var(--error);   padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: .875rem; border: 1px solid var(--error-border);   margin-top: var(--space-4); }
     .success-msg { background: var(--success-bg); color: var(--success); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: .875rem; border: 1px solid var(--success); margin-top: var(--space-4); font-weight: 500; }
+
+    .contact-modal-body { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-5); }
+    .contact-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--gray-50); border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .contact-row-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .contact-row-info { flex: 1; }
+    .contact-row-label { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+    .contact-row-value { font-size: .9rem; font-weight: 600; color: var(--text-primary); }
+    .contact-row a { color: var(--brand); text-decoration: none; }
+    .contact-row a:hover { text-decoration: underline; }
+    .contact-plan-badge {
+      display: inline-block; background: var(--brand-subtle); color: var(--brand);
+      border-radius: var(--radius-xs); padding: .15rem .5rem;
+      font-size: .8125rem; font-weight: 700;
+    }
   `],
 })
 export class SubscriptionComponent implements OnInit {
@@ -141,10 +157,11 @@ export class SubscriptionComponent implements OnInit {
   readonly loading = signal(true)
   readonly actionLoading = signal(false)
   readonly showCancelConfirm = signal(false)
+  readonly showContactModal = signal(false)
+  readonly contactPlan = signal<Plan | null>(null)
   readonly error = signal<string | null>(null)
   readonly successMsg = signal<string | null>(null)
   readonly cycle = signal<BillingCycle>('monthly')
-  readonly selectedPlan = signal<Plan | null>(null)
 
   ngOnInit(): void {
     this.load()
@@ -194,51 +211,9 @@ export class SubscriptionComponent implements OnInit {
     return keys[status] ?? status
   }
 
-  initPayment(plan: Plan): void {
-    this.selectedPlan.set(plan)
-    this.actionLoading.set(true)
-    this.error.set(null)
-    this.successMsg.set(null)
-
-    this.subscriptionService.subscribe({ planSlug: plan.slug, billingCycle: this.cycle() }).subscribe({
-      next: (res) => {
-        this.actionLoading.set(false)
-        this.openCheckout(Number(res.transactionId), plan)
-      },
-      error: (err) => {
-        this.actionLoading.set(false)
-        this.selectedPlan.set(null)
-        const msg: string = err.error?.message ?? ''
-        if (msg.includes('non configuré')) {
-          this.error.set('Le système de paiement n\'est pas encore configuré. Contactez l\'administrateur.')
-        } else {
-          this.error.set(msg || 'Une erreur est survenue.')
-        }
-      },
-    })
-  }
-
-  private openCheckout(transactionId: number, plan: Plan): void {
-    if (typeof FedaPay === 'undefined') {
-      this.error.set('Le module de paiement n\'est pas chargé. Vérifiez votre connexion et rechargez la page.')
-      return
-    }
-
-    const widget = FedaPay.init({
-      public_key: environment.fedapayPublicKey,
-      environment: environment.fedapayEnvironment,
-      transaction: { id: transactionId },
-      onComplete: (reason: string) => {
-        if (reason === FedaPay.CHECKOUT_COMPLETED || reason === 'CHECKOUT COMPLETE') {
-          this.successMsg.set(`Paiement effectué ! Votre abonnement ${plan.name} est en cours d'activation (quelques secondes).`)
-          this.error.set(null)
-          // Recharge après 4s pour laisser le webhook activer l'abonnement
-          setTimeout(() => this.load(), 4000)
-        }
-      },
-    })
-
-    widget.open()
+  selectPlan(plan: Plan): void {
+    this.contactPlan.set(plan)
+    this.showContactModal.set(true)
   }
 
   cancelSubscription(): void {
