@@ -255,7 +255,8 @@ export default class SuperAdminRestaurantsController {
     const subscription = await Subscription.create({
       restaurantId: restaurant.id,
       planId: plan.id,
-      cinetpayTransactionId: `sa_grant_${Date.now()}`,
+      fedapayTransactionId: `sa_grant_${Date.now()}`,
+      paymentProvider: 'fedapay',
       billingCycle,
       status: 'active',
       amountCents: amountPaidCents,
