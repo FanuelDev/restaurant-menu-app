@@ -22,7 +22,6 @@ export default class FedaPayService {
   readonly #secretKey  = env.get('FEDAPAY_SECRET_KEY')
   readonly #webhookSecret = env.get('FEDAPAY_WEBHOOK_SECRET', '')
   readonly #callbackUrl = env.get('FEDAPAY_CALLBACK_URL')
-  readonly #returnUrl   = env.get('FEDAPAY_RETURN_URL')
   readonly #sandbox     = env.get('FEDAPAY_SANDBOX', 'true') === 'true'
 
   get #baseUrl() {

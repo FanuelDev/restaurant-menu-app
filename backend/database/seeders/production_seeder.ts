@@ -42,10 +42,11 @@ export default class ProductionSeeder extends BaseSeeder {
     ]
 
     for (const table of tables) {
-      const exists = await db.schema.hasTable(table)
-      if (exists) {
+      try {
         await db.from(table).delete()
         console.log(`  🗑️  ${table} vidée`)
+      } catch {
+        console.log(`  ⏭️  ${table} ignorée (table inexistante)`)
       }
     }
 

@@ -181,17 +181,18 @@ export default class MainSeeder extends BaseSeeder {
     ])
     console.log(`✅ Restaurant 1 : ${r1.name} (slug: ${r1.slug})`)
 
-    // Active subscription for r1 — upsert pour éviter les conflits sur cinetpayTransactionId
+    // Active subscription for r1 — upsert par fedapayTransactionId
     await Subscription.updateOrCreate(
-      { cinetpayTransactionId: `seed_sub_${r1.id}_pro` },
+      { fedapayTransactionId: `seed_sub_${r1.id}_pro` },
       {
         restaurantId: r1.id,
         planId: proPlan.id,
-        cinetpayPaymentToken: null,
+        paymentProvider: 'fedapay',
+        fedapayPaymentToken: null,
         billingCycle: 'yearly',
         status: 'active',
         amountCents: proPlan.priceYearlyCents,
-        currency: 'EUR',
+        currency: 'XOF',
         currentPeriodStart: DateTime.now(),
         currentPeriodEnd: DateTime.now().plus({ years: 1 }),
         canceledAt: null,
