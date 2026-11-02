@@ -152,6 +152,12 @@ export default class SuperAdminRestaurantsController {
     owner.emailVerificationTokenExpiresAt = null
     await owner.save()
 
+    // Activer le restaurant s'il est encore en attente de vérification
+    if (!restaurant.isActive && !restaurant.blockedAt) {
+      restaurant.isActive = true
+      await restaurant.save()
+    }
+
     await this.#auditService.log({
       ctx: { request } as never,
       user: auth.user!,

@@ -36,9 +36,17 @@ export default class TenantMiddleware {
     }
 
     if (!restaurant.isActive) {
+      // Compte suspendu manuellement par un super-admin
+      if (restaurant.blockedReason !== null || restaurant.blockedAt !== null) {
+        return response.forbidden({
+          message: 'Ce compte restaurant a été suspendu. Contactez le support.',
+          blockedReason: restaurant.blockedReason,
+        })
+      }
+      // Email non encore vérifié (inscription en attente)
       return response.forbidden({
-        message: 'Ce compte restaurant a été suspendu. Contactez le support.',
-        blockedReason: restaurant.blockedReason,
+        message: 'Compte en attente de vérification. Veuillez confirmer votre adresse e-mail.',
+        requiresEmailVerification: true,
       })
     }
 
