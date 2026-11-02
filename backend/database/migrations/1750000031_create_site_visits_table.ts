@@ -4,7 +4,7 @@ export default class extends BaseSchema {
   protected tableName = 'site_visits'
 
   async up() {
-    this.schema.createTable(this.tableName, (table) => {
+    this.schema.createTableIfNotExists(this.tableName, (table) => {
       table.increments('id')
       // hash(ip + user-agent) — anonymisé, non réversible
       table.string('visitor_id', 64).notNullable()
