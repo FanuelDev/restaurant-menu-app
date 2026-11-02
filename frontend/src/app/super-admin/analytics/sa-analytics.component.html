@@ -1,0 +1,107 @@
+<div class="analytics-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Audience</h1>
+    <p class="page-sub">
+      <span class="dot-live"></span>
+      Mise à jour automatique · dernière sync
+      @if (overview()) {
+        {{ lastRefresh() | date:'HH:mm:ss' }}
+      }
+    </p>
+  </div>
+
+  <!-- KPI cards (skeleton while loading) -->
+  @if (loading()) {
+    <div class="skeleton-grid">
+      @for (_ of [1,2,3,4,5]; track $index) {
+        <div class="skeleton"></div>
+      }
+    </div>
+    <div class="bottom-grid">
+      <div class="skeleton-panel"></div>
+      <div class="skeleton-panel"></div>
+    </div>
+  } @else {
+    <div class="kpi-grid">
+      @for (kpi of kpiList; track kpi.key) {
+        <div class="kpi-card" [style.--d]="kpi.d">
+          <div class="kpi-accent" [style.background]="kpi.color"></div>
+          <div class="kpi-icon-wrap" [style.background]="kpi.bg">
+            {{ kpi.icon }}
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-value">{{ kpiValue(kpi.key) | number }}</div>
+            <div class="kpi-label">{{ kpi.label }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="bottom-grid">
+      <!-- Courbe 30 jours -->
+      <div class="panel">
+        <div class="panel-title">Visiteurs uniques — 30 derniers jours</div>
+        <div class="chart-wrap">
+          <svg viewBox="0 0 740 144" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Gradient fill -->
+            <defs>
+              <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="var(--brand)" stop-opacity=".25"/>
+                <stop offset="100%" stop-color="var(--brand)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Horizontal grid lines -->
+            @for (y of [140, 105, 70, 35]; track y) {
+              <line [attr.x1]="0" [attr.y1]="y" [attr.x2]="740" [attr.y2]="y"
+                    stroke="var(--border)" stroke-width="1"/>
+            }
+            <!-- Fill -->
+            @if (chartFill) {
+              <path [attr.d]="chartFill" fill="url(#chartFill)"/>
+            }
+            <!-- Line -->
+            @if (chartPath) {
+              <path [attr.d]="chartPath"
+                    fill="none" stroke="var(--brand)" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            }
+            <!-- Empty state -->
+            @if (!chartPath) {
+              <text x="370" y="72" text-anchor="middle"
+                    fill="var(--text-muted)" font-size="13">Aucune donnée pour l'instant</text>
+            }
+          </svg>
+        </div>
+        <div class="chart-labels">
+          @for (lbl of chartLabels; track $index) {
+            <span class="chart-lbl">{{ lbl }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Top pages -->
+      <div class="panel">
+        <div class="panel-title">Pages les plus visitées</div>
+        @if (overview()?.topPages?.length) {
+          <div class="top-pages">
+            @for (page of overview()!.topPages; track page.path) {
+              <div class="tp-row">
+                <span class="tp-path" [title]="page.path">{{ page.path }}</span>
+                <div class="tp-bar-wrap">
+                  <div class="tp-bar" [style.width.%]="topPageWidth(page.views)"></div>
+                </div>
+                <span class="tp-num">{{ page.views }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <p style="color:var(--text-muted);font-size:.85rem;margin:0">
+            Aucune page visitée pour l'instant.
+          </p>
+        }
+      </div>
+    </div>
+  }
+</div>

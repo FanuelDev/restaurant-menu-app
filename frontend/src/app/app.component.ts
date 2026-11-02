@@ -4,6 +4,7 @@ import { Router, RouterOutlet, NavigationStart, NavigationEnd, NavigationCancel,
 import { CommonModule } from '@angular/common'
 import { Subscription } from 'rxjs'
 import { LangSwitcherComponent } from './shared/components/lang-switcher/lang-switcher.component'
+import { TrackingService } from './shared/services/tracking.service'
 
 @Component({
   selector: 'app-root',
@@ -43,6 +44,8 @@ import { LangSwitcherComponent } from './shared/components/lang-switcher/lang-sw
 export class AppComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router)
   private routerSub?: Subscription
+  // instanciation suffit — le service s'abonne aux événements router dans son constructeur
+  private readonly _tracking = inject(TrackingService)
 
   readonly loading = signal(false)
 

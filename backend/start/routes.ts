@@ -31,6 +31,8 @@ const SAStatsController = () => import('#controllers/super_admin/stats_controlle
 const SaInvoicesController = () => import('#controllers/super_admin/sa_invoices_controller')
 const SaRevenueController = () => import('#controllers/super_admin/revenue_controller')
 const SaIntelligenceController = () => import('#controllers/super_admin/intelligence_controller')
+const SaAnalyticsController    = () => import('#controllers/super_admin/analytics_controller')
+const TrackingController       = () => import('#controllers/tracking_controller')
 
 // Admin invoices
 const InvoicesController = () => import('#controllers/invoices_controller')
@@ -39,6 +41,9 @@ const InvoicesController = () => import('#controllers/invoices_controller')
 const ApiKeysController    = () => import('#controllers/api_keys_controller')
 const ExternalApiController = () => import('#controllers/external_api_controller')
 const CronController = () => import('#controllers/cron_controller')
+
+// ─── Tracking (public, no auth, rate-limit natif AdonisJS) ───────────────────
+router.post('/api/track', [TrackingController, 'store'])
 
 // ─── Static / health ──────────────────────────────────────────────────────────
 router.get('/health', async ({ response }) => response.ok({ status: 'ok', timestamp: new Date().toISOString() }))
@@ -291,6 +296,8 @@ router
     router.get('/invoices/:id', [SaInvoicesController, 'show'])
     router.get('/revenue', [SaRevenueController, 'index'])
     router.get('/intelligence', [SaIntelligenceController, 'index'])
+    router.get('/analytics/overview', [SaAnalyticsController, 'overview'])
+    router.get('/analytics/daily',    [SaAnalyticsController, 'daily'])
     router.get('/gdpr-requests',       [GdprController, 'index'])
     router.patch('/gdpr-requests/:id', [GdprController, 'update'])
   })
