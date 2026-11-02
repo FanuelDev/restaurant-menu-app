@@ -96,7 +96,13 @@ const KNOWN_FEATURES: Array<{ key: string; label: string; desc: string }> = [
     }
 
     /* Modal */
-    .modal-lg { max-width: 600px; }
+    .modal-lg {
+      max-width: 600px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-lg .modal-body { overflow-y: auto; flex: 1; min-height: 0; }
     .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
     .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
     .form-hint  { font-size: .75rem; color: var(--text-muted); font-weight: 400; }
@@ -136,7 +142,7 @@ export class SaPlansComponent implements OnInit {
 
   form = {
     name: '', slug: '', description: '',
-    priceMonthlyCents: 0, priceYearlyCents: 0,
+    priceMonthly: 0, priceYearly: 0,
     maxCategories: -1, maxMenuItems: -1, maxUsers: -1,
     isActive: true, isPublic: true,
   }
@@ -149,7 +155,7 @@ export class SaPlansComponent implements OnInit {
 
   formatCents(cents: number): string {
     if (cents === 0) return 'Gratuit'
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(cents / 100)
   }
 
   private initFeaturesState(plan?: Plan): void {
@@ -161,7 +167,7 @@ export class SaPlansComponent implements OnInit {
 
   openCreate(): void {
     this.editingPlan.set(null)
-    this.form = { name: '', slug: '', description: '', priceMonthlyCents: 0, priceYearlyCents: 0, maxCategories: -1, maxMenuItems: -1, maxUsers: -1, isActive: true, isPublic: true }
+    this.form = { name: '', slug: '', description: '', priceMonthly: 0, priceYearly: 0, maxCategories: -1, maxMenuItems: -1, maxUsers: -1, isActive: true, isPublic: true }
     this.initFeaturesState()
     this.modalError.set(null)
     this.showModal.set(true)
@@ -169,7 +175,7 @@ export class SaPlansComponent implements OnInit {
 
   openEdit(plan: Plan): void {
     this.editingPlan.set(plan)
-    this.form = { name: plan.name, slug: plan.slug, description: plan.description ?? '', priceMonthlyCents: plan.priceMonthlyCents, priceYearlyCents: plan.priceYearlyCents, maxCategories: plan.maxCategories, maxMenuItems: plan.maxMenuItems, maxUsers: plan.maxUsers, isActive: plan.isActive, isPublic: plan.isPublic }
+    this.form = { name: plan.name, slug: plan.slug, description: plan.description ?? '', priceMonthly: plan.priceMonthlyCents / 100, priceYearly: plan.priceYearlyCents / 100, maxCategories: plan.maxCategories, maxMenuItems: plan.maxMenuItems, maxUsers: plan.maxUsers, isActive: plan.isActive, isPublic: plan.isPublic }
     this.initFeaturesState(plan)
     this.modalError.set(null)
     this.showModal.set(true)
@@ -185,7 +191,12 @@ export class SaPlansComponent implements OnInit {
     for (const [key, enabled] of Object.entries(this.featuresState)) {
       if (enabled) features[key] = true
     }
-    const payload = { ...this.form, features }
+    const payload = {
+      ...this.form,
+      priceMonthlyCents: Math.round(this.form.priceMonthly * 100),
+      priceYearlyCents: Math.round(this.form.priceYearly * 100),
+      features,
+    }
     const editing = this.editingPlan()
     const op = editing ? this.saService.updatePlan(editing.id, payload) : this.saService.createPlan(payload)
     op.subscribe({

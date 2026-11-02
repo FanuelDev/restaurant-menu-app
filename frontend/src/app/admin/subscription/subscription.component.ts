@@ -175,11 +175,21 @@ export class SubscriptionComponent implements OnInit {
     })
   }
 
+  private readonly featureLabels: Record<string, string> = {
+    orders:               'Commandes en ligne',
+    reservations:         'Réservations de table',
+    stats:                'Statistiques avancées',
+    priority_support:     'Support prioritaire',
+    gift_qr:              'QR codes cadeaux',
+    financial_management: 'Gestion financière',
+    api_access:           'API développeur',
+  }
+
   enabledFeatures(plan: Plan): string[] {
     if (!plan.features) return []
     return Object.entries(plan.features)
-      .filter(([k, v]) => v && /\s|[^\x00-\x7F]/.test(k))  // garde seulement les labels lisibles (avec espace ou accent)
-      .map(([k]) => k)
+      .filter(([, v]) => !!v)
+      .map(([k]) => this.featureLabels[k] ?? k)
   }
 
   isCurrentPlan(plan: Plan): boolean {

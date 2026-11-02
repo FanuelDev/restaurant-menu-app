@@ -123,12 +123,12 @@
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">{{ t('superAdmin.plans.fieldPriceMonthly') }} <span class="form-hint">(centimes)</span></label>
-                <input [(ngModel)]="form.priceMonthlyCents" type="number" min="0" class="form-control" />
+                <label class="form-label">{{ t('superAdmin.plans.fieldPriceMonthly') }} <span class="form-hint">(XOF)</span></label>
+                <input [(ngModel)]="form.priceMonthly" type="number" min="0" class="form-control" placeholder="0" />
               </div>
               <div class="form-group">
-                <label class="form-label">{{ t('superAdmin.plans.fieldPriceYearly') }} <span class="form-hint">(centimes)</span></label>
-                <input [(ngModel)]="form.priceYearlyCents" type="number" min="0" class="form-control" />
+                <label class="form-label">{{ t('superAdmin.plans.fieldPriceYearly') }} <span class="form-hint">(XOF)</span></label>
+                <input [(ngModel)]="form.priceYearly" type="number" min="0" class="form-control" placeholder="0" />
               </div>
             </div>
             <div class="form-row form-row-3">
