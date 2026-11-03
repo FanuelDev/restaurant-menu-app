@@ -258,6 +258,8 @@
     "submitSave": "保存修改",
     "hoursTitle": "营业时间",
     "hoursClosed": "休息",
+    "hoursOpen": "开业",
+    "hoursClose": "打烊",
     "hoursEditAria": "编辑 {{ day }} 营业时间",
     "hoursPromptOpen": "开门时间（{{ day }}）— 格式 HH:MM：",
     "hoursPromptClose": "关门时间（{{ day }}）— 格式 HH:MM：",

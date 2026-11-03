@@ -1,7 +1,7 @@
 ﻿// frontend/src/app/admin/restaurant/restaurant.component.ts
 import { Component, inject, OnInit, signal, computed } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormBuilder, FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { RestaurantService } from '../../shared/services/restaurant.service'
 import { AuthService } from '../../shared/services/auth.service'
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco'
@@ -28,7 +28,7 @@ const DAYS: { key: string }[] = [
 @Component({
   selector: 'app-restaurant',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslocoModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslocoModule],
   templateUrl: './restaurant.component.html',
   styles: [`
     .page-container { max-width: 960px; }
@@ -158,6 +158,79 @@ const DAYS: { key: string }[] = [
     .hours-day { font-weight: 500; flex: 1; font-size: 0.9375rem; }
     .hours-time { font-size: 0.875rem; color: var(--text-secondary); white-space: nowrap; }
     .hours-closed { font-size: 0.875rem; color: var(--text-muted); font-style: italic; }
+
+    /* ── Hours modal ─────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+      padding: var(--space-4);
+      animation: fadeIn .15s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .hours-modal {
+      background: var(--surface-1); border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      width: min(420px, 100%);
+      box-shadow: 0 8px 40px rgba(0,0,0,.2);
+      animation: slideUp .2s cubic-bezier(.34,1.2,.64,1);
+      overflow: hidden;
+    }
+    @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .modal-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-md);
+      background: var(--color-brand-light, #fef3f2);
+      color: var(--color-brand);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .modal-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: none; background: var(--gray-100, #f3f4f6);
+      color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+      &:hover { background: var(--gray-200, #e5e7eb); color: var(--text-primary); }
+    }
+    .modal-body { padding: var(--space-5) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+    .modal-time-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .modal-field { display: flex; flex-direction: column; gap: var(--space-2); }
+    .modal-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; }
+    .modal-input {
+      padding: 0.625rem 0.875rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface-2, var(--gray-50)); color: var(--text-primary);
+      font-size: 1rem; font-family: var(--font-body);
+      box-sizing: border-box; width: 100%;
+      transition: border-color .15s, box-shadow .15s;
+      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 3px var(--color-brand-light); }
+      &:disabled { opacity: .45; cursor: not-allowed; background: var(--gray-100); }
+    }
+    .modal-closed-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--gray-50, #f9fafb); border-radius: var(--radius-md);
+      border: 1.5px solid var(--border); cursor: pointer;
+    }
+    .modal-closed-row input[type="checkbox"] { accent-color: var(--color-brand); width: 16px; height: 16px; cursor: pointer; }
+    .modal-closed-label { font-size: 0.9375rem; font-weight: 500; color: var(--text-primary); user-select: none; }
+    .modal-footer {
+      padding: var(--space-4) var(--space-6) var(--space-5);
+      border-top: 1px solid var(--border);
+      display: flex; gap: var(--space-3); justify-content: flex-end;
+    }
+    .btn-ghost {
+      padding: 0.625rem 1.25rem; border-radius: var(--radius-md);
+      border: 1.5px solid var(--border); background: transparent;
+      color: var(--text-secondary); font-size: 0.9375rem; font-weight: 500; cursor: pointer;
+      transition: background .15s, border-color .15s;
+      &:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    }
 
     .auto-row { display: flex; align-items: center; gap: var(--space-4); }
     .auto-info { flex: 1; }
@@ -445,6 +518,13 @@ export class RestaurantComponent implements OnInit {
   readonly currencyOptions = CURRENCIES
   readonly autoAvailabilityCtrl = new FormControl(false)
 
+  // Hours modal
+  readonly hoursModalOpen = signal(false)
+  readonly hoursModalDay  = signal<string | null>(null)
+  hoursModalOpen_ = ''
+  hoursModalClose_ = ''
+  hoursModalClosed = false
+
   form = this.fb.group({
     name: ['', Validators.required],
     slogan: [''],
@@ -497,16 +577,26 @@ export class RestaurantComponent implements OnInit {
 
   editHours(day: string): void {
     const hours = this.getHours(day)
-    const open = prompt(this.transloco.translate('restaurant.hoursPromptOpen', { day }), hours?.open ?? '12:00')
-    if (open === null) return
-    const close = prompt(this.transloco.translate('restaurant.hoursPromptClose', { day }), hours?.close ?? '22:00')
-    if (close === null) return
+    this.hoursModalDay.set(day)
+    this.hoursModalOpen_  = hours?.open   ?? '12:00'
+    this.hoursModalClose_ = hours?.close  ?? '22:00'
+    this.hoursModalClosed = hours?.closed ?? false
+    this.hoursModalOpen.set(true)
+  }
 
+  saveHoursModal(): void {
+    const day = this.hoursModalDay()
+    if (!day) return
     const updated = {
       ...this.restaurant()?.openingHours,
-      [day]: { open, close, closed: false },
+      [day]: { open: this.hoursModalOpen_, close: this.hoursModalClose_, closed: this.hoursModalClosed },
     }
     this.restaurantService.update({ openingHours: updated } as never).subscribe()
+    this.hoursModalOpen.set(false)
+  }
+
+  closeHoursModal(): void {
+    this.hoursModalOpen.set(false)
   }
 
   onLogoChange(event: Event): void {

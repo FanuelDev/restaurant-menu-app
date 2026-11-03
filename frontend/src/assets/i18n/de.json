@@ -258,6 +258,8 @@
     "submitSave": "Änderungen speichern",
     "hoursTitle": "Öffnungszeiten",
     "hoursClosed": "Geschlossen",
+    "hoursOpen": "Öffnung",
+    "hoursClose": "Schließung",
     "hoursEditAria": "Öffnungszeiten {{ day }} bearbeiten",
     "hoursPromptOpen": "Öffnung ({{ day }}) — Format HH:MM:",
     "hoursPromptClose": "Schließung ({{ day }}) — Format HH:MM:",
