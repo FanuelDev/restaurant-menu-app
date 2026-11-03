@@ -225,22 +225,24 @@
                 <div class="poster-designs">
 
                   <!-- Design 1 - Classique (Gratuit) -->
-                  <button
+                  <button type="button"
                     class="design-card"
                     [class.design-active]="selectedDesign() === 1"
                     (click)="selectDesign(1)"
                   >
                     <div class="design-preview dp-1" [style.--dp-color]="brandColor()">
                       <div class="dp-bar"></div>
+                      <div class="dp-name-line"></div>
+                      <svg class="dp-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
                       <div class="dp-qr"></div>
-                      <div class="dp-lines"><span></span><span></span></div>
+                      <div class="dp-url-line"></div>
                     </div>
                     <span class="design-name">Classique</span>
                     <span class="design-badge design-badge-free">Gratuit</span>
                   </button>
 
                   <!-- Design 2 - Élégante (Pro) -->
-                  <button
+                  <button type="button"
                     class="design-card"
                     [class.design-active]="selectedDesign() === 2"
                     [class.design-locked]="!isPro()"
@@ -253,7 +255,9 @@
                         </div>
                       }
                       <div class="dp-grad"></div>
+                      <div class="dp-name-dark"></div>
                       <div class="dp-card"></div>
+                      <svg class="dp-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
                       <div class="dp-qr"></div>
                     </div>
                     <span class="design-name">Élégante</span>
@@ -261,7 +265,7 @@
                   </button>
 
                   <!-- Design 3 - Vivante (Pro) -->
-                  <button
+                  <button type="button"
                     class="design-card"
                     [class.design-active]="selectedDesign() === 3"
                     [class.design-locked]="!isPro()"
@@ -275,7 +279,9 @@
                       }
                       <div class="dp-circle-tl"></div>
                       <div class="dp-circle-br"></div>
+                      <div class="dp-name-white"></div>
                       <div class="dp-card"></div>
+                      <svg class="dp-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
                       <div class="dp-qr"></div>
                     </div>
                     <span class="design-name">Vivante</span>

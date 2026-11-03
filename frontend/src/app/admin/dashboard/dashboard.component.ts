@@ -273,36 +273,43 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
       width: 62px; height: 86px; border-radius: 5px; overflow: hidden;
       position: relative; flex-shrink: 0;
     }
-    /* Design 1 - Classique */
+    /* Icône fourchette/couteau partagée */
+    .dp-icon {
+      position: absolute; z-index: 2; left: 50%; transform: translateX(-50%);
+    }
+    /* Design 1 - Classique (blanc) */
     .dp-1 { background: #fff; border: 1px solid #e5e7eb; }
-    .dp-1 .dp-bar { position: absolute; top: 0; left: 0; right: 0; height: 12px; background: var(--dp-color); }
+    .dp-1 .dp-bar { position: absolute; top: 0; left: 0; right: 0; height: 11px; background: var(--dp-color); }
+    .dp-1 .dp-name-line { position: absolute; top: 14px; left: 9px; right: 9px; height: 2px; background: #1f2937; border-radius: 1px; }
+    .dp-1 .dp-icon { top: 19px; color: #374151; }
     .dp-1 .dp-qr {
-      position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 28px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/5px 5px;
+      position: absolute; top: 35px; left: 50%; transform: translateX(-50%);
+      width: 22px; height: 22px; border-radius: 2px;
+      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
     }
-    .dp-1 .dp-lines { position: absolute; bottom: 8px; left: 7px; right: 7px; display: flex; flex-direction: column; gap: 3px; }
-    .dp-1 .dp-lines > span { height: 2.5px; border-radius: 2px; display: block; }
-    .dp-1 .dp-lines > span:first-child { background: #374151; width: 80%; }
-    .dp-1 .dp-lines > span:last-child  { background: var(--dp-color); width: 60%; }
-    /* Design 2 - Élégante */
+    .dp-1 .dp-url-line { position: absolute; bottom: 8px; left: 12px; right: 12px; height: 2px; background: var(--dp-color); border-radius: 1px; opacity: .7; }
+    /* Design 2 - Élégante (sombre) */
     .dp-2 { background: #0f172a; }
-    .dp-2 .dp-grad { position: absolute; top: 0; left: 0; right: 0; height: 18px; background: var(--dp-color); opacity: .55; }
-    .dp-2 .dp-card { position: absolute; top: 20px; left: 7px; right: 7px; bottom: 8px; background: #fff; border-radius: 3px; }
+    .dp-2 .dp-grad { position: absolute; top: 0; left: 0; right: 0; height: 16px; background: var(--dp-color); opacity: .55; }
+    .dp-2 .dp-name-dark { position: absolute; top: 18px; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,.55); border-radius: 1px; }
+    .dp-2 .dp-card { position: absolute; top: 24px; left: 7px; right: 7px; bottom: 7px; background: #fff; border-radius: 3px; }
+    .dp-2 .dp-icon { top: 29px; color: #374151; }
     .dp-2 .dp-qr {
-      position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 28px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/5px 5px;
+      position: absolute; top: 45px; left: 50%; transform: translateX(-50%);
+      width: 22px; height: 22px; border-radius: 2px;
+      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
     }
-    /* Design 3 - Vivante */
+    /* Design 3 - Vivante (couleur brand) */
     .dp-3 { background: var(--dp-color); }
-    .dp-3 .dp-circle-tl { position: absolute; top: -12px; right: -12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.18); }
-    .dp-3 .dp-circle-br { position: absolute; bottom: -10px; left: -10px; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.13); }
-    .dp-3 .dp-card { position: absolute; top: 16px; left: 6px; right: 6px; bottom: 7px; background: #fff; border-radius: 4px; }
+    .dp-3 .dp-circle-tl { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.15); }
+    .dp-3 .dp-circle-br { position: absolute; bottom: -8px; left: -8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.10); }
+    .dp-3 .dp-name-white { position: absolute; top: 8px; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,.85); border-radius: 1px; }
+    .dp-3 .dp-card { position: absolute; top: 18px; left: 6px; right: 6px; bottom: 6px; background: #fff; border-radius: 4px; }
+    .dp-3 .dp-icon { top: 24px; color: #374151; }
     .dp-3 .dp-qr {
-      position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
-      width: 28px; height: 28px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/5px 5px;
+      position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+      width: 22px; height: 22px; border-radius: 2px;
+      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
     }
     .dp-lock {
       position: absolute; inset: 0; z-index: 3; border-radius: 5px;
