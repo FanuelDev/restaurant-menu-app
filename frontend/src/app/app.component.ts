@@ -56,6 +56,13 @@ export class AppComponent implements OnInit, OnDestroy {
   })
 
   ngOnInit(): void {
+    // On a tenant subdomain (e.g. resto-test.saemenus.com), redirect root to /menu
+    const parts = window.location.hostname.split('.')
+    const reserved = new Set(['www', 'app', 'api', 'admin', 'localhost', ''])
+    if (parts.length >= 3 && !reserved.has(parts[0]) && this.router.url === '/') {
+      this.router.navigate(['/menu'], { replaceUrl: true })
+    }
+
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart)  this.loading.set(true)
       if (event instanceof NavigationEnd
