@@ -380,6 +380,7 @@
     </ng-container>
 
 <!-- Hours modal -->
+<ng-container *transloco="let t">
 @if (hoursModalOpen()) {
   <div class="modal-backdrop" (click)="closeHoursModal()">
     <div class="hours-modal" (click)="$event.stopPropagation()">
@@ -424,4 +425,5 @@
     </div>
   </div>
 }
+</ng-container>
   
