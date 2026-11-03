@@ -309,11 +309,19 @@ export class AdminLayoutComponent implements OnInit {
   })
   readonly hasMarketing = computed(() => {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
-    return f['marketing'] === true || f['api_access'] === true
+    return f['marketing'] === true
   })
   readonly hasApi = computed(() => {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
     return f['api_access'] === true
+  })
+  readonly hasTeam = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['team'] === true
+  })
+  readonly hasAuditLogs = computed(() => {
+    const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>
+    return f['audit_logs'] === true
   })
   readonly isPro = computed(() => {
     const f = (this.authService.restaurant()?.plan?.features ?? {}) as Record<string, boolean>

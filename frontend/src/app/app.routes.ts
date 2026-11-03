@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router'
-import { authGuard, superAdminGuard, adminGuard, planGuard } from './shared/guards/auth.guard'
+import { authGuard, superAdminGuard, adminGuard, featureGuard } from './shared/guards/auth.guard'
 
 export const routes: Routes = [
   // ─── Public pages ────────────────────────────────────────────────────────
@@ -120,56 +120,56 @@ export const routes: Routes = [
       },
       {
         path: 'team',
-        canActivate: [planGuard('pro', 'enterprise')],
+        canActivate: [featureGuard('team')],
         loadComponent: () =>
           import('./admin/team/team.component').then((m) => m.TeamComponent),
         title: 'Équipe',
       },
       {
         path: 'audit-logs',
-        canActivate: [planGuard('pro', 'enterprise')],
+        canActivate: [featureGuard('audit_logs')],
         loadComponent: () =>
           import('./admin/audit-logs/audit-logs.component').then((m) => m.AuditLogsComponent),
         title: 'Journal d\'audit',
       },
       {
         path: 'stats',
-        canActivate: [planGuard('pro', 'enterprise')],
+        canActivate: [featureGuard('stats')],
         loadComponent: () =>
           import('./admin/stats/stats.component').then((m) => m.StatsComponent),
         title: 'Statistiques',
       },
       {
         path: 'orders',
-        canActivate: [planGuard('pro', 'enterprise')],
+        canActivate: [featureGuard('orders')],
         loadComponent: () =>
           import('./admin/orders/orders.component').then((m) => m.OrdersComponent),
         title: 'Commandes',
       },
       {
         path: 'reservations',
-        canActivate: [planGuard('pro', 'enterprise')],
+        canActivate: [featureGuard('reservations')],
         loadComponent: () =>
           import('./admin/reservations/reservations.component').then((m) => m.ReservationsComponent),
         title: 'Réservations',
       },
       {
         path: 'api',
-        canActivate: [planGuard('enterprise')],
+        canActivate: [featureGuard('api_access')],
         loadComponent: () =>
           import('./admin/api/api.component').then((m) => m.ApiComponent),
         title: 'API dédiée',
       },
       {
         path: 'finance',
-        canActivate: [planGuard('enterprise')],
+        canActivate: [featureGuard('financial_management')],
         loadComponent: () =>
           import('./admin/finance/finance.component').then((m) => m.FinanceComponent),
         title: 'Gestion financière',
       },
       {
         path: 'marketing',
-        canActivate: [planGuard('enterprise')],
+        canActivate: [featureGuard('marketing')],
         loadComponent: () =>
           import('./admin/marketing/marketing.component').then((m) => m.MarketingComponent),
         title: 'Marketing',

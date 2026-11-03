@@ -30,13 +30,25 @@ export const adminGuard: CanActivateFn = () => {
 }
 
 /**
- * Bloque l'accès à une route si le plan du restaurant ne correspond pas.
+ * Bloque l'accès à une route si la feature n'est pas activée dans le plan.
  * Redirige vers /admin/subscription si insuffisant.
  *
  * Utilisation :
- *   canActivate: [planGuard('enterprise')]
- *   canActivate: [planGuard('pro', 'enterprise')]
+ *   canActivate: [featureGuard('orders')]
+ *   canActivate: [featureGuard('api_access')]
  */
+export const featureGuard = (featureKey: string): CanActivateFn => () => {
+  const authService = inject(AuthService)
+  const router      = inject(Router)
+
+  if (!authService.isAuthenticated()) return router.createUrlTree(['/login'])
+
+  const features = ((authService.restaurant()?.plan as any)?.features ?? {}) as Record<string, boolean>
+  if (features[featureKey] === true) return true
+  return router.createUrlTree(['/admin/subscription'])
+}
+
+/** @deprecated Utiliser featureGuard à la place */
 export const planGuard = (...requiredPlans: string[]): CanActivateFn => () => {
   const authService = inject(AuthService)
   const router      = inject(Router)
@@ -47,7 +59,6 @@ export const planGuard = (...requiredPlans: string[]): CanActivateFn => () => {
   const slug     = plan?.slug ?? ''
   const features = (plan as any)?.features ?? {}
 
-  // Vérifie le slug du plan ET les feature flags éventuels
   const allowed =
     requiredPlans.includes(slug) ||
     (requiredPlans.includes('pro')        && !!features['orders_and_reservations']) ||

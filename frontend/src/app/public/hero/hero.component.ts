@@ -259,4 +259,9 @@ export class HeroComponent {
     }
     return ''
   }
+
+  scrollToMenu(e: Event): void {
+    e.preventDefault()
+    document.getElementById('menu-content')?.scrollIntoView({ behavior: 'smooth' })
+  }
 }
