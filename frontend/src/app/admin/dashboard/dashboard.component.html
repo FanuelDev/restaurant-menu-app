@@ -231,11 +231,39 @@
                     (click)="selectDesign(1)"
                   >
                     <div class="design-preview dp-1" [style.--dp-color]="brandColor()">
-                      <div class="dp-bar"></div>
-                      <div class="dp-name-line"></div>
-                      <svg class="dp-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
-                      <div class="dp-qr"></div>
-                      <div class="dp-url-line"></div>
+                      <svg viewBox="0 0 62 86" xmlns="http://www.w3.org/2000/svg" width="62" height="86" style="display:block">
+                        <rect width="62" height="86" fill="#fffef8"/>
+                        <rect width="62" height="11" fill="var(--dp-color)"/>
+                        <!-- Fourchette gauche -->
+                        <line x1="13" y1="16" x2="13" y2="36" stroke="#b0b8c1" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="10" y1="16" x2="10" y2="21" stroke="#b0b8c1" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="16" y1="16" x2="16" y2="21" stroke="#b0b8c1" stroke-width="1.2" stroke-linecap="round"/>
+                        <path d="M10 21 A3 3 0 0 0 16 21" stroke="#b0b8c1" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                        <!-- Couteau droit -->
+                        <line x1="49" y1="16" x2="49" y2="36" stroke="#b0b8c1" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M49 16 Q53 23 49 27" stroke="#b0b8c1" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                        <line x1="47" y1="27" x2="51" y2="27" stroke="#b0b8c1" stroke-width="1.2" stroke-linecap="round"/>
+                        <!-- Assiette (cercles concentriques) -->
+                        <circle cx="31" cy="33" r="14" fill="none" stroke="#d9dbe1" stroke-width="1.5"/>
+                        <circle cx="31" cy="33" r="11" fill="none" stroke="#ebedf0" stroke-width="1"/>
+                        <path d="M21 28 A14 14 0 0 1 41 28" stroke="var(--dp-color)" stroke-width="1.5" fill="none" opacity="0.3"/>
+                        <!-- QR dans l'assiette -->
+                        <rect x="24" y="26" width="14" height="14" fill="white" rx="1"/>
+                        <rect x="24" y="26" width="5" height="5" fill="#111" rx="0.5"/>
+                        <rect x="33" y="26" width="5" height="5" fill="#111" rx="0.5"/>
+                        <rect x="24" y="35" width="5" height="5" fill="#111" rx="0.5"/>
+                        <rect x="30" y="30" width="2" height="2" fill="#111"/>
+                        <rect x="33" y="33" width="3" height="3" fill="#111"/>
+                        <rect x="33" y="35" width="5" height="5" fill="#111" rx="0.5"/>
+                        <rect x="30" y="33" width="2" height="5" fill="#111"/>
+                        <!-- CTA line -->
+                        <rect x="10" y="52" width="42" height="2.5" rx="1.25" fill="#374151"/>
+                        <rect x="14" y="57" width="34" height="1.5" rx="0.75" fill="var(--dp-color)" opacity="0.7"/>
+                        <circle cx="25" cy="64" r="1.5" fill="#c8cacf"/>
+                        <circle cx="31" cy="64" r="1.5" fill="#c8cacf"/>
+                        <circle cx="37" cy="64" r="1.5" fill="#c8cacf"/>
+                        <rect y="76" width="62" height="10" fill="var(--dp-color)"/>
+                      </svg>
                     </div>
                     <span class="design-name">Classique</span>
                     <span class="design-badge design-badge-free">Gratuit</span>
@@ -254,11 +282,42 @@
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                         </div>
                       }
-                      <div class="dp-grad"></div>
-                      <div class="dp-name-dark"></div>
-                      <div class="dp-card"></div>
-                      <svg class="dp-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
-                      <div class="dp-qr"></div>
+                      <svg viewBox="0 0 62 86" xmlns="http://www.w3.org/2000/svg" width="62" height="86" style="display:block">
+                        <rect width="62" height="86" fill="#0f172a"/>
+                        <rect width="62" height="22" fill="var(--dp-color)" opacity="0.7"/>
+                        <!-- Assiette illustrée brand color -->
+                        <circle cx="31" cy="19" r="10" fill="none" stroke="var(--dp-color)" stroke-width="1.5" opacity="0.9"/>
+                        <circle cx="31" cy="19" r="6.5" fill="none" stroke="var(--dp-color)" stroke-width="1" opacity="0.65"/>
+                        <circle cx="31" cy="8" r="1.5" fill="var(--dp-color)" opacity="0.5"/>
+                        <circle cx="40" cy="11" r="1.5" fill="var(--dp-color)" opacity="0.5"/>
+                        <circle cx="22" cy="11" r="1.5" fill="var(--dp-color)" opacity="0.5"/>
+                        <!-- Fourchette gauche brand -->
+                        <line x1="14" y1="10" x2="14" y2="27" stroke="var(--dp-color)" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="11" y1="10" x2="11" y2="15" stroke="var(--dp-color)" stroke-width="1.2" stroke-linecap="round"/>
+                        <line x1="17" y1="10" x2="17" y2="15" stroke="var(--dp-color)" stroke-width="1.2" stroke-linecap="round"/>
+                        <path d="M11 15 A3 3 0 0 0 17 15" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <!-- Couteau droit brand -->
+                        <line x1="48" y1="10" x2="48" y2="27" stroke="var(--dp-color)" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M48 10 Q52 17 48 21" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <line x1="46" y1="21" x2="50" y2="21" stroke="var(--dp-color)" stroke-width="1.2"/>
+                        <!-- Carte blanche pour QR -->
+                        <rect x="7" y="33" width="48" height="46" rx="3" fill="white"/>
+                        <path d="M9.5 35 L9.5 38.5 L13 38.5" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <path d="M52.5 35 L52.5 38.5 L49 38.5" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <path d="M9.5 77 L9.5 73.5 L13 73.5" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <path d="M52.5 77 L52.5 73.5 L49 73.5" stroke="var(--dp-color)" stroke-width="1.2" fill="none"/>
+                        <rect x="17" y="37" width="28" height="1.5" rx="0.75" fill="var(--dp-color)"/>
+                        <!-- QR simulation -->
+                        <rect x="15" y="41" width="32" height="26" fill="#f8f8f8" rx="1"/>
+                        <rect x="15" y="41" width="11" height="11" fill="#111" rx="0.8"/>
+                        <rect x="36" y="41" width="11" height="11" fill="#111" rx="0.8"/>
+                        <rect x="15" y="56" width="11" height="11" fill="#111" rx="0.8"/>
+                        <rect x="28" y="46" width="4" height="4" fill="#111"/>
+                        <rect x="33" y="49" width="4" height="4" fill="#111"/>
+                        <rect x="36" y="54" width="11" height="11" fill="#111" rx="0.8"/>
+                        <rect x="28" y="53" width="4" height="11" fill="#111"/>
+                        <rect x="15" y="69" width="32" height="1" rx="0.5" fill="#94a3b8"/>
+                      </svg>
                     </div>
                     <span class="design-name">Élégante</span>
                     <span class="design-badge" [class.design-badge-pro]="!isPro()" [class.design-badge-free]="isPro()">Pro</span>
@@ -277,12 +336,43 @@
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                         </div>
                       }
-                      <div class="dp-circle-tl"></div>
-                      <div class="dp-circle-br"></div>
-                      <div class="dp-name-white"></div>
-                      <div class="dp-card"></div>
-                      <svg class="dp-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3v7"/></svg>
-                      <div class="dp-qr"></div>
+                      <svg viewBox="0 0 62 86" xmlns="http://www.w3.org/2000/svg" width="62" height="86" style="display:block">
+                        <rect width="62" height="86" fill="var(--dp-color)"/>
+                        <circle cx="58" cy="2" r="18" fill="rgba(255,255,255,0.10)"/>
+                        <circle cx="4" cy="84" r="14" fill="rgba(255,255,255,0.07)"/>
+                        <!-- Nom restaurant placeholder -->
+                        <rect x="10" y="7" width="42" height="3" rx="1.5" fill="rgba(255,255,255,0.85)"/>
+                        <rect x="16" y="12" width="30" height="2" rx="1" fill="rgba(255,255,255,0.5)"/>
+                        <!-- Fork + knife + mini assiette en blanc -->
+                        <line x1="26" y1="18" x2="26" y2="26" stroke="rgba(255,255,255,0.65)" stroke-width="1.3" stroke-linecap="round"/>
+                        <line x1="24" y1="18" x2="24" y2="21.5" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-linecap="round"/>
+                        <line x1="28" y1="18" x2="28" y2="21.5" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-linecap="round"/>
+                        <path d="M24 21.5 A2 2 0 0 0 28 21.5" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>
+                        <line x1="36" y1="18" x2="36" y2="26" stroke="rgba(255,255,255,0.65)" stroke-width="1.3" stroke-linecap="round"/>
+                        <path d="M36 18 Q39.5 21.5 36 24" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>
+                        <circle cx="31" cy="23" r="4.5" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+                        <circle cx="31" cy="23" r="2.5" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.75"/>
+                        <!-- Carte blanche -->
+                        <rect x="5" y="30" width="52" height="49" rx="4" fill="white"/>
+                        <rect x="12" y="34" width="38" height="1.5" rx="0.75" fill="var(--dp-color)"/>
+                        <!-- QR simulation -->
+                        <rect x="11" y="38" width="40" height="30" fill="#f9fafb" rx="1"/>
+                        <rect x="11" y="38" width="13" height="13" fill="#111" rx="0.8"/>
+                        <rect x="38" y="38" width="13" height="13" fill="#111" rx="0.8"/>
+                        <rect x="11" y="55" width="13" height="13" fill="#111" rx="0.8"/>
+                        <rect x="26" y="43" width="5" height="5" fill="#111"/>
+                        <rect x="33" y="47" width="5" height="5" fill="#111"/>
+                        <rect x="38" y="55" width="13" height="13" fill="#111" rx="0.8"/>
+                        <rect x="26" y="50" width="5" height="11" fill="#111"/>
+                        <rect x="14" y="70" width="34" height="1.2" rx="0.6" fill="#9ca3af"/>
+                        <!-- Mini assiettes déco (icônes plate) -->
+                        <circle cx="24" cy="77" r="3.2" fill="var(--dp-color)" opacity="0.65"/>
+                        <circle cx="24" cy="77" r="2" fill="rgba(255,255,255,0.85)"/>
+                        <circle cx="31" cy="77" r="3.2" fill="var(--dp-color)" opacity="0.65"/>
+                        <circle cx="31" cy="77" r="2" fill="rgba(255,255,255,0.85)"/>
+                        <circle cx="38" cy="77" r="3.2" fill="var(--dp-color)" opacity="0.65"/>
+                        <circle cx="38" cy="77" r="2" fill="rgba(255,255,255,0.85)"/>
+                      </svg>
                     </div>
                     <span class="design-name">Vivante</span>
                     <span class="design-badge" [class.design-badge-pro]="!isPro()" [class.design-badge-free]="isPro()">Pro</span>

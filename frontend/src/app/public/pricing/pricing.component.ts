@@ -86,14 +86,15 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .plans-section { padding: 0 var(--space-6) var(--space-12); }
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(min(var(--plan-cols, 3), 3), 1fr);
-      gap: var(--space-5); max-width: 1080px; margin: 0 auto;
+      grid-template-columns: repeat(var(--plan-cols, 3), 1fr);
+      gap: var(--space-4); max-width: 1400px; margin: 0 auto;
     }
-    @media (max-width: 860px) { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }
+    @media (max-width: 1100px) { .plans-grid { grid-template-columns: repeat(2, 1fr); max-width: 760px; } }
+    @media (max-width: 600px)  { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }
 
     .plan-card {
       background: white; border: 1.5px solid var(--border);
-      border-radius: var(--radius-2xl); padding: var(--space-6);
+      border-radius: var(--radius-2xl); padding: var(--space-5);
       position: relative; transition: box-shadow var(--t-normal), transform var(--t-normal);
     }
     .plan-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }

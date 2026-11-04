@@ -273,44 +273,10 @@ import { QrCodeService } from '../../shared/services/qrcode.service'
       width: 62px; height: 86px; border-radius: 5px; overflow: hidden;
       position: relative; flex-shrink: 0;
     }
-    /* Icône fourchette/couteau partagée */
-    .dp-icon {
-      position: absolute; z-index: 2; left: 50%; transform: translateX(-50%);
-    }
-    /* Design 1 - Classique (blanc) */
-    .dp-1 { background: #fff; border: 1px solid #e5e7eb; }
-    .dp-1 .dp-bar { position: absolute; top: 0; left: 0; right: 0; height: 11px; background: var(--dp-color); }
-    .dp-1 .dp-name-line { position: absolute; top: 14px; left: 9px; right: 9px; height: 2px; background: #1f2937; border-radius: 1px; }
-    .dp-1 .dp-icon { top: 19px; color: #374151; }
-    .dp-1 .dp-qr {
-      position: absolute; top: 35px; left: 50%; transform: translateX(-50%);
-      width: 22px; height: 22px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
-    }
-    .dp-1 .dp-url-line { position: absolute; bottom: 8px; left: 12px; right: 12px; height: 2px; background: var(--dp-color); border-radius: 1px; opacity: .7; }
-    /* Design 2 - Élégante (sombre) */
+    /* Designs 1/2/3 : background de base (le rendu est dans le SVG inline) */
+    .dp-1 { background: #fffef8; }
     .dp-2 { background: #0f172a; }
-    .dp-2 .dp-grad { position: absolute; top: 0; left: 0; right: 0; height: 16px; background: var(--dp-color); opacity: .55; }
-    .dp-2 .dp-name-dark { position: absolute; top: 18px; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,.55); border-radius: 1px; }
-    .dp-2 .dp-card { position: absolute; top: 24px; left: 7px; right: 7px; bottom: 7px; background: #fff; border-radius: 3px; }
-    .dp-2 .dp-icon { top: 29px; color: #374151; }
-    .dp-2 .dp-qr {
-      position: absolute; top: 45px; left: 50%; transform: translateX(-50%);
-      width: 22px; height: 22px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
-    }
-    /* Design 3 - Vivante (couleur brand) */
     .dp-3 { background: var(--dp-color); }
-    .dp-3 .dp-circle-tl { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.15); }
-    .dp-3 .dp-circle-br { position: absolute; bottom: -8px; left: -8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.10); }
-    .dp-3 .dp-name-white { position: absolute; top: 8px; left: 10px; right: 10px; height: 2px; background: rgba(255,255,255,.85); border-radius: 1px; }
-    .dp-3 .dp-card { position: absolute; top: 18px; left: 6px; right: 6px; bottom: 6px; background: #fff; border-radius: 4px; }
-    .dp-3 .dp-icon { top: 24px; color: #374151; }
-    .dp-3 .dp-qr {
-      position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
-      width: 22px; height: 22px; border-radius: 2px;
-      background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0/4px 4px;
-    }
     .dp-lock {
       position: absolute; inset: 0; z-index: 3; border-radius: 5px;
       background: rgba(0,0,0,.48); display: flex; align-items: center; justify-content: center;
@@ -543,231 +509,205 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     return t + '…'
   }
 
+  private drawFork(ctx: CanvasRenderingContext2D, cx: number, y: number, h: number): void {
+    const sp = h * 0.072
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath(); ctx.moveTo(cx + i * sp, y); ctx.lineTo(cx + i * sp, y + h * 0.4); ctx.stroke()
+    }
+    ctx.beginPath(); ctx.arc(cx, y + h * 0.4, sp, Math.PI, 0, true); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cx, y + h * 0.4 + sp * 0.95); ctx.lineTo(cx, y + h); ctx.stroke()
+  }
+
+  private drawKnife(ctx: CanvasRenderingContext2D, cx: number, y: number, h: number): void {
+    ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx, y + h); ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(cx, y)
+    ctx.bezierCurveTo(cx + h * 0.07, y + h * 0.18, cx + h * 0.07, y + h * 0.42, cx, y + h * 0.58)
+    ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cx - h * 0.04, y + h * 0.59); ctx.lineTo(cx + h * 0.04, y + h * 0.59); ctx.stroke()
+  }
+
   private drawDesign1(ctx: CanvasRenderingContext2D, qrImg: HTMLImageElement, name: string, slogan: string, url: string, brand: string): void {
-    // Background blanc
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, 800, 1100)
+    const W = 800, H = 1100
+    ctx.fillStyle = '#fffef8'; ctx.fillRect(0, 0, W, H)
 
-    // Bande couleur haut
-    ctx.fillStyle = brand
-    ctx.fillRect(0, 0, 800, 70)
-
-    // Nom du restaurant
+    // Header brand + fourchette & couteau en blanc
+    ctx.fillStyle = brand; ctx.fillRect(0, 0, W, 108)
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'
+    this.drawFork(ctx, 185, 14, 80)
+    this.drawKnife(ctx, 615, 14, 80)
     ctx.textAlign = 'center'
-    ctx.font = 'bold 38px Georgia, serif'
-    ctx.fillStyle = '#111827'
-    ctx.fillText(this.fitText(ctx, name, 680), 400, 145)
-
-    // Slogan
+    ctx.font = 'bold 30px Georgia, serif'; ctx.fillStyle = '#ffffff'
+    ctx.fillText(this.fitText(ctx, name, 340), 400, 56)
     if (slogan) {
-      ctx.font = 'italic 20px Georgia, serif'
-      ctx.fillStyle = '#6b7280'
-      ctx.fillText(this.fitText(ctx, slogan, 660), 400, 185)
+      ctx.font = 'italic 15px Georgia, serif'; ctx.fillStyle = 'rgba(255,255,255,0.78)'
+      ctx.fillText(this.fitText(ctx, slogan, 370), 400, 88)
     }
 
-    // Ligne décorative
-    ctx.strokeStyle = brand
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(280, 210)
-    ctx.lineTo(520, 210)
-    ctx.stroke()
+    // Label "MENU DIGITAL"
+    ctx.font = 'bold 13px Arial, sans-serif'; ctx.fillStyle = brand
+    ctx.fillText('MENU  DIGITAL', 400, 148)
+    ctx.strokeStyle = '#d1d5db'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(100, 162); ctx.lineTo(370, 162); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(430, 162); ctx.lineTo(700, 162); ctx.stroke()
+    ctx.fillStyle = brand; ctx.beginPath(); ctx.arc(400, 162, 5, 0, Math.PI * 2); ctx.fill()
 
-    // Carte QR code
-    const qrSize = 320
-    const qrX = (800 - qrSize) / 2
-    const qrY = 240
-    ctx.fillStyle = '#f9fafb'
-    this.roundRect(ctx, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48, 20)
-    ctx.fill()
-    ctx.strokeStyle = '#e5e7eb'
-    ctx.lineWidth = 1
-    ctx.stroke()
-    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
+    // Grande assiette illustrée
+    const px = 400, py = 455, pr = 195
+    ctx.strokeStyle = '#d9dbe1'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.stroke()
+    ctx.strokeStyle = '#ebedf0'; ctx.lineWidth = 1.5
+    ctx.beginPath(); ctx.arc(px, py, pr - 22, 0, Math.PI * 2); ctx.stroke()
+    // Arc accent brand
+    ctx.strokeStyle = brand; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.2
+    ctx.beginPath(); ctx.arc(px, py, pr, -Math.PI * 0.35, Math.PI * 1.35); ctx.stroke()
+    ctx.globalAlpha = 1
 
-    // CTA
-    ctx.font = 'bold 22px Arial, sans-serif'
-    ctx.fillStyle = '#111827'
-    ctx.fillText('Scannez pour voir notre menu', 400, 680)
+    // Fourchette gauche + couteau droit de l'assiette
+    ctx.strokeStyle = '#b0b8c1'; ctx.lineWidth = 3; ctx.lineCap = 'round'
+    this.drawFork(ctx, 148, 310, 290)
+    this.drawKnife(ctx, 652, 310, 290)
 
-    // URL
-    ctx.font = '15px monospace'
-    ctx.fillStyle = brand
-    ctx.fillText(this.fitText(ctx, url, 660), 400, 715)
+    // QR code dans l'assiette
+    const qrS = 268
+    ctx.drawImage(qrImg, px - qrS / 2, py - qrS / 2, qrS, qrS)
 
-    // Divider bas
-    ctx.strokeStyle = '#e5e7eb'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(80, 755); ctx.lineTo(720, 755); ctx.stroke()
+    // CTA + URL
+    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(100, 704); ctx.lineTo(700, 704); ctx.stroke()
+    ctx.font = 'bold 22px Arial, sans-serif'; ctx.fillStyle = '#111827'
+    ctx.fillText('Scannez pour voir notre menu', 400, 748)
+    ctx.font = '15px monospace'; ctx.fillStyle = brand
+    ctx.fillText(this.fitText(ctx, url, 660), 400, 782)
 
-    // Tips
-    ctx.font = '14px Arial, sans-serif'
-    ctx.fillStyle = '#9ca3af'
-    ctx.fillText('Compatible avec tous les smartphones', 400, 790)
-    ctx.fillText('Menu toujours a jour en temps reel', 400, 818)
+    // Petits dots décoratifs
+    ctx.fillStyle = '#c8cacf'
+    for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.arc(295 + i * 35, 816, 2.5, 0, Math.PI * 2); ctx.fill() }
 
     // Footer
-    ctx.fillStyle = brand
-    ctx.fillRect(0, 1055, 800, 45)
-    ctx.font = 'bold 14px Arial, sans-serif'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText('Genere par SaeMenus', 400, 1083)
+    ctx.fillStyle = brand; ctx.fillRect(0, 1052, W, 48)
+    ctx.font = 'bold 13px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.9)'
+    ctx.fillText('SaeMenus — Menu digital QR pour restaurants', 400, 1080)
   }
 
   private drawDesign2(ctx: CanvasRenderingContext2D, qrImg: HTMLImageElement, name: string, slogan: string, url: string, brand: string): void {
-    // Background sombre
-    ctx.fillStyle = '#0f172a'
-    ctx.fillRect(0, 0, 800, 1100)
+    const W = 800, H = 1100
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H)
 
-    // Gradient top brand color
-    const grad = ctx.createLinearGradient(0, 0, 0, 200)
-    grad.addColorStop(0, brand)
-    grad.addColorStop(1, 'rgba(15,23,42,0)')
-    ctx.fillStyle = grad
-    ctx.fillRect(0, 0, 800, 200)
+    // Gradient top
+    const grad = ctx.createLinearGradient(0, 0, 0, 170)
+    grad.addColorStop(0, brand); grad.addColorStop(1, 'rgba(15,23,42,0)')
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, 170)
 
-    // Nom restaurant
-    ctx.textAlign = 'center'
-    ctx.font = 'bold 34px Georgia, serif'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText(this.fitText(ctx, name, 680), 400, 110)
-
-    // Slogan
-    if (slogan) {
-      ctx.font = 'italic 18px Georgia, serif'
-      ctx.fillStyle = '#94a3b8'
-      ctx.fillText(this.fitText(ctx, slogan, 660), 400, 148)
+    // Illustration assiette fine dining (brand color, petite, décorative)
+    const px = 400, py = 195, pr = 80
+    ctx.strokeStyle = brand; ctx.lineWidth = 2; ctx.globalAlpha = 0.85
+    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.stroke()
+    ctx.beginPath(); ctx.arc(px, py, pr * 0.68, 0, Math.PI * 2); ctx.stroke()
+    ctx.globalAlpha = 1
+    // Fourchette & couteau autour de l'assiette
+    ctx.strokeStyle = brand; ctx.lineWidth = 2.5; ctx.lineCap = 'round'
+    this.drawFork(ctx, px - pr - 52, py - 72, 148)
+    this.drawKnife(ctx, px + pr + 52, py - 72, 148)
+    // Points décoratifs autour de l'assiette
+    ctx.fillStyle = brand
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 - Math.PI / 2
+      ctx.globalAlpha = 0.45
+      ctx.beginPath(); ctx.arc(px + Math.cos(a) * (pr + 14), py + Math.sin(a) * (pr + 14), 2.5, 0, Math.PI * 2); ctx.fill()
     }
-
-    // Petite ligne déco
-    ctx.strokeStyle = brand
-    ctx.lineWidth = 1.5
-    ctx.globalAlpha = 0.6
-    ctx.beginPath(); ctx.moveTo(320, 172); ctx.lineTo(480, 172); ctx.stroke()
     ctx.globalAlpha = 1
 
-    // Carte blanche pour QR
-    const cardX = 130, cardY = 195, cardW = 540, cardH = 660, cardR = 24
-    ctx.fillStyle = '#ffffff'
-    this.roundRect(ctx, cardX, cardY, cardW, cardH, cardR)
-    ctx.fill()
+    // Nom + slogan
+    ctx.textAlign = 'center'; ctx.font = 'bold 34px Georgia, serif'; ctx.fillStyle = '#ffffff'
+    ctx.fillText(this.fitText(ctx, name, 680), 400, 340)
+    if (slogan) {
+      ctx.font = 'italic 17px Georgia, serif'; ctx.fillStyle = '#94a3b8'
+      ctx.fillText(this.fitText(ctx, slogan, 660), 400, 378)
+    }
+    ctx.strokeStyle = brand; ctx.lineWidth = 1; ctx.globalAlpha = 0.45
+    ctx.beginPath(); ctx.moveTo(250, 398); ctx.lineTo(550, 398); ctx.stroke()
+    ctx.globalAlpha = 1
 
-    // Label "VOTRE MENU" dans la carte
-    ctx.font = 'bold 13px Arial, sans-serif'
-    ctx.fillStyle = brand
-    ctx.letterSpacing = '0.1em'
-    ctx.fillText('VOTRE MENU', 400, 248)
-    ctx.letterSpacing = '0'
-
-    // QR dans la carte
-    const qrSize = 360
-    const qrX = (800 - qrSize) / 2
-    ctx.drawImage(qrImg, qrX, 268, qrSize, qrSize)
-
-    // URL dans la carte
-    ctx.font = '13px monospace'
-    ctx.fillStyle = '#64748b'
-    ctx.fillText(this.fitText(ctx, url, 480), 400, 672)
-
-    // Accents décoratifs coins de la carte
-    const accentSize = 14
-    ctx.strokeStyle = brand
-    ctx.lineWidth = 2
-    // coin haut-gauche
-    ctx.beginPath(); ctx.moveTo(cardX + 12, cardY + 12 + accentSize); ctx.lineTo(cardX + 12, cardY + 12); ctx.lineTo(cardX + 12 + accentSize, cardY + 12); ctx.stroke()
-    // coin haut-droit
-    ctx.beginPath(); ctx.moveTo(cardX + cardW - 12 - accentSize, cardY + 12); ctx.lineTo(cardX + cardW - 12, cardY + 12); ctx.lineTo(cardX + cardW - 12, cardY + 12 + accentSize); ctx.stroke()
-    // coin bas-gauche
-    ctx.beginPath(); ctx.moveTo(cardX + 12, cardY + cardH - 12 - accentSize); ctx.lineTo(cardX + 12, cardY + cardH - 12); ctx.lineTo(cardX + 12 + accentSize, cardY + cardH - 12); ctx.stroke()
-    // coin bas-droit
-    ctx.beginPath(); ctx.moveTo(cardX + cardW - 12 - accentSize, cardY + cardH - 12); ctx.lineTo(cardX + cardW - 12, cardY + cardH - 12); ctx.lineTo(cardX + cardW - 12, cardY + cardH - 12 - accentSize); ctx.stroke()
-
-    // Texte bas
-    ctx.font = 'italic 16px Georgia, serif'
-    ctx.fillStyle = '#475569'
-    ctx.fillText('Scannez et explorez notre carte', 400, 920)
+    // Carte blanche QR avec coins décorés
+    const cX = 120, cY = 420, cW = 560, cH = 520, cR = 20
+    ctx.fillStyle = '#ffffff'; this.roundRect(ctx, cX, cY, cW, cH, cR); ctx.fill()
+    const bs = 18, bo = 18
+    ctx.strokeStyle = brand; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.moveTo(cX+bo, cY+bo+bs); ctx.lineTo(cX+bo, cY+bo); ctx.lineTo(cX+bo+bs, cY+bo); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cX+cW-bo-bs, cY+bo); ctx.lineTo(cX+cW-bo, cY+bo); ctx.lineTo(cX+cW-bo, cY+bo+bs); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cX+bo, cY+cH-bo-bs); ctx.lineTo(cX+bo, cY+cH-bo); ctx.lineTo(cX+bo+bs, cY+cH-bo); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cX+cW-bo-bs, cY+cH-bo); ctx.lineTo(cX+cW-bo, cY+cH-bo); ctx.lineTo(cX+cW-bo, cY+cH-bo-bs); ctx.stroke()
+    ctx.font = 'bold 12px Arial, sans-serif'; ctx.fillStyle = brand
+    ctx.fillText('SCANNEZ POUR VOIR NOTRE MENU', 400, 460)
+    const qrS = 340
+    ctx.drawImage(qrImg, (W - qrS) / 2, 474, qrS, qrS)
+    ctx.font = '13px monospace'; ctx.fillStyle = '#64748b'
+    ctx.fillText(this.fitText(ctx, url, 500), 400, 864)
 
     // Footer
-    ctx.font = 'bold 13px Arial, sans-serif'
-    ctx.fillStyle = '#334155'
-    ctx.fillText('SaeMenus — Menu digital QR', 400, 1070)
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 1046, W, 54)
+    ctx.strokeStyle = brand; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(0, 1046); ctx.lineTo(W, 1046); ctx.stroke()
+    ctx.font = 'bold 13px Arial, sans-serif'; ctx.fillStyle = '#94a3b8'
+    ctx.fillText('SaeMenus — Menu digital pour restaurants', 400, 1078)
   }
 
   private drawDesign3(ctx: CanvasRenderingContext2D, qrImg: HTMLImageElement, name: string, slogan: string, url: string, brand: string): void {
-    // Background couleur brand
-    ctx.fillStyle = brand
-    ctx.fillRect(0, 0, 800, 1100)
+    const W = 800, H = 1100
+    ctx.fillStyle = brand; ctx.fillRect(0, 0, W, H)
 
-    // Cercle décoratif haut-droit
-    ctx.fillStyle = 'rgba(255,255,255,0.12)'
-    ctx.beginPath(); ctx.arc(760, -30, 200, 0, Math.PI * 2); ctx.fill()
+    // Cercles décoratifs
+    ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.beginPath(); ctx.arc(730, -30, 220, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.arc(70, 1080, 180, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.beginPath(); ctx.arc(720, 580, 100, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';       ctx.beginPath(); ctx.arc(80, 300, 60, 0, Math.PI * 2); ctx.fill()
 
-    // Cercle décoratif bas-gauche
-    ctx.fillStyle = 'rgba(255,255,255,0.08)'
-    ctx.beginPath(); ctx.arc(40, 1080, 160, 0, Math.PI * 2); ctx.fill()
-
-    // Cercle décoratif centre-droit (petit)
-    ctx.fillStyle = 'rgba(255,255,255,0.07)'
-    ctx.beginPath(); ctx.arc(740, 550, 90, 0, Math.PI * 2); ctx.fill()
-
-    // Nom restaurant (grand)
-    ctx.textAlign = 'center'
-    ctx.font = 'bold 46px Georgia, serif'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText(this.fitText(ctx, name, 700), 400, 120)
-
-    // Slogan
+    // Nom restaurant (grand, haut)
+    ctx.textAlign = 'center'; ctx.font = 'bold 46px Georgia, serif'; ctx.fillStyle = '#ffffff'
+    ctx.fillText(this.fitText(ctx, name, 700), 400, 105)
     if (slogan) {
-      ctx.font = 'italic 20px Georgia, serif'
-      ctx.fillStyle = 'rgba(255,255,255,0.78)'
-      ctx.fillText(this.fitText(ctx, slogan, 660), 400, 162)
+      ctx.font = 'italic 20px Georgia, serif'; ctx.fillStyle = 'rgba(255,255,255,0.78)'
+      ctx.fillText(this.fitText(ctx, slogan, 660), 400, 146)
     }
 
-    // Carte blanche QR (plus grande)
-    const cardX = 90, cardY = 195, cardW = 620, cardH = 690, cardR = 28
-    ctx.fillStyle = '#ffffff'
-    this.roundRect(ctx, cardX, cardY, cardW, cardH, cardR)
-    ctx.fill()
+    // Fourchette + couteau + mini assiette décoratifs en blanc
+    ctx.strokeStyle = 'rgba(255,255,255,0.62)'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'
+    this.drawFork(ctx, 358, 160, 52)
+    this.drawKnife(ctx, 442, 160, 52)
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5
+    ctx.beginPath(); ctx.arc(400, 184, 13, 0, Math.PI * 2); ctx.stroke()
+    ctx.beginPath(); ctx.arc(400, 184, 8, 0, Math.PI * 2); ctx.stroke()
 
-    // "Scannez pour voir notre menu" en deux lignes dans la carte
-    ctx.font = 'bold 18px Arial, sans-serif'
-    ctx.fillStyle = brand
-    ctx.fillText('Scannez pour voir notre menu', 400, 252)
+    // Carte blanche QR
+    const cX = 80, cY = 226, cW = 640, cH = 688, cR = 28
+    ctx.fillStyle = '#ffffff'; this.roundRect(ctx, cX, cY, cW, cH, cR); ctx.fill()
+    ctx.font = 'bold 14px Arial, sans-serif'; ctx.fillStyle = brand
+    ctx.fillText('SCANNEZ POUR VOIR NOTRE MENU', 400, 272)
+    ctx.strokeStyle = brand; ctx.lineWidth = 1; ctx.globalAlpha = 0.22
+    ctx.beginPath(); ctx.moveTo(160, 285); ctx.lineTo(640, 285); ctx.stroke()
+    ctx.globalAlpha = 1
+    const qrS = 365
+    ctx.drawImage(qrImg, (W - qrS) / 2, 298, qrS, qrS)
+    ctx.font = '14px monospace'; ctx.fillStyle = '#6b7280'
+    ctx.fillText(this.fitText(ctx, url, 560), 400, 706)
+    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(200, 724); ctx.lineTo(600, 724); ctx.stroke()
 
-    // QR dans la carte
-    const qrSize = 380
-    const qrX = (800 - qrSize) / 2
-    ctx.drawImage(qrImg, qrX, 272, qrSize, qrSize)
-
-    // URL
-    ctx.font = '14px monospace'
-    ctx.fillStyle = '#6b7280'
-    ctx.fillText(this.fitText(ctx, url, 550), 400, 698)
-
-    // Petite ligne sous l'url
-    ctx.strokeStyle = '#e5e7eb'
-    ctx.lineWidth = 1
-    ctx.beginPath(); ctx.moveTo(200, 718); ctx.lineTo(600, 718); ctx.stroke()
-
-    // Tagline sous la carte
-    ctx.font = 'bold 20px Arial, sans-serif'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText('Decouvrez notre carte digitale', 400, 950)
-
-    // Petits points décoratifs
-    ctx.fillStyle = 'rgba(255,255,255,0.4)'
-    for (let i = 0; i < 7; i++) {
-      ctx.beginPath()
-      ctx.arc(280 + i * 40, 980, 3, 0, Math.PI * 2)
-      ctx.fill()
+    // Mini assiettes décoratives (icônes "plate" stylisées)
+    for (let i = 0; i < 3; i++) {
+      const bx = 326 + i * 74, by = 758
+      ctx.fillStyle = brand; ctx.globalAlpha = 0.65
+      ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.globalAlpha = 1
+      ctx.beginPath(); ctx.arc(bx, by, 6.5, 0, Math.PI * 2); ctx.fill()
     }
+    ctx.globalAlpha = 1
 
     // Footer
-    ctx.fillStyle = 'rgba(0,0,0,0.2)'
-    ctx.fillRect(0, 1045, 800, 55)
-    ctx.font = 'bold 14px Arial, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'
-    ctx.fillText('SaeMenus — Propulsez votre restaurant en ligne', 400, 1078)
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(0, 1042, W, 58)
+    ctx.font = 'bold 14px Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.88)'
+    ctx.fillText('SaeMenus — Menu digital QR pour restaurants', 400, 1076)
   }
 
   private markShared(): void {
