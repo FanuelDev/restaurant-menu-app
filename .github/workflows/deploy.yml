@@ -140,10 +140,9 @@ jobs:
             frontend/dist/restaurant-menu/browser/ \
             "$VPS_USER@$VPS_HOST:$APP_DIR/frontend-dist/"
 
-          # Redémarrer le conteneur Nginx pour servir les nouveaux fichiers
+          # Recréer le conteneur Nginx (applique le volume mount + nouveaux fichiers)
           ssh -p "$PORT" "$VPS_USER@$VPS_HOST" \
-            "docker exec restaurant_frontend nginx -s reload 2>/dev/null || \
-             $COMPOSE up -d --force-recreate frontend"
+            "$COMPOSE up -d --force-recreate frontend"
 
           echo "✅ Frontend déployé avec succès"
 
