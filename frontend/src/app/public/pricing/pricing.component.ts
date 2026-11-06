@@ -122,9 +122,9 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .plan-name { font-size: 1.0625rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
     .plan-desc { font-size: .8125rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
 
-    .plan-price { margin-bottom: var(--space-4); }
-    .price-main { font-size: 2.25rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
-    .price-period { font-size: .875rem; color: var(--text-muted); margin-left: 4px; }
+    .plan-price { margin-bottom: var(--space-3); }
+    .price-main { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+    .price-period { font-size: .8125rem; color: var(--text-muted); margin-left: 4px; }
     .price-forever { display: block; font-size: .8125rem; color: var(--text-muted); margin-top: 4px; }
     .price-saving {
       display: inline-block; margin-left: 8px;

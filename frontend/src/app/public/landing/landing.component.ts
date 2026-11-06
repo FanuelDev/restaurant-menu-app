@@ -777,7 +777,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     .price-card-appear { animation: priceCardIn .55s cubic-bezier(0.22,1,0.36,1) both; }
     .price-card {
       background: white; border: 1.5px solid #f0e8dc;
-      border-radius: var(--radius-xl); padding: var(--space-8);
+      border-radius: var(--radius-xl); padding: var(--space-5) var(--space-6);
       position: relative;
       transition: box-shadow .4s cubic-bezier(0.22,1,0.36,1), transform .4s;
       &:hover { box-shadow: 0 20px 60px rgba(180,80,30,.1); transform: translateY(-6px); }
@@ -789,13 +789,13 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
       padding: var(--space-1) var(--space-4); border-radius: var(--radius-full);
       font-size: .75rem; font-weight: 700; white-space: nowrap;
     }
-    .price-name { font-size: 1.0625rem; font-weight: 700; margin-bottom: var(--space-4); color: var(--text-primary); font-family: 'Playfair Display', Georgia, serif; }
-    .price-amount { margin-bottom: var(--space-4); display: flex; align-items: baseline; gap: 4px; }
-    .price-val { font-family: 'Playfair Display', Georgia, serif; font-size: 2.5rem; color: var(--text-primary); line-height: 1; }
-    .price-period { font-size: .9rem; color: var(--text-muted); }
-    .price-desc { font-size: .875rem; color: var(--text-muted); margin: 0 0 var(--space-6); line-height: 1.6; padding-bottom: var(--space-6); border-bottom: 1px solid #f0e8dc; }
-    .price-features { list-style: none; padding: 0; margin: 0 0 var(--space-8); display: flex; flex-direction: column; gap: var(--space-4); }
-    .price-features li { display: flex; align-items: flex-start; gap: var(--space-3); font-size: .9375rem; color: var(--text-secondary); line-height: 1.5; }
+    .price-name { font-size: .9375rem; font-weight: 700; margin-bottom: var(--space-3); color: var(--text-primary); font-family: 'Playfair Display', Georgia, serif; }
+    .price-amount { margin-bottom: var(--space-3); display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+    .price-val { font-family: 'Playfair Display', Georgia, serif; font-size: 1.75rem; color: var(--text-primary); line-height: 1; }
+    .price-period { font-size: .8125rem; color: var(--text-muted); }
+    .price-desc { font-size: .8125rem; color: var(--text-muted); margin: 0 0 var(--space-5); line-height: 1.6; padding-bottom: var(--space-5); border-bottom: 1px solid #f0e8dc; }
+    .price-features { list-style: none; padding: 0; margin: 0 0 var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
+    .price-features li { display: flex; align-items: flex-start; gap: var(--space-2); font-size: .875rem; color: var(--text-secondary); line-height: 1.5; }
     .price-check { width: 20px; height: 20px; border-radius: 50%; background: var(--success-bg); color: var(--success); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
     .price-check-featured { background: var(--brand-subtle) !important; color: var(--brand) !important; }
     .price-cta {
