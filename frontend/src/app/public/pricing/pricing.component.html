@@ -48,7 +48,7 @@
       <!-- Plans -->
       @if (loading()) {
         <section class="plans-section">
-          <div class="plans-grid" [style.--plan-cols]="3">
+          <div class="plans-grid">
             @for (_ of [1,2,3]; track $index) {
               <div class="plan-card-skeleton">
                 <div class="skeleton" style="height:24px;width:60%;margin-bottom:12px"></div>
@@ -65,7 +65,7 @@
         </section>
       } @else {
         <section class="plans-section">
-          <div class="plans-grid" [style.--plan-cols]="plans().length">
+          <div class="plans-grid">
             @for (plan of plans(); track plan.id; let i = $index) {
               <div class="plan-card animate-up"
                    [class.plan-featured]="isFeatured(i)"

@@ -769,10 +769,10 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     }
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(min(var(--plan-cols, 3), 3), 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: var(--space-5); margin-bottom: var(--space-6);
     }
-    @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto var(--space-6); } }
+    @media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto var(--space-6); } }
     @keyframes priceCardIn { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
     .price-card-appear { animation: priceCardIn .55s cubic-bezier(0.22,1,0.36,1) both; }
     .price-card {

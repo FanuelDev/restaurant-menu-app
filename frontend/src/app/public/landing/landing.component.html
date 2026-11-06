@@ -574,7 +574,7 @@
             }
           </div>
         } @else {
-          <div class="pricing-grid" [style.--plan-cols]="plans().length">
+          <div class="pricing-grid">
             @for (plan of plans(); track plan.id; let i = $index) {
               <div class="price-card price-card-appear" [class.price-card-featured]="isFeatured(i)" [style.animation-delay]="(i * 100) + 'ms'">
                 @if (isFeatured(i)) { <div class="price-badge">{{ t('public.landing.planFeatured') }}</div> }
