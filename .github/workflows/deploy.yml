@@ -1,21 +1,15 @@
 # .github/workflows/deploy.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# Déploiement intelligent sur VPS via SSH
+# Déploiement sur VPS
 #
-# Déclencheurs :
-#   • Push sur main → déploie uniquement ce qui a changé
-#   • workflow_dispatch → déploiement manuel avec choix des cibles
+# Frontend : build Angular sur le runner GitHub Actions → rsync dist/ sur VPS
+# Backend  : build Docker sur le VPS
 #
-# Secrets GitHub à configurer (Settings → Secrets → Actions) :
-#   VPS_HOST       — IP ou nom de domaine du VPS  (ex: 72.62.21.77)
-#   VPS_USER       — Utilisateur SSH              (ex: root)
-#   VPS_PASSWORD   — Mot de passe SSH
-#   VPS_PORT       — Port SSH                     (optionnel, défaut: 22)
-#
-# Prérequis sur le VPS :
-#   • Git cloné dans /root/restaurant-menu-app
-#   • .env.production présent dans ce dossier
-#   • Docker + Docker Compose installés
+# Secrets GitHub (Settings → Secrets → Actions) :
+#   VPS_HOST       — IP ou nom de domaine du VPS
+#   VPS_USER       — Utilisateur SSH (ex: root)
+#   VPS_SSH_KEY    — Clé privée SSH
+#   VPS_PORT       — Port SSH (optionnel, défaut: 22)
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: Deploy to VPS
@@ -23,8 +17,6 @@ name: Deploy to VPS
 on:
   push:
     branches: [main]
-
-  # Déploiement manuel depuis l'onglet Actions de GitHub
   workflow_dispatch:
     inputs:
       force_frontend:
@@ -55,9 +47,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # nécessaire pour comparer avec le commit précédent
+          fetch-depth: 2
 
-      # dorny/paths-filter compare HEAD vs HEAD~1
       - name: Analyser les fichiers modifiés
         uses: dorny/paths-filter@v3
         id: filter
@@ -69,14 +60,12 @@ jobs:
               - 'backend/**'
               - 'docker-compose*.yml'
 
-      # Fusionne les résultats du filtre avec les overrides manuels
       - name: Résoudre les cibles de déploiement
         id: resolve
         run: |
           FRONTEND="${{ steps.filter.outputs.frontend }}"
           BACKEND="${{ steps.filter.outputs.backend }}"
 
-          # workflow_dispatch : les inputs peuvent forcer le déploiement
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             [ "${{ inputs.force_frontend }}" = "true" ] && FRONTEND="true"
             [ "${{ inputs.force_backend }}"  = "true" ] && BACKEND="true"
@@ -85,19 +74,84 @@ jobs:
           echo "frontend=$FRONTEND" >> $GITHUB_OUTPUT
           echo "backend=$BACKEND"   >> $GITHUB_OUTPUT
 
-          # Résumé visible dans le log GitHub
           echo "### Cibles de déploiement" >> $GITHUB_STEP_SUMMARY
           echo "| Service  | Déployer ? |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | $( [ '$FRONTEND' = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend  | $( [ '$BACKEND'  = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | $( [ \"$FRONTEND\" = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend  | $( [ \"$BACKEND\"  = 'true' ] && echo '✅ Oui' || echo '⏭️ Ignoré') |" >> $GITHUB_STEP_SUMMARY
 
-  # ── Job 2 : Déploiement ──────────────────────────────────────────────────────
-  deploy:
-    name: Déployer sur le VPS
+  # ── Job 2 : Build + déploiement Frontend ────────────────────────────────────
+  deploy-frontend:
+    name: Build & déployer Frontend
     needs: detect
-    # Ne s'exécute que si au moins un service a changé
-    if: needs.detect.outputs.frontend == 'true' || needs.detect.outputs.backend == 'true'
+    if: needs.detect.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Installer les dépendances
+        working-directory: frontend
+        run: npm ci --prefer-offline
+
+      - name: Build Angular (production)
+        working-directory: frontend
+        run: npm run build:prod
+
+      - name: Configurer la clé SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Ajouter le VPS aux known_hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          PORT="${VPS_PORT:-22}"
+          ssh-keyscan -p "$PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Déployer les fichiers sur le VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          PORT="${VPS_PORT:-22}"
+          APP_DIR="/root/restaurant-menu-app"
+          COMPOSE="docker compose -f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml --env-file $APP_DIR/.env.production"
+
+          # Mettre à jour la config sur le VPS (docker-compose.yml, nginx.conf, etc.)
+          ssh -p "$PORT" "$VPS_USER@$VPS_HOST" \
+            "cd $APP_DIR && git checkout -- . && git pull origin main && mkdir -p frontend-dist"
+
+          # Synchroniser les fichiers compilés (quelques Mo, très rapide)
+          rsync -avz --delete \
+            -e "ssh -p $PORT" \
+            frontend/dist/restaurant-menu/browser/ \
+            "$VPS_USER@$VPS_HOST:$APP_DIR/frontend-dist/"
+
+          # Redémarrer le conteneur Nginx pour servir les nouveaux fichiers
+          ssh -p "$PORT" "$VPS_USER@$VPS_HOST" \
+            "docker exec restaurant_frontend nginx -s reload 2>/dev/null || \
+             $COMPOSE up -d --force-recreate frontend"
+
+          echo "✅ Frontend déployé avec succès"
+
+  # ── Job 3 : Build + déploiement Backend ─────────────────────────────────────
+  deploy-backend:
+    name: Build & déployer Backend
+    needs: detect
+    if: needs.detect.outputs.backend == 'true'
     runs-on: ubuntu-latest
     environment: production
 
@@ -115,56 +169,32 @@ jobs:
           PORT="${VPS_PORT:-22}"
           ssh-keyscan -p "$PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
 
-      - name: Connexion SSH et déploiement
+      - name: Déployer le backend sur le VPS
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
         run: |
           PORT="${VPS_PORT:-22}"
-          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=30 -p "$PORT" "$VPS_USER@$VPS_HOST" << EOF
+          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=30 \
+            -p "$PORT" "$VPS_USER@$VPS_HOST" << 'EOF'
             set -e
-
-            DEPLOY_FRONTEND="${{ needs.detect.outputs.frontend }}"
-            DEPLOY_BACKEND="${{ needs.detect.outputs.backend }}"
-
             APP_DIR="/root/restaurant-menu-app"
-            COMPOSE="docker compose -f \$APP_DIR/docker-compose.yml -f \$APP_DIR/docker-compose.prod.yml --env-file \$APP_DIR/.env.production"
-
-            echo "────────────────────────────────────────────"
-            echo " Déploiement — \$(date '+%Y-%m-%d %H:%M:%S')"
-            echo " Frontend : \$DEPLOY_FRONTEND"
-            echo " Backend  : \$DEPLOY_BACKEND"
-            echo "────────────────────────────────────────────"
-
-            cd "\$APP_DIR"
+            COMPOSE="docker compose -f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml --env-file $APP_DIR/.env.production"
 
             echo "→ Pulling latest code..."
+            cd "$APP_DIR"
             git checkout -- .
             git pull origin main
 
-            SERVICES_TO_UP=""
+            echo "→ Building backend..."
+            $COMPOSE build backend
 
-            if [ "\$DEPLOY_BACKEND" = "true" ]; then
-              echo "→ Building backend..."
-              \$COMPOSE build backend
-              SERVICES_TO_UP="\$SERVICES_TO_UP backend"
-            fi
-
-            if [ "\$DEPLOY_FRONTEND" = "true" ]; then
-              echo "→ Building frontend..."
-              \$COMPOSE build frontend
-              SERVICES_TO_UP="\$SERVICES_TO_UP frontend"
-            fi
-
-            echo "→ Starting:\$SERVICES_TO_UP"
-            \$COMPOSE up -d --remove-orphans \$SERVICES_TO_UP
-
-            echo "→ État des conteneurs :"
-            \$COMPOSE ps
+            echo "→ Starting backend..."
+            $COMPOSE up -d --remove-orphans backend
 
             echo "→ Cleaning unused images..."
             docker image prune -f
 
-            echo "Deployment finished successfully."
-          EOF
+            echo "✅ Backend déployé avec succès"
+EOF

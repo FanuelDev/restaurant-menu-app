@@ -147,6 +147,8 @@ services:
       - backend
     ports:
       - "4200:80"
+    volumes:
+      - ./frontend-dist:/usr/share/nginx/html:ro
     networks:
       - restaurant_net
 
