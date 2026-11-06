@@ -751,6 +751,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
 
     /* ── Pricing ─────────────────────────────────────────── */
     .lp-pricing { background: #fffcf8; }
+    .lp-pricing .lp-container { max-width: 1480px; }
     .pricing-toggle {
       display: inline-flex; background: #f0e8dc;
       border-radius: var(--radius-lg); padding: 3px; gap: 2px;
@@ -769,20 +770,25 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     }
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: var(--space-5); margin-bottom: var(--space-6);
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--space-6); margin-bottom: var(--space-6);
     }
     @media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto var(--space-6); } }
-    @keyframes priceCardIn { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
-    .price-card-appear { animation: priceCardIn .55s cubic-bezier(0.22,1,0.36,1) both; }
+    @keyframes priceCardIn { from{opacity:0;transform:translateY(32px) scale(.97)} to{opacity:1;transform:none} }
+    .price-card-appear { animation: priceCardIn .6s cubic-bezier(0.22,1,0.36,1) both; }
     .price-card {
       background: white; border: 1.5px solid #f0e8dc;
-      border-radius: var(--radius-xl); padding: var(--space-5) var(--space-6);
+      border-radius: var(--radius-xl); padding: var(--space-6) var(--space-7);
       position: relative;
-      transition: box-shadow .4s cubic-bezier(0.22,1,0.36,1), transform .4s;
-      &:hover { box-shadow: 0 20px 60px rgba(180,80,30,.1); transform: translateY(-6px); }
+      transition: box-shadow .35s cubic-bezier(0.22,1,0.36,1), transform .35s cubic-bezier(0.22,1,0.36,1), border-color .35s;
+      &:hover { box-shadow: 0 24px 64px rgba(180,80,30,.13); transform: translateY(-8px); border-color: #e0c8b0; }
     }
-    .price-card-featured { border-color: var(--brand) !important; box-shadow: 0 0 0 4px var(--brand-subtle), 0 20px 60px rgba(192,57,43,.12); }
+    .price-card-featured {
+      border-color: var(--brand) !important;
+      box-shadow: 0 0 0 4px var(--brand-subtle), 0 24px 64px rgba(192,57,43,.15);
+      transform: translateY(-4px);
+      &:hover { transform: translateY(-12px); box-shadow: 0 0 0 4px var(--brand-subtle), 0 32px 80px rgba(192,57,43,.2); }
+    }
     .price-badge {
       position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
       background: var(--brand); color: white;

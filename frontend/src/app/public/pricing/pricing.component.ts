@@ -83,11 +83,11 @@ import type { Plan, BillingCycle } from '../../shared/models'
     }
 
     /* ── Plans ─────────────────────────────────────── */
-    .plans-section { padding: 0 var(--space-6) var(--space-12); }
+    .plans-section { padding: 0 var(--space-8) var(--space-12); max-width: 1480px; margin: 0 auto; }
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: var(--space-4); max-width: 1400px; margin: 0 auto;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--space-6); margin: 0 auto;
     }
     @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }
 
