@@ -156,45 +156,24 @@ jobs:
     environment: production
 
     steps:
-      - name: Configurer la clé SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-
-      - name: Ajouter le VPS aux known_hosts
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          PORT="${VPS_PORT:-22}"
-          ssh-keyscan -p "$PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
-
       - name: Déployer le backend sur le VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          PORT="${VPS_PORT:-22}"
-          ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=30 \
-            -p "$PORT" "$VPS_USER@$VPS_HOST" << 'EOF'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 20m
+          script: |
             set -e
             APP_DIR="/root/restaurant-menu-app"
             COMPOSE="docker compose -f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml --env-file $APP_DIR/.env.production"
-
-            echo "→ Pulling latest code..."
             cd "$APP_DIR"
             git checkout -- .
             git pull origin main
-
             echo "→ Building backend..."
             $COMPOSE build backend
-
             echo "→ Starting backend..."
             $COMPOSE up -d --remove-orphans backend
-
-            echo "→ Cleaning unused images..."
             docker image prune -f
-
-            echo "✅ Backend déployé avec succès"
-EOF
+            echo "Backend déployé avec succès"
