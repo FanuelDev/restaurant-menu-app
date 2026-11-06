@@ -5,4 +5,5 @@ export const environment = {
   publicMenuBaseUrl: 'https://{slug}.saemenus.com/menu',
   fedapayPublicKey: 'pk_live_REMPLACER_PAR_VOTRE_CLE_PUBLIQUE_LIVE',
   fedapayEnvironment: 'live' as 'sandbox' | 'live',
+  buildDate: '2026-11-06',
 }
