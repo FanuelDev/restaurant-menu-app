@@ -86,7 +86,7 @@ import type { Plan, BillingCycle } from '../../shared/models'
     .plans-section { padding: 0 var(--space-8) var(--space-12); max-width: 1480px; margin: 0 auto; }
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: var(--space-6); margin: 0 auto;
     }
     @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; max-width: 420px; } }

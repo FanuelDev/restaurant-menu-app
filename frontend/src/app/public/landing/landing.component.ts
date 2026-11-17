@@ -770,7 +770,7 @@ const FAQ_INDICES = [0, 1, 2, 3, 4]
     }
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: var(--space-6); margin-bottom: var(--space-6);
     }
     @media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto var(--space-6); } }
